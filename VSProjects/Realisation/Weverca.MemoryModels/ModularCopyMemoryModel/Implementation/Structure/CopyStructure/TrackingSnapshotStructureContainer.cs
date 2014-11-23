@@ -72,7 +72,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         private LazyCopyDeclarationContainer<FunctionValue> functionDecl;
         private LazyCopyDeclarationContainer<TypeValue> classDecl;
 
-        private ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> indexTracker;
+        private ChangeTracker<IReadOnlySnapshotStructure> changeTracker;
         private bool definitionAdded = false;
 
         #endregion
@@ -84,7 +84,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         private TrackingSnapshotStructureContainer(Snapshot snapshot)
             : base(snapshot)
         {
-            indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(StructureId, this, null);
+            changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(StructureId, this, null);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.classDecl = new LazyCopyDeclarationContainer<TypeValue>(this.classDecl);
             data.callArrays = new LazyCopyDictionary<AssociativeArray, CopySet<Snapshot>>(this.callArrays);
 
-            data.indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(data.StructureId, data, this.indexTracker);
+            data.changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(data.StructureId, data, this.changeTracker);
 
             return data;
         }
@@ -160,27 +160,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker
+        public override IReadonlyChangeTracker<IReadOnlySnapshotStructure> ReadonlyChangeTracker
         {
             get
             {
-                return indexTracker;
+                return changeTracker;
             }
         }
 
         /// <inheritdoc />
-        public override IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker
+        public override IWriteableChangeTracker<IReadOnlySnapshotStructure> WriteableChangeTracker
         {
             get
             {
-                return indexTracker;
+                return changeTracker;
             }
         }
 
         /// <inheritdoc />
-        public override void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
+        public override void ReinitializeTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
         {
-            this.indexTracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>(this.StructureId, this, parentSnapshotStructure.ReadonlyIndexChangeTracker);
+            this.changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(this.StructureId, this, parentSnapshotStructure.ReadonlyChangeTracker);
         }
 
         #region MemoryStack
@@ -368,14 +368,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 
             CopyIndexDefinition data = new CopyIndexDefinition();
             indexDefinitions.Add(index, data);
-            indexTracker.Inserted(index);
+            changeTracker.InsertedIndex(index);
         }
 
         /// <inheritdoc />
         public override void RemoveIndex(MemoryIndex index)
         {
             indexDefinitions.Remove(index);
-            indexTracker.Deleted(index);
+            changeTracker.DeletedIndex(index);
         }
 
         #endregion
@@ -457,7 +457,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 
             indexDefinitions[index] = builder.Build();
 
-            indexTracker.Modified(index);
+            changeTracker.ModifiedIndex(index);
         }
 
         #endregion
@@ -557,7 +557,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public override void SetDescriptor(AssociativeArray arrayvalue, IArrayDescriptor descriptor)
         {
             arrayDescriptors[arrayvalue] = descriptor;
-            indexTracker.Modified(descriptor.ParentIndex);
+            changeTracker.ModifiedIndex(descriptor.ParentIndex);
         }
 
         /// <inheritdoc />
@@ -586,7 +586,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             builder.SetArray(arrayValue);
 
             indexDefinitions[index] = builder.Build();
-            indexTracker.Modified(index);
+            changeTracker.ModifiedIndex(index);
 
             IArrayDescriptor descriptor;
             if (TryGetDescriptor(arrayValue, out descriptor))
@@ -614,7 +614,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             builder.SetArray(null);
 
             indexDefinitions[index] = builder.Build();
-            indexTracker.Modified(index);
+            changeTracker.ModifiedIndex(index);
             GetWriteableStackContext(index.CallLevel).WriteableArrays.Remove(arrayValue);
         }
 
@@ -637,7 +637,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override bool TryGetFunction(QualifiedName functionName, out IEnumerable<FunctionValue> functionValues)
         {
-            throw new NotImplementedException();
+            return functionDecl.TryGetValue(functionName, out functionValues);
         }
 
         /// <inheritdoc />
@@ -647,10 +647,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override void SetFunction(QualifiedName name, FunctionValue declaration)
+        public override void AddFunctiondeclaration(QualifiedName name, FunctionValue declaration)
         {
             functionDecl.Add(name, declaration);
             definitionAdded = true;
+            changeTracker.ModifiedFunction(name);
+        }
+
+        /// <inheritdoc />
+        public override void SetFunctionDeclarations(QualifiedName name, IEnumerable<FunctionValue> declarations)
+        {
+            functionDecl.SetAll(name, declarations);
+            definitionAdded = true;
+            changeTracker.ModifiedFunction(name);
         }
 
         #endregion
@@ -682,10 +691,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override void SetClass(PHP.Core.QualifiedName name, TypeValue declaration)
+        public override void AddClassDeclaration(PHP.Core.QualifiedName name, TypeValue declaration)
         {
             classDecl.Add(name, declaration);
             definitionAdded = true;
+            changeTracker.ModifiedClass(name);
+        }
+
+        /// <inheritdoc />
+        public override void SetClassDeclarations(QualifiedName name, IEnumerable<TypeValue> declarations)
+        {
+            classDecl.SetAll(name, declarations);
+            definitionAdded = true;
+            changeTracker.ModifiedClass(name);
         }
 
         #endregion
@@ -735,14 +753,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             builder.SetAliases(alias);
 
             indexDefinitions[index] = builder.Build();
-            indexTracker.Modified(index);
+            changeTracker.ModifiedIndex(index);
         }
 
         /// <inheritdoc />
         public override void RemoveAlias(MemoryIndex index)
         {
             SetAlias(index, null);
-            indexTracker.Modified(index);
+            changeTracker.ModifiedIndex(index);
         }
 
         #endregion

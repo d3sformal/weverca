@@ -589,9 +589,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override void SetFunction(QualifiedName name, FunctionValue declaration)
+        public override void AddFunctiondeclaration(QualifiedName name, FunctionValue declaration)
         {
             functionDecl.Add(name, declaration);
+        }
+
+        /// <inheritdoc />
+        public override void SetFunctionDeclarations(QualifiedName name, IEnumerable<FunctionValue> declarations)
+        {
+            functionDecl.SetAll(name, declarations);
         }
 
         #endregion
@@ -623,9 +629,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public override void SetClass(PHP.Core.QualifiedName name, TypeValue declaration)
+        public override void AddClassDeclaration(PHP.Core.QualifiedName name, TypeValue declaration)
         {
             classDecl.Add(name, declaration);
+        }
+
+        /// <inheritdoc />
+        public override void SetClassDeclarations(QualifiedName name, IEnumerable<TypeValue> declarations)
+        {
+            classDecl.SetAll(name, declarations);
         }
 
         #endregion

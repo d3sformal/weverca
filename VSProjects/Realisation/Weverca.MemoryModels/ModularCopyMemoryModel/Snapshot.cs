@@ -704,7 +704,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         }
 
         /// <inheritdoc />
-        protected override void extendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription) 
+        protected override void extendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription)
         {
             Logger.Log(this, "extend");
 
@@ -776,7 +776,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
         protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
-            Logger.Log(this, "call merge");
+            //throw new NotImplementedException("Merging function call is not implemented");
 
             CallLevel = ((Snapshot)callerPoint.OutSnapshot).CallLevel;
             var tempCallLevel = CallLevel;
@@ -980,11 +980,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             if (!structure.IsFunctionDefined(name))
             {
-                structure.SetFunction(name, declaration);
+                structure.AddFunctiondeclaration(name, declaration);
             }
             else
             {
-                structure.SetFunction(name, declaration);
+                structure.AddFunctiondeclaration(name, declaration);
             }
         }
 
@@ -1001,11 +1001,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             if (!structure.IsClassDefined(name))
             {
-                structure.SetClass(name, declaration);
+                structure.AddClassDeclaration(name, declaration);
             }
             else
             {
-                structure.SetClass(name, declaration);
+                structure.AddClassDeclaration(name, declaration);
             }
         }
 

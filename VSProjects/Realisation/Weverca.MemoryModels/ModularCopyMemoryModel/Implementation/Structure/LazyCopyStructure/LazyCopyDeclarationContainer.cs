@@ -122,6 +122,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
+        /// Sets all given declaration for declarations with given name.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The values.</param>
+        public void SetAll(QualifiedName key, IEnumerable<T> values)
+        {
+            if (!copied)
+            {
+                this.declarations = new CopyDeclarationContainer<T>(declarations);
+                copied = true;
+            }
+
+            this.declarations.SetAll(key, values);
+        }
+
+        /// <summary>
         /// Gets all qualified names which are defined in the container.
         /// </summary>
         /// <returns>List of names of all declarations in this container.</returns>

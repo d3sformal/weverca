@@ -114,9 +114,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return !areSame;
         }
 
-        private HashSet<T> getChanges<T, C>(IReadonlyChangeTracker<T, C> trackerA, IReadonlyChangeTracker<T, C> trackerB)
+        private HashSet<MemoryIndex> getChanges<T, C>(IReadonlyChangeTracker<C> trackerA, IReadonlyChangeTracker<C> trackerB)
         {
-            HashSet<T> values = new HashSet<T>();
+            HashSet<MemoryIndex> values = new HashSet<MemoryIndex>();
             while (trackerA != trackerB)
             {
                 if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
@@ -126,7 +126,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     trackerB = swap;
                 }
 
-                CollectionTools.AddAll(values, trackerA.ChangedValues);
+                CollectionTools.AddAll(values, trackerA.IndexChanges);
                 trackerA = trackerA.PreviousTracker;
             }
 
@@ -149,13 +149,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             bool areEqual = true;
 
-            var previousStructure = newStructure.Readonly.ReadonlyIndexChangeTracker.PreviousTracker;
+            var previousStructure = newStructure.Readonly.ReadonlyChangeTracker.PreviousTracker;
             if (previousStructure != null)
             {
                 areEqual = areEqual && !previousStructure.Container.DiffersOnCommit;
             }
 
-            var previousData = newData.Readonly.IndexChangeTracker.PreviousTracker;
+            var previousData = newData.Readonly.ChangeTracker.PreviousTracker;
             if (previousData != null)
             {
                 areEqual = areEqual && !previousData.Container.DiffersOnCommit;
@@ -165,11 +165,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
 
-                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.ReadonlyIndexChangeTracker.ChangedValues);
-                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.ReadonlyIndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
+                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
 
-                CollectionTools.AddAll(usedIndexes, newData.Readonly.IndexChangeTracker.ChangedValues);
-                CollectionTools.AddAll(usedIndexes, oldData.Readonly.IndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, newData.Readonly.ChangeTracker.IndexChanges);
+                CollectionTools.AddAll(usedIndexes, oldData.Readonly.ChangeTracker.IndexChanges);
 
                 IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
 
@@ -231,7 +231,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             bool areEqual = true;
 
-            var previousData = newData.Readonly.IndexChangeTracker.PreviousTracker;
+            var previousData = newData.Readonly.ChangeTracker.PreviousTracker;
             if (previousData != null)
             {
                 areEqual = areEqual && !previousData.Container.DiffersOnCommit;
@@ -241,7 +241,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
 
-                CollectionTools.AddAll(usedIndexes, newData.Readonly.IndexChangeTracker.ChangedValues);
+                CollectionTools.AddAll(usedIndexes, newData.Readonly.ChangeTracker.IndexChanges);
 
                 foreach (MemoryIndex index in usedIndexes)
                 {

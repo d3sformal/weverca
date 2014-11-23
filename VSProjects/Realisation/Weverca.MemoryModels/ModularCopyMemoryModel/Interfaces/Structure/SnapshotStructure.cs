@@ -168,12 +168,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         bool DefinitionAdded { get; }
 
         /// <summary>
-        /// Gets the index change tracker.
+        /// Gets the readonly change tracker with lists of modified indexes, functions and classes.
         /// </summary>
         /// <value>
-        /// The index change tracker.
+        /// The readonly change tracker.
         /// </value>
-        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker { get; }
+        IReadonlyChangeTracker<IReadOnlySnapshotStructure> ReadonlyChangeTracker { get; }
 
         #region MemoryStack
 
@@ -466,18 +466,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         void SetDiffersOnCommit(bool isDifferent);
 
         /// <summary>
-        /// Reinitializes the index change tracker and sets the parent tracker to be given structure tracker.
+        /// Reinitializes change tracker and sets the parent tracker to be given structure tracker.
         /// </summary>
         /// <param name="parentSnapshotStructure">The parent snapshot structure.</param>
-        void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure);
+        void ReinitializeTracker(IReadOnlySnapshotStructure parentSnapshotStructure);
 
         /// <summary>
-        /// Gets the writeable index change tracker.
+        /// Gets the writeable change tracker with lists of modified indexes, functions and classes.
         /// </summary>
         /// <value>
-        /// The writeable index change tracker.
+        /// The writeable change tracker.
         /// </value>
-        IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker { get; }
+        IWriteableChangeTracker<IReadOnlySnapshotStructure> WriteableChangeTracker { get; }
 
         #region MemoryStack
 
@@ -588,22 +588,36 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         #region Functions
 
         /// <summary>
-        /// Sets the function.
+        /// Add new declaration for function with given name.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="declaration">The declaration.</param>
-        void SetFunction(QualifiedName name, FunctionValue declaration);
+        void AddFunctiondeclaration(QualifiedName name, FunctionValue declaration);
 
+        /// <summary>
+        /// Sets the function declarations.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="declarations">The declarations.</param>
+        void SetFunctionDeclarations(QualifiedName name, IEnumerable<FunctionValue> declarations);
+        
         #endregion
 
         #region Classes
 
         /// <summary>
-        /// Sets the class.
+        /// Add new declaration for class with given name.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="declaration">The declaration.</param>
-        void SetClass(QualifiedName name, TypeValue declaration);
+        void AddClassDeclaration(QualifiedName name, TypeValue declaration);
+
+        /// <summary>
+        /// Sets the class declarations.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="declarations">The declarations.</param>
+        void SetClassDeclarations(QualifiedName name, IEnumerable<TypeValue> declarations);
 
         #endregion
 
@@ -665,19 +679,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         }
 
         /// <inheritdoc />
-        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ReadonlyIndexChangeTracker
+        public virtual IWriteableChangeTracker<IReadOnlySnapshotStructure> WriteableChangeTracker
         {
             get { return null; }
         }
 
         /// <inheritdoc />
-        public virtual IWriteableChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> WriteableIndexChangeTracker
+        public virtual IReadonlyChangeTracker<IReadOnlySnapshotStructure> ReadonlyChangeTracker
         {
             get { return null; }
         }
 
         /// <inheritdoc />
-        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
+        public virtual void ReinitializeTracker(IReadOnlySnapshotStructure parentSnapshotStructure)
         {
         }
 
@@ -975,87 +989,45 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 
         #region Functions
 
-        /// <summary>
-        /// Gets the collection of defined functions.
-        /// </summary>
-        /// <returns>
-        /// The collection of defined functions.
-        /// </returns>
+        /// <inheritdoc />
         public abstract IEnumerable<QualifiedName> GetFunctions();
 
-        /// <summary>
-        /// Determines whether function with given name is defined.
-        /// </summary>
-        /// <param name="functionName">Name of the function.</param>
-        /// <returns>True whether function with given name is defined..</returns>
+        /// <inheritdoc />
         public abstract bool IsFunctionDefined(PHP.Core.QualifiedName functionName);
 
-        /// <summary>
-        /// Tries the get functions with specified class name.
-        /// </summary>
-        /// <param name="functionName">Name of the function.</param>
-        /// <param name="functionValues">The function values.</param>
-        /// <returns>
-        /// True whether specified function is defined.
-        /// </returns>
+        /// <inheritdoc />
         public abstract bool TryGetFunction(QualifiedName functionName, out IEnumerable<FunctionValue> functionValues);
 
-        /// <summary>
-        /// Gets the function.
-        /// </summary>
-        /// <param name="functionName">Name of the function.</param>
-        /// <returns>List of functions with given name.</returns>
+        /// <inheritdoc />
         public abstract IEnumerable<FunctionValue> GetFunction(QualifiedName functionName);
 
-        /// <summary>
-        /// Sets the function.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="declaration">The declaration.</param>
-        public abstract void SetFunction(QualifiedName name, FunctionValue declaration);
+        /// <inheritdoc />
+        public abstract void AddFunctiondeclaration(QualifiedName name, FunctionValue declaration);
+
+        /// <inheritdoc />
+        public abstract void SetFunctionDeclarations(QualifiedName name, IEnumerable<FunctionValue> declarations);
 
         #endregion
 
         #region Classes
 
-        /// <summary>
-        /// Gets the collection of defined classes.
-        /// </summary>
-        /// <returns>
-        /// The collection of defined classes.
-        /// </returns>
+        /// <inheritdoc />
         public abstract IEnumerable<QualifiedName> GetClasses();
 
-        /// <summary>
-        /// Determines whether class with specified name is defined.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <returns>True whether class with specified name is defined.</returns>
+        /// <inheritdoc />
         public abstract bool IsClassDefined(PHP.Core.QualifiedName name);
 
-        /// <summary>
-        /// Tries the get classes with specified class name.
-        /// </summary>
-        /// <param name="className">Name of the class.</param>
-        /// <param name="classValues">The class values.</param>
-        /// <returns>
-        /// True whether specified class is defined.
-        /// </returns>
+        /// <inheritdoc />
         public abstract bool TryGetClass(QualifiedName className, out IEnumerable<TypeValue> classValues);
 
-        /// <summary>
-        /// Gets the class.
-        /// </summary>
-        /// <param name="className">Name of the class.</param>
-        /// <returns>Class with the specified name.</returns>
+        /// <inheritdoc />
         public abstract IEnumerable<TypeValue> GetClass(QualifiedName className);
 
-        /// <summary>
-        /// Sets the class.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="declaration">The declaration.</param>
-        public abstract void SetClass(QualifiedName name, TypeValue declaration);
+        /// <inheritdoc />
+        public abstract void AddClassDeclaration(QualifiedName name, TypeValue declaration);
+
+        /// <inheritdoc />
+        public abstract void SetClassDeclarations(QualifiedName name, IEnumerable<TypeValue> declarations);
 
         #endregion
 

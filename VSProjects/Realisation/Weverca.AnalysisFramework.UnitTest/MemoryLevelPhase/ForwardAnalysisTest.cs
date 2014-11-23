@@ -2197,6 +2197,76 @@ $cany = $ar[$y]['c']['any'];
             AnalysisTestUtils.RunTestCase(LoopMerge_CASE);
         }
 
+
+        readonly static TestCase FunctionDefinitionMerge_CASE = @"
+if ($_POST[0]) {
+    function f() { return 'f'; }
+}
+else {
+    function g() { return 'g'; }
+}
+
+$f = f();
+$g = g();
+
+"
+.AssertVariable("f").HasValues("f")
+.AssertVariable("g").HasValues("g")
+;
+
+
+        [TestMethod]
+        public void FunctionDefinitionMerge()
+        {
+            AnalysisTestUtils.RunTestCase(FunctionDefinitionMerge_CASE);
+        }
+
+        readonly static TestCase ClassDefinitionMerge_CASE = @"
+if ($_POST[0]) {
+    class f { function m() { return 'f'; } }
+}
+else {
+    class g { function m() { return 'g'; } }
+}
+
+$fo = new f();
+$go = new g();
+
+$f = $fo->m();
+$g = $go->m();
+
+"
+            .AssertVariable("f").HasValues("f")
+            .AssertVariable("g").HasValues("g")
+            ;
+
+
+        [TestMethod]
+        public void ClassDefinitionMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ClassDefinitionMerge_CASE);
+        }
+
+        readonly static TestCase LocalVariableSeparation_CASE = @"
+
+function f() { $a = 'f'; return $a; }
+function g() { $a = 'g'; f(); return $a; }
+
+$f = f();
+$g = g();
+
+"
+.AssertVariable("f").HasValues("f")
+.AssertVariable("g").HasValues("g")
+;
+
+
+        [TestMethod]
+        public void LocalVariableSeparation()
+        {
+            AnalysisTestUtils.RunTestCase(LocalVariableSeparation_CASE);
+        }
+
         [TestMethod]
         public void SwitchWithOneBreak3()
         {

@@ -46,6 +46,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Tools
         }
 
         /// <summary>
+        /// Adds all values to target collection. Do nothing when the values enumeration is null.
+        /// </summary>
+        /// <typeparam name="T">Type of collection.</typeparam>
+        /// <param name="targetSet">The target set.</param>
+        /// <param name="values">The values.</param>
+        public static void AddAllIfNotNull<T>(ICollection<T> targetSet, IEnumerable<T> values)
+        {
+            if (values != null)
+            {
+                AddAll(targetSet, values);
+            }
+        }
+
+        /// <summary>
         /// Determines whether given collections contains the same values or not.
         /// </summary>
         /// <typeparam name="T">Type of collection.</typeparam>

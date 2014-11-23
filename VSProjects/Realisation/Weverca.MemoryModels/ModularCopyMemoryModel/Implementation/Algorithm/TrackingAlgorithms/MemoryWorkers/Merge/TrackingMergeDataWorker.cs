@@ -15,7 +15,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     {
         public ISnapshotDataProxy Data { get; set; }
         private IWriteableSnapshotData writeableTargetData;
-        private IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> commonAncestor;
+        private IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor;
 
         public TrackingMergeDataWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
             : base(targetSnapshot, sourceSnapshots, isCallMerge)
@@ -43,7 +43,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void collectDataChanges()
         {
-            IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> ancestor = snapshotContexts[0].SourceData.IndexChangeTracker;
+            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = snapshotContexts[0].SourceData.ChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
@@ -53,7 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                ancestor = getFirstCommonAncestor(context.SourceData.IndexChangeTracker, ancestor, currentChanges, changes);
+                ancestor = getFirstCommonAncestor(context.SourceData.ChangeTracker, ancestor, currentChanges, changes);
             }
             commonAncestor = ancestor;
         }
@@ -63,7 +63,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, parentSnapshotContext.SourceSnapshot.Data);
             writeableTargetData = Data.Writeable;
 
-            writeableTargetData.ReinitializeIndexTracker(commonAncestor.Container);
+            writeableTargetData.ReinitializeTracker(commonAncestor.Container);
         }
 
         protected override TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation)

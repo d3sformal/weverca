@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
@@ -136,6 +137,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             {
                 set.Add(value);
             }
+        }
+
+        /// <summary>
+        /// Sets all given declaration for declarations with given name.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">The values.</param>
+        public void SetAll(QualifiedName key, IEnumerable<T> values)
+        {
+            HashSet<T> set;
+            if (!declarations.TryGetValue(key, out set))
+            {
+                set = new HashSet<T>();
+                declarations[key] = set;
+            }
+
+            set.Clear();
+            CollectionTools.AddAll(set, values);
         }
 
         /// <summary>

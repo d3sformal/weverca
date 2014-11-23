@@ -144,7 +144,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     foreach (var decl in snapshot.Structure.Readonly.GetFunction(name))
                     {
-                        Structure.Writeable.SetFunction(name, decl);
+                        Structure.Writeable.AddFunctiondeclaration(name, decl);
                     }
                 }
 
@@ -152,7 +152,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     foreach (var decl in snapshot.Structure.Readonly.GetClass(name))
                     {
-                        Structure.Writeable.SetClass(name, decl);
+                        Structure.Writeable.AddClassDeclaration(name, decl);
                     }
                 }
 

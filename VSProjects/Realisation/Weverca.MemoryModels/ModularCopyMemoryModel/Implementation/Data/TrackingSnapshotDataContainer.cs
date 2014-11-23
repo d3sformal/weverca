@@ -42,7 +42,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         private Dictionary<MemoryIndex, MemoryEntry> IndexData;
 
-        private ChangeTracker<MemoryIndex, IReadOnlySnapshotData> tracker;
+        private ChangeTracker<IReadOnlySnapshotData> tracker;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
@@ -52,7 +52,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             : base(snapshot)
         {
             IndexData = new Dictionary<MemoryIndex, MemoryEntry>();
-            tracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotData>(DataId, this, null);
+            tracker = new ChangeTracker<IReadOnlySnapshotData>(DataId, this, null);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             TrackingSnapshotDataAssociativeContainer data = new TrackingSnapshotDataAssociativeContainer(snapshot);
 
             data.IndexData = new Dictionary<MemoryIndex, MemoryEntry>(IndexData);
-            data.tracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotData>(data.DataId, data, this.tracker);
+            data.tracker = new ChangeTracker<IReadOnlySnapshotData>(data.DataId, data, this.tracker);
 
             return data;
         }
@@ -107,11 +107,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         {
             if (IndexData.ContainsKey(index))
             {
-                tracker.Modified(index);
+                tracker.ModifiedIndex(index);
             }
             else
             {
-                tracker.Inserted(index);
+                tracker.InsertedIndex(index);
             }
 
             IndexData[index] = memoryEntry;
@@ -123,13 +123,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         {
             if (IndexData.ContainsKey(index))
             {
-                tracker.Deleted(index);
+                tracker.DeletedIndex(index);
                 IndexData.Remove(index);
             }
         }
 
         /// <inheritdoc />
-        public override IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker
+        public override IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker
         {
             get
             {
@@ -138,9 +138,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <inheritdoc />
-        public override void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData)
+        public override void ReinitializeTracker(IReadOnlySnapshotData parentSnapshotData)
         {
-            tracker = new ChangeTracker<MemoryIndex, IReadOnlySnapshotData>(this.DataId, this, parentSnapshotData.IndexChangeTracker);
+            tracker = new ChangeTracker<IReadOnlySnapshotData>(this.DataId, this, parentSnapshotData.ChangeTracker);
         }
     }
 }

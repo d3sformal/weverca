@@ -18,7 +18,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#define COPY_SNAPSHOT_LOG
+ //#define COPY_SNAPSHOT_LOG
 
 using System;
 using System.Collections.Generic;

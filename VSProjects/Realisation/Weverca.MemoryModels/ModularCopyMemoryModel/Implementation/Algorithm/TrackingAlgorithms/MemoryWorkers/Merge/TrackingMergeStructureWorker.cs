@@ -1,18 +1,21 @@
-﻿using System;
+﻿using PHP.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
     class TrackingMergeStructureWorker : AbstractTrackingMergeWorker, IReferenceHolder
     {
-        private IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> commonAncestor = null;
+        private IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor = null;
         internal Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
 
         public TrackingMergeStructureWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
@@ -37,15 +40,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             updateAliases();
 
-            foreach (MemoryIndex index in this.changeTree.Changes)
-            {
-                writeableTargetStructure.WriteableIndexChangeTracker.Modified(index);
-            }
+            mergeDeclarations();
+
+            ensureTrackingChanges();
         }
 
         private void collectStructureChanges()
         {
-            IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure> ancestor = snapshotContexts[0].SourceStructure.ReadonlyIndexChangeTracker;
+            IReadonlyChangeTracker<IReadOnlySnapshotStructure> ancestor = snapshotContexts[0].SourceStructure.ReadonlyChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
@@ -55,7 +57,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyIndexChangeTracker, ancestor, currentChanges, changes);
+                ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
 
             commonAncestor = ancestor;
@@ -67,7 +69,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
 
-            writeableTargetStructure.ReinitializeIndexTracker(commonAncestor.Container);
+            writeableTargetStructure.ReinitializeTracker(commonAncestor.Container);
 
         }
 
@@ -84,7 +86,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 }
                 else
                 {
-                    /*IMemoryAlias currentAliases;
+                    IMemoryAlias currentAliases;
                     if (writeableTargetStructure.TryGetAliases(targetIndex, out currentAliases))
                     {
                         aliasInfo.Aliases.MayAliases.AddAll(currentAliases.MayAliases);
@@ -93,8 +95,57 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     else
                     {
                         writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build());
-                    }*/
+                    }
                 }
+            }
+        }
+
+        private void mergeDeclarations()
+        {
+            foreach (QualifiedName functionName in functionChages)
+            {
+                HashSet<FunctionValue> declarations = new HashSet<FunctionValue>();
+                foreach (var context in snapshotContexts)
+                {
+                    IEnumerable<FunctionValue> decl;
+                    if (context.SourceStructure.TryGetFunction(functionName, out decl))
+                    {
+                        CollectionTools.AddAll(declarations, decl);
+                    }
+                }
+                writeableTargetStructure.SetFunctionDeclarations(functionName, declarations);
+            }
+
+            foreach (QualifiedName className in classChanges)
+            {
+                HashSet<TypeValue> declarations = new HashSet<TypeValue>();
+                foreach (var context in snapshotContexts)
+                {
+                    IEnumerable<TypeValue> decl;
+                    if (context.SourceStructure.TryGetClass(className, out decl))
+                    {
+                        CollectionTools.AddAll(declarations, decl);
+                    }
+                }
+                writeableTargetStructure.SetClassDeclarations(className, declarations);
+            }
+        }
+
+        private void ensureTrackingChanges()
+        {
+            foreach (MemoryIndex index in this.changeTree.Changes)
+            {
+                writeableTargetStructure.WriteableChangeTracker.ModifiedIndex(index);
+            }
+
+            foreach (QualifiedName name in functionChages)
+            {
+                writeableTargetStructure.WriteableChangeTracker.ModifiedFunction(name);
+            }
+
+            foreach (QualifiedName name in classChanges)
+            {
+                writeableTargetStructure.WriteableChangeTracker.ModifiedClass(name);
             }
         }
 

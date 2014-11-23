@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PHP.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,6 +31,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         protected List<SnapshotContext> snapshotContexts = new List<SnapshotContext>();
         protected SnapshotContext parentSnapshotContext;
         protected MemoryIndexTree changeTree = new MemoryIndexTree();
+
+        protected HashSet<QualifiedName> functionChages = new HashSet<QualifiedName>();
+        protected HashSet<QualifiedName> classChanges = new HashSet<QualifiedName>();
 
         protected IReadOnlySnapshotStructure targetStructure;
         protected IWriteableSnapshotStructure writeableTargetStructure;
@@ -309,10 +313,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
-        protected IReadonlyChangeTracker<MemoryIndex, T> getFirstCommonAncestor<T>(
-            IReadonlyChangeTracker<MemoryIndex, T> trackerA,
-            IReadonlyChangeTracker<MemoryIndex, T> trackerB,
-            MemoryIndexTree currentChanges, List<MemoryIndexTree> changes)
+        protected IReadonlyChangeTracker<T> getFirstCommonAncestor<T>(
+            IReadonlyChangeTracker<T> trackerA,
+            IReadonlyChangeTracker<T> trackerB,
+            MemoryIndexTree currentChanges, List<MemoryIndexTree> changes
+            )
         {
             bool swapped = false;
             while (trackerA != trackerB)
@@ -326,14 +331,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     swapped = true;
                 }
 
-                CollectionTools.AddAll(currentChanges, trackerA.ChangedValues);
-                CollectionTools.AddAll(this.changeTree, trackerA.ChangedValues);
+                CollectionTools.AddAll(currentChanges, trackerA.IndexChanges);
+                CollectionTools.AddAll(this.changeTree, trackerA.IndexChanges);
+
+                CollectionTools.AddAllIfNotNull(functionChages, trackerA.FunctionChanges);
+                CollectionTools.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
 
                 if (swapped)
                 {
                     foreach (MemoryIndexTree tree in changes)
                     {
-                        CollectionTools.AddAll(tree, trackerA.ChangedValues);
+                        CollectionTools.AddAll(tree, trackerA.IndexChanges);
                     }
                 }
 
@@ -435,199 +443,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 operationQueue.AddLast(unknownOperation);
             }
         }
-
-        /*public void MergeStructure()
-        {
-            sourceStructures = new List<IReadOnlySnapshotStructure>();
-            structureChanges = new MemoryIndexTree();
-
-            var changeTrackers = new List<IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotStructure>>();
-            foreach (Snapshot sourceSnapshot in sourceSnapshots)
-            {
-                var sourceStructure = sourceSnapshot.Structure.Readonly;
-                changeTrackers.Add(sourceStructure.IndexChangeTracker);
-
-                if (sourceSnapshot.CallLevel == targetSnapshot.CallLevel && parentStructure == null)
-                {
-                    parentStructure = sourceSnapshot.Structure;
-                }
-                else
-                {
-                    sourceStructures.Add(sourceStructure);
-                    filteredSourceSnapshots.Add(sourceSnapshot);
-                }
-            }
-
-            var ancestor = getFirstCommonAncestor(changeTrackers, structureChanges);
-
-            Structure = Snapshot.SnapshotStructureFactory.CopyInstance(targetSnapshot, parentStructure);
-
-            mergeStructureRoot();
-        }
-
-        private void mergeStructureRoot()
-        {
-            foreach (var stack in structureChanges.MemoryStack)
-            {
-                int level = stack.Key;
-                MemoryIndexTreeStackContext stackContext = stack.Value;
-                
-                List<IReadonlyIndexContainer> variables = new List<IReadonlyIndexContainer>();
-                List<IReadonlyIndexContainer> controlls = new List<IReadonlyIndexContainer>();
-                List<IReadonlySet<MemoryIndex>> temporary = new List<IReadonlySet<MemoryIndex>>();
-                List<Snapshot> snapshots = new List<Snapshot>();
-
-                int structurePos = 0;
-                foreach (var sourceStructure in sourceStructures)
-                {
-                    if (sourceStructure.CallLevel < level)
-                    {
-                        var sourceContext = sourceStructure.GetReadonlyStackContext(level);
-                        variables.Add(sourceContext.ReadonlyVariables);
-                        controlls.Add(sourceContext.ReadonlyControllVariables);
-                        temporary.Add(sourceContext.ReadonlyTemporaryVariables);
-
-                        snapshots.Add(filteredSourceSnapshots[structurePos]);
-                    }
-                    structurePos++;
-                }
-
-                var targetContext = Structure.Writeable.GetWriteableStackContext(level);
-
-                mergeVariables(targetContext.WriteableVariables, variables, snapshots, stackContext.VariablesTreeRoot);
-                mergeVariables(targetContext.WriteableControllVariables, controlls, snapshots, stackContext.ControlsTreeRoot);
-                mergeTemporary(targetContext.WriteableTemporaryVariables, temporary, snapshots, stackContext.TemporaryTreeRoot);
-            }
-
-            foreach (var objectRoot in structureChanges.ObjectTreeRoots)
-            {
-
-            }
-        }
-
-        private void mergeVariables(
-            IWriteableIndexContainer targetVariables, 
-            IEnumerable<IReadonlyIndexContainer> sourceVariables, 
-            List<Snapshot> snapshots,
-            MemoryIndexTreeNode treeNode)
-        {
-            foreach (var variable in treeNode.ChildNodes)
-            {
-                string name = variable.Key;
-                MemoryIndexTreeNode variableNode = variable.Value;
-
-                MergeOperation operation = new MergeOperation();
-                operation.CurrentNode = variableNode;
-                operation.IsRoot = true;
-
-                int containerIndex = 0;
-                foreach (IReadonlyIndexContainer sourceContainer in sourceVariables)
-                {
-                    MemoryIndex sourceIndex;
-                    if (sourceContainer.TryGetIndex(name, out sourceIndex))
-                    {
-                        operation.Add(sourceIndex, snapshots[containerIndex]);
-                        operation.IsDefined = true;
-                        operation.TargetIndex = sourceIndex;
-                    }
-                    else
-                    {
-                        operation.Add(sourceContainer.UnknownIndex, snapshots[containerIndex]);
-                        operation.IsUndefined = true;
-                    }
-
-                    containerIndex++;
-                }
-
-                MemoryIndex targetIndex;
-                if (targetVariables.TryGetIndex(name, out targetIndex))
-                {
-                    operation.TargetIndex = targetIndex;
-                    operation.IsDefined = true;
-
-                    operationStack.AddLast(operation);
-                }
-                else if (operation.IsDefined)
-                {
-                    operation.IsUndefined = true;
-
-                    targetVariables.AddIndex(name, operation.TargetIndex);
-
-                    operationStack.AddLast(operation);
-                }
-            }
-
-            if (treeNode.AnyChild == null)
-            {
-                MergeOperation anyOperation = new MergeOperation();
-                anyOperation.CurrentNode = treeNode.AnyChild;
-                anyOperation.IsRoot = true;
-                anyOperation.TargetIndex = targetVariables.UnknownIndex;
-                anyOperation.IsDefined = true;
-                anyOperation.IsUndefined = true;
-
-                int containerIndex = 0;
-                foreach (IReadonlyIndexContainer sourceContainer in sourceVariables)
-                {
-                    anyOperation.Add(sourceContainer.UnknownIndex, snapshots[containerIndex]);
-                    containerIndex++;
-                }
-
-                operationStack.AddLast(anyOperation);
-            }
-        }
-
-        private void mergeTemporary(
-            IWriteableSet<MemoryIndex> writeableSet,
-            List<IReadonlySet<MemoryIndex>> temporary,
-            List<Snapshot> snapshots,
-            MemoryIndexTreeNode memoryIndexTreeNode)
-        {
-            throw new NotImplementedException();
-        }
-
-
-
-
-
-
-
-
-
-        private IReadonlyChangeTracker<T, C> getFirstCommonAncestor<T, C>(
-            IReadonlyChangeTracker<T, C> trackerA,
-            IReadonlyChangeTracker<T, C> trackerB,
-            ICollection<T> changes)
-        {
-            while (trackerA != trackerB)
-            {
-                if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
-                {
-                    var swap = trackerA;
-                    trackerA = trackerB;
-                    trackerB = swap;
-                }
-
-                CollectionTools.AddAll(changes, trackerA.AddedOrModifiedValues);
-                trackerA = trackerA.PreviousTracker;
-            }
-
-            return trackerA;
-        }
-
-        private IReadonlyChangeTracker<T, C> getFirstCommonAncestor<T, C>(
-            List<IReadonlyChangeTracker<T, C>> trackers,
-            ICollection<T> changes)
-        {
-            IReadonlyChangeTracker<T, C> ancestor = trackers[0];
-            for (int x = 1; x < trackers.Count; x++)
-            {
-                ancestor = getFirstCommonAncestor(trackers[x], ancestor, changes);
-            }
-
-            return ancestor;
-        }*/
-
-
     }
 }

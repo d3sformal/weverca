@@ -112,7 +112,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <value>
         /// The index change tracker.
         /// </value>
-        IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker { get; }
+        IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker { get; }
 
         /// <summary>
         /// Gets the list of indexes for which are defined data in this container.
@@ -175,7 +175,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// Reinitializes the index change tracker and sets the parent tracker to be given structure tracker.
         /// </summary>
         /// <param name="parentSnapshotData">The parent snapshot data.</param>
-        void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData);
+        void ReinitializeTracker(IReadOnlySnapshotData parentSnapshotData);
     }
 
     /// <summary>
@@ -253,13 +253,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         public abstract void RemoveMemoryEntry(MemoryIndex index);
 
         /// <inheritdoc />
-        public virtual IReadonlyChangeTracker<MemoryIndex, IReadOnlySnapshotData> IndexChangeTracker
+        public virtual IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker
         {
             get { return null; }
         }
 
         /// <inheritdoc />
-        public virtual void ReinitializeIndexTracker(IReadOnlySnapshotData parentSnapshotData)
+        public virtual void ReinitializeTracker(IReadOnlySnapshotData parentSnapshotData)
         {
 
         }

@@ -18,11 +18,13 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+using PHP.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 {
@@ -31,78 +33,124 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         Inserted, Deleted, Modified
     }
 
-    public interface IReadonlyChangeTracker<T, C>
+    public interface IReadonlyChangeTracker<C>
     {
         int TrackerId { get; }
 
         C Container { get; }
 
-        IReadonlyChangeTracker<T, C> PreviousTracker { get; }
+        IReadonlyChangeTracker<C> PreviousTracker { get; }
 
-        IEnumerable<KeyValuePair<T, ChangeType>> Changes { get; }
+        IEnumerable<MemoryIndex> IndexChanges { get; }
 
-        IEnumerable<T> ChangedValues { get; }
+        IEnumerable<QualifiedName> FunctionChanges { get; }
 
-        IEnumerable<T> AddedOrModifiedValues { get; }
+        IEnumerable<QualifiedName> ClassChanges { get; }
     }
 
-    public interface IWriteableChangeTracker<T, C> : IReadonlyChangeTracker<T, C>
+    public interface IWriteableChangeTracker<C> : IReadonlyChangeTracker<C>
     {
-        void Inserted(T value);
+        void InsertedIndex(MemoryIndex index);
+        void DeletedIndex(MemoryIndex index);
+        void ModifiedIndex(MemoryIndex index);
+        void RemoveIndexChange(MemoryIndex index);
 
-        void Deleted(T value);
+        void ModifiedFunction(QualifiedName function);
+        void ModifiedClass(QualifiedName function);
 
-        void Modified(T value);
-
-        void RemoveChange(T value);
+        void RemoveFunctionChange(QualifiedName functionName);
+        void RemoveClassChange(QualifiedName className);
     }
 
-    public class ChangeTracker<T, C> : IReadonlyChangeTracker<T, C>, IWriteableChangeTracker<T, C>
+    public class ChangeTracker<C> : IReadonlyChangeTracker<C>, IWriteableChangeTracker<C>
     {
-        HashSet<T> changes = new HashSet<T>();
-        HashSet<T> addedOrModifiedChanges = new HashSet<T>();
+        HashSet<MemoryIndex> indexChanges;
+        HashSet<QualifiedName> functionChanges;
+        HashSet<QualifiedName> classChanges;
 
         public int TrackerId { get; private set; }
         public C Container { get; private set; }
-        public IReadonlyChangeTracker<T, C> PreviousTracker { get; private set; }
-        public IEnumerable<KeyValuePair<T, ChangeType>> Changes { get { return null; } }
-        public IEnumerable<T> ChangedValues { get { return changes; } }
-        public IEnumerable<T> AddedOrModifiedValues { get { return addedOrModifiedChanges; } }
 
-        public ChangeTracker(int trackerId, C container, IReadonlyChangeTracker<T, C> previousTracker)
+        public IEnumerable<MemoryIndex> IndexChanges
+        {
+            get { return indexChanges; }
+        }
+
+        public IEnumerable<QualifiedName> FunctionChanges
+        {
+            get { return functionChanges; }
+        }
+
+        public IEnumerable<QualifiedName> ClassChanges
+        {
+            get { return classChanges; }
+        }
+
+        public IReadonlyChangeTracker<C> PreviousTracker { get; private set; }
+
+
+
+        public ChangeTracker(int trackerId, C container, IReadonlyChangeTracker<C> previousTracker)
         {
             TrackerId = trackerId;
             Container = container;
             PreviousTracker = previousTracker;
+
+            indexChanges = new HashSet<MemoryIndex>();
         }
 
-        public void Inserted(T value)
+        public void InsertedIndex(MemoryIndex index)
         {
-            changes.Add(value);
-            addedOrModifiedChanges.Add(value);
-            //changes[value] = ChangeType.Inserted;
+            indexChanges.Add(index);
         }
 
-        public void Deleted(T value)
+        public void DeletedIndex(MemoryIndex index)
         {
-            changes.Add(value);
-            //changes[value] = ChangeType.Deleted;
+            indexChanges.Add(index);
         }
 
-        public void Modified(T value)
+        public void ModifiedIndex(MemoryIndex index)
         {
-            changes.Add(value);
-            addedOrModifiedChanges.Add(value);
-            /*if (!changes.ContainsKey(value))
+            indexChanges.Add(index);
+        }
+
+        public void RemoveIndexChange(MemoryIndex index)
+        {
+            indexChanges.Remove(index);
+        }
+
+        public void ModifiedFunction(QualifiedName functionName)
+        {
+            if (functionChanges == null)
             {
-                changes[value] = ChangeType.Modified;
-            }*/
+                functionChanges = new HashSet<QualifiedName>();
+            }
+            functionChanges.Add(functionName);
         }
 
-        public void RemoveChange(T value)
+        public void ModifiedClass(QualifiedName className)
         {
-            changes.Remove(value);
-            addedOrModifiedChanges.Remove(value);
+            if (classChanges == null)
+            {
+                classChanges = new HashSet<QualifiedName>();
+            }
+            classChanges.Add(className);
+        }
+
+        public void RemoveFunctionChange(QualifiedName functionName)
+        {
+            if (functionChanges != null)
+            {
+                functionChanges.Remove(functionName);
+            }
+        }
+
+        public void RemoveClassChange(QualifiedName className)
+        {
+            if (classChanges != null)
+            {
+                classChanges.Remove(className);
+            }
         }
     }
 }
