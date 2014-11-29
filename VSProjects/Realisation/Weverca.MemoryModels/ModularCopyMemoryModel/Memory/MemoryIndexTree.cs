@@ -108,7 +108,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
                 objectTreeRoots[index.Object] = root;
             }
 
-            addToRoot(index, root);
+            if (index.MemoryRoot.IsAny)
+            {
+                addToRoot(index, root.GetOrCreateAny());
+            }
+            else
+            {
+                addToRoot(index, root.GetOrCreateChild(index.MemoryRoot.Name));
+            }
+
         }
 
         public void VisitVariableIndex(VariableIndex index)
@@ -134,7 +142,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public void VisitControlIndex(ControlIndex index)
         {
             MemoryIndexTreeStackContext stackContext = getStackLevel(index);
-            addToRoot(index, stackContext.ControlsTreeRoot);
+
+            if (index.MemoryRoot.IsAny)
+            {
+                addToRoot(index, stackContext.ControlsTreeRoot.GetOrCreateAny());
+            }
+            else
+            {
+                addToRoot(index, stackContext.ControlsTreeRoot.GetOrCreateChild(index.MemoryRoot.Name));
+            }
         }
     }
 

@@ -60,6 +60,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New object with empty global context.</returns>
         ISnapshotStructureProxy CreateGlobalContextInstance(Snapshot snapshot);
+        
+        /// <summary>
+        /// Creates new snapshot structure container as copy containing data from given inner container.
+        /// Copied object mustn't interfere with source.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="oldData">The old data.</param>
+        /// <returns>New object with inner scructure as copy of given object.</returns>
+        ISnapshotStructureProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotStructure oldData);
     }
 
     /// <summary>

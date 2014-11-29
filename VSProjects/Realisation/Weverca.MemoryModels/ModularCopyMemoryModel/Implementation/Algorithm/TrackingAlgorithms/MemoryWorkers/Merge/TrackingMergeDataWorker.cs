@@ -43,13 +43,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void collectDataChanges()
         {
-            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = snapshotContexts[0].SourceData.ChangeTracker;
+            SnapshotContext ancestorContext = getDefaultAncestorContext();
+            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = ancestorContext.SourceData.ChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
-            for (int x = 1; x < snapshotContexts.Count; x++)
+            for (int x = 0; x < snapshotContexts.Count; x++)
             {
                 SnapshotContext context = snapshotContexts[x];
+
+                if (context == ancestorContext)
+                {
+                    continue;
+                }
+
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
@@ -60,7 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, parentSnapshotContext.SourceSnapshot.Data);
+            Data = Snapshot.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
@@ -125,6 +132,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                 writeableTargetData.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
             }
+
+            public override void provideCustomDeleteOperation(MemoryIndex targetIndex, IIndexDefinition targetDefinition)
+            {
+                throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + targetIndex);
+            }
+        }
+
+        protected override MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName)
+        {
+            throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + childName);
+        }
+
+        protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)
+        {
+            throw new Exception("Error merging structure in readonly mode - deleting index: " + childName);
         }
     }
 }

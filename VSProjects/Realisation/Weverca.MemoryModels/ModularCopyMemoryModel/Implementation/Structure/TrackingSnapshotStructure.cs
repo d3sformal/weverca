@@ -63,6 +63,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         {
             return TrackingSnapshotStructureProxy.CreateGlobal(snapshot);
         }
+
+        /// <inheritdoc />
+        public ISnapshotStructureProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotStructure oldData)
+        {
+            TrackingSnapshotStructureContainer data = oldData as TrackingSnapshotStructureContainer;
+            if (data != null)
+            {
+                return TrackingSnapshotStructureProxy.CreateWithData(snapshot, data);
+            }
+            else
+            {
+                throw new InvalidCastException("Argument is not of type TrackingSnapshotStructureContainer");
+            }
+        }
     }
 
     /// <summary>
@@ -115,6 +129,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy();
             proxy.readonlyInstance = this.readonlyInstance;
+            proxy.snapshot = snapshot;
+            return proxy;
+        }
+
+        /// <summary>
+        /// Creates new structure object with copy of diven data object.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="data">The old data.</param>
+        /// <returns>New structure object with copy of diven data object.</returns>
+        public static ISnapshotStructureProxy CreateWithData(Snapshot snapshot, TrackingSnapshotStructureContainer data)
+        {
+            TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy();
+            proxy.readonlyInstance = data;
             proxy.snapshot = snapshot;
             return proxy;
         }

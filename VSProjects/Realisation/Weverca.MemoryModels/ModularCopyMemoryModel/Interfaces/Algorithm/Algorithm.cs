@@ -246,13 +246,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <param name="snapshots">The snapshots.</param>
         void Merge(Snapshot snapshot, List<Snapshot> snapshots);
 
+
         /// <summary>
         /// Data of the specified snapshot are merged together and inserted to the specified
         /// snapshot and local level of memory stack is closed.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
+        /// <param name="callSnapshot">The call snapshot.</param>
         /// <param name="snapshots">The snapshots.</param>
-        void MergeWithCall(Snapshot snapshot, List<Snapshot> snapshots);
+        void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots);
 
         /// <summary>
         /// Merges data of the given data entry and stores it within given temporary index.

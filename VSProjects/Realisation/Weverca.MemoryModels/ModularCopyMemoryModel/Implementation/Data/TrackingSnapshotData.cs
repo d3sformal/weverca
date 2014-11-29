@@ -49,6 +49,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             TrackingSnapshotDataProxy proxy = TrackingSnapshotDataProxy.Convert(oldData);
             return new TrackingSnapshotDataProxy(snapshot, proxy);
         }
+
+        /// <inheritdoc />
+        public ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData)
+        {
+            TrackingSnapshotDataAssociativeContainer data = oldData as TrackingSnapshotDataAssociativeContainer;
+            if (data != null)
+            {
+                return new TrackingSnapshotDataProxy(snapshot, data);
+            }
+            else
+            {
+                throw new InvalidCastException("Argument is not of type TrackingSnapshotDataAssociativeContainer");
+            }
+        }
     }
 
     /// <summary>
@@ -91,6 +105,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             this.snapshot = snapshot;
             isReadonly = false;
             readonlyInstance = snapshotData;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Uses given data instance as readonly source of data.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="oldData">The old data.</param>
+        public TrackingSnapshotDataProxy(Snapshot snapshot, TrackingSnapshotDataAssociativeContainer oldData)
+        {
+            readonlyInstance = oldData;
+            this.snapshot = snapshot;
         }
 
         /// <summary>

@@ -59,6 +59,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         }
 
         /// <inheritdoc />
+        public ISnapshotStructureProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotStructure oldData)
+        {
+            SnapshotStructureContainer data = oldData as SnapshotStructureContainer;
+            if (data != null)
+            {
+                return LazyCopySnapshotStructure.CreateWithData(snapshot, data);
+            }
+            else
+            {
+                throw new InvalidCastException("Argument is not of type SnapshotStructureContainer");
+            }
+        }
+
+        /// <inheritdoc />
         public ISnapshotStructureProxy CreateGlobalContextInstance(Snapshot snapshot)
         {
             return LazyCopySnapshotStructure.CreateGlobal(snapshot);
@@ -115,6 +129,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure();
             proxy.readonlyInstance = this.readonlyInstance;
+            proxy.snapshot = snapshot;
+            return proxy;
+        }
+
+        /// <summary>
+        /// Creates new structure object with copy of diven data object.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="data">The old data.</param>
+        /// <returns>New structure object with copy of diven data object.</returns>
+        public static ISnapshotStructureProxy CreateWithData(Snapshot snapshot, SnapshotStructureContainer data)
+        {
+            LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure();
+            proxy.readonlyInstance = data;
             proxy.snapshot = snapshot;
             return proxy;
         }

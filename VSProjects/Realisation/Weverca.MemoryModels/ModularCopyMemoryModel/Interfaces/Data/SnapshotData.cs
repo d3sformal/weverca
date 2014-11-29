@@ -52,6 +52,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <param name="oldData">The old data.</param>
         /// <returns>New object with inner scructure as copy of given object.</returns>
         ISnapshotDataProxy CopyInstance(Snapshot snapshot, ISnapshotDataProxy oldData);
+
+        /// <summary>
+        /// Creates new snapshot structure container as copy containing data from given inner container.
+        /// Copied object mustn't interfere with source.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="oldData">The old data.</param>
+        /// <returns>New snapshot structure container as copy containing data from given inner container.</returns>
+        ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData);
     }
 
     /// <summary>

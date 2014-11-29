@@ -31,6 +31,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             createSnapshotContexts();
             collectStructureChanges();
             selectParentSnapshot();
+
             createNewStructure();
             
             mergeObjectDefinitions();
@@ -45,15 +46,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             ensureTrackingChanges();
         }
 
+        public void StoreLocalArays()
+        {
+            foreach (var context in snapshotContexts)
+            {
+                foreach (AssociativeArray array in context.SourceStructure.ReadonlyLocalContext.ReadonlyArrays)
+                {
+                    Structure.Writeable.AddCallArray(array, context.SourceSnapshot);
+                }
+            }
+        }
+
         private void collectStructureChanges()
         {
-            IReadonlyChangeTracker<IReadOnlySnapshotStructure> ancestor = snapshotContexts[0].SourceStructure.ReadonlyChangeTracker;
+            SnapshotContext ancestorContext = getDefaultAncestorContext();
+            IReadonlyChangeTracker<IReadOnlySnapshotStructure> ancestor = ancestorContext.SourceStructure.ReadonlyChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
-            for (int x = 1; x < snapshotContexts.Count; x++)
+            for (int x = 0; x < snapshotContexts.Count; x++)
             {
                 SnapshotContext context = snapshotContexts[x];
+                if (context == ancestorContext)
+                {
+                    continue;
+                }
+
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
@@ -65,7 +83,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructure()
         {
-            Structure = Snapshot.SnapshotStructureFactory.CopyInstance(targetSnapshot, parentSnapshotContext.SourceSnapshot.Structure);
+            Structure = Snapshot.SnapshotStructureFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
 
@@ -80,11 +99,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndex targetIndex = item.Key;
                 MemoryAliasInfo aliasInfo = item.Value;
 
-                if (aliasInfo.IsTargetOfMerge)
-                {
-                    writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build());
-                }
-                else
+                if (!aliasInfo.IsTargetOfMerge)
                 {
                     IMemoryAlias currentAliases;
                     if (writeableTargetStructure.TryGetAliases(targetIndex, out currentAliases))
@@ -92,11 +107,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         aliasInfo.Aliases.MayAliases.AddAll(currentAliases.MayAliases);
                         aliasInfo.Aliases.MustAliases.AddAll(currentAliases.MustAliases);
                     }
-                    else
-                    {
-                        writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build());
-                    }
                 }
+                foreach (MemoryIndex alias in aliasInfo.RemovedAliases)
+                {
+                    aliasInfo.Aliases.MustAliases.Remove(alias);
+                    aliasInfo.Aliases.MayAliases.Remove(alias);
+                }
+
+                writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build());
             }
         }
 
@@ -151,7 +169,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         protected override TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation)
         {
-            return new OperationAccessor(operation, targetSnapshot, this);
+            return new OperationAccessor(operation, targetSnapshot, writeableTargetStructure, this);
         }
 
         /// <summary>
@@ -163,19 +181,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// <param name="mayAliases">The may aliases.</param>
         public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
-            MemoryAliasInfo aliasInfo;
-            IMemoryAliasBuilder alias;
-            if (!MemoryAliases.TryGetValue(index, out aliasInfo))
-            {
-                alias = Structure.CreateMemoryAlias(index).Builder();
-                aliasInfo = new MemoryAliasInfo(alias, false);
-
-                MemoryAliases[index] = aliasInfo;
-            }
-            else
-            {
-                alias = aliasInfo.Aliases;
-            }
+            MemoryAliasInfo aliasInfo = getAliasInfo(index);
+            IMemoryAliasBuilder alias = aliasInfo.Aliases;
 
             if (mustAliases != null)
             {
@@ -204,19 +211,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// <param name="mayAlias">The may alias.</param>
         public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
         {
-            MemoryAliasInfo aliasInfo;
-            IMemoryAliasBuilder alias;
-            if (!MemoryAliases.TryGetValue(index, out aliasInfo))
-            {
-                alias = Structure.CreateMemoryAlias(index).Builder();
-                aliasInfo = new MemoryAliasInfo(alias, false);
-
-                MemoryAliases[index] = aliasInfo;
-            }
-            else
-            {
-                alias = aliasInfo.Aliases;
-            }
+            MemoryAliasInfo aliasInfo = getAliasInfo(index);
+            IMemoryAliasBuilder alias = aliasInfo.Aliases;
 
             if (mustAlias != null)
             {
@@ -234,15 +230,36 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        internal MemoryAliasInfo getAliasInfo(MemoryIndex index)
+        {
+            MemoryAliasInfo aliasInfo;
+            if (!MemoryAliases.TryGetValue(index, out aliasInfo))
+            {
+                IMemoryAliasBuilder alias = Structure.CreateMemoryAlias(index).Builder();
+                aliasInfo = new MemoryAliasInfo(alias, false);
+
+                MemoryAliases[index] = aliasInfo;
+            }
+            return aliasInfo;
+        }
+
         internal class MemoryAliasInfo
         {
+            private HashSet<MemoryIndex> removedAliases;
             public IMemoryAliasBuilder Aliases { get; set; }
             public bool IsTargetOfMerge { get; set; }
+            public IEnumerable<MemoryIndex> RemovedAliases { get { return removedAliases; } }
 
             public MemoryAliasInfo(IMemoryAliasBuilder aliases, bool isTargetOfMerge)
             {
                 this.Aliases = aliases;
                 this.IsTargetOfMerge = isTargetOfMerge;
+                this.removedAliases = new HashSet<MemoryIndex>();
+            }
+
+            public void AddRemovedAlias(MemoryIndex alias)
+            {
+                removedAliases.Add(alias);
             }
         }
 
@@ -256,13 +273,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             private Snapshot targetSnapshot;
             private TrackingMergeStructureWorker mergeWorker;
 
-            private bool hasAliases = false;
             private bool hasAliasesAlways = true;
+            private IWriteableSnapshotStructure writeableTargetStructure;
 
-            public OperationAccessor(MergeOperation operation, Snapshot targetSnapshot, TrackingMergeStructureWorker mergeWorker)
+            public OperationAccessor(MergeOperation operation, Snapshot targetSnapshot, IWriteableSnapshotStructure writeableTargetStructure, TrackingMergeStructureWorker mergeWorker)
             {
                 this.operation = operation;
                 this.targetSnapshot = targetSnapshot;
+                this.writeableTargetStructure = writeableTargetStructure;
                 this.mergeWorker = mergeWorker;
             }
 
@@ -272,8 +290,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 {
                     references.CollectMust(sourceDefinition.Aliases.MustAliases, targetSnapshot.CallLevel);
                     references.CollectMay(sourceDefinition.Aliases.MayAliases, targetSnapshot.CallLevel);
-
-                    hasAliases = true;
                 }
                 else
                 {
@@ -283,7 +299,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             public override void provideCustomOperation(MemoryIndex targetIndex)
             {
-                if (hasAliases)
+                if (references.HasAliases)
                 {
                     references.SetAliases(targetIndex, mergeWorker, hasAliasesAlways && !operation.IsUndefined);
 
@@ -298,6 +314,44 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     }
                 }
             }
+
+            public override void provideCustomDeleteOperation(MemoryIndex targetIndex, IIndexDefinition targetDefinition)
+            {
+                if (targetDefinition.Array != null)
+                {
+                    writeableTargetStructure.RemoveArray(targetIndex, targetDefinition.Array);
+                }
+
+                if (targetDefinition.Aliases != null)
+                {
+                    foreach (MemoryIndex aliasIndex in targetDefinition.Aliases.MustAliases)
+                    {
+                        MemoryAliasInfo aliasInfo = mergeWorker.getAliasInfo(aliasIndex);
+                        aliasInfo.AddRemovedAlias(targetIndex);
+                    }
+
+                    foreach (MemoryIndex aliasIndex in targetDefinition.Aliases.MayAliases)
+                    {
+                        MemoryAliasInfo aliasInfo = mergeWorker.getAliasInfo(aliasIndex);
+                        aliasInfo.AddRemovedAlias(targetIndex);
+                    }
+                }
+
+                writeableTargetStructure.RemoveIndex(targetIndex);
+            }
+        }
+
+        protected override MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName)
+        {
+            MemoryIndex targetIndex = targetContainerContext.createMemoryIndex(childName);
+            targetContainerContext.getWriteableSourceContainer().AddIndex(childName, targetIndex);
+
+            return targetIndex;
+        }
+
+        protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)
+        {
+            targetContainerContext.getWriteableSourceContainer().RemoveIndex(childName);
         }
     }
 }

@@ -118,7 +118,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
 
         /// <inheritdoc />
-        public void MergeWithCall(Snapshot snapshot, List<Snapshot> snapshots)
+        public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             switch (snapshot.CurrentMode)
             {

@@ -778,7 +778,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             //throw new NotImplementedException("Merging function call is not implemented");
 
-            CallLevel = ((Snapshot)callerPoint.OutSnapshot).CallLevel;
+            Snapshot callSnapshot = (Snapshot)callerPoint.OutSnapshot;
+
+            CallLevel = callSnapshot.CallLevel;
             var tempCallLevel = CallLevel;
             // In case of shared functions, the call level of the caller can be bigger than call levels of the callee.
             // Se extendAsCall method.
@@ -802,7 +804,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 case SnapshotMode.MemoryLevel:
                     algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
-                    algorithm.MergeWithCall(this, snapshots);
+                    algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
                     Structure = algorithm.GetMergedStructure();
                     Data = algorithm.GetMergedData();
@@ -813,7 +815,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 case SnapshotMode.InfoLevel:
                     algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
-                    algorithm.MergeWithCall(this, snapshots);
+                    algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
                     Infos = algorithm.GetMergedData();
                     CurrentData = Infos;
@@ -1703,9 +1705,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// </exception>
         private void mergeSnapshots(ISnapshotReadonly[] inputs)
         {
-            var snapshots = inputs.Select (a => SnapshotEntry.ToSnapshot (a)).ToList();
+            List<Snapshot> snapshots = new List<Snapshot>();
+            foreach (var item in inputs)
+            {
+                Snapshot s = SnapshotEntry.ToSnapshot(item);
+                snapshots.Add(s);
 
-            Logger.Log(this, "merge");
+                Logger.Log(this, "merge " + s.getSnapshotIdentification());
+            }
 
             IMergeAlgorithm algorithm;
             switch (CurrentMode)

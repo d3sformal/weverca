@@ -18,6 +18,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     {
         public abstract void addSource(MergeOperationContext operationContext, IIndexDefinition sourceDefinition);
         public abstract void provideCustomOperation(MemoryIndex targetIndex);
+
+        public abstract void provideCustomDeleteOperation(MemoryIndex targetIndex, IIndexDefinition targetDefinition);
     }
 
     abstract class AbstractTrackingMergeWorker
@@ -61,7 +63,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             this.isCallMerge = isCallMerge;
         }
 
+        public void SetParentSnapshot(Snapshot parentSnapshot)
+        {
+            SnapshotContext context = new SnapshotContext(parentSnapshot);
+            context.SourceStructure = parentSnapshot.Structure.Readonly;
+            context.SourceData = parentSnapshot.CurrentData.Readonly;
+            context.CallLevel = parentSnapshot.CallLevel;
+
+            parentSnapshotContext = context;
+        }
+
         protected abstract TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation);
+
+        protected abstract MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName);
+
+        protected abstract void deleteChild(ITargetContainerContext targetContainerContext, string childName);
 
         protected void createSnapshotContexts()
         {
@@ -79,19 +95,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         protected void selectParentSnapshot()
         {
-            foreach (SnapshotContext context in snapshotContexts)
+            if (parentSnapshotContext == null)
             {
-                if (context.CallLevel == targetSnapshot.CallLevel)
+                foreach (SnapshotContext context in snapshotContexts)
                 {
-                    if (parentSnapshotContext == null
-                    || context.ChangedIndexesTree.Count > parentSnapshotContext.ChangedIndexesTree.Count)
+                    if (context.CallLevel == targetSnapshot.CallLevel)
                     {
-                        parentSnapshotContext = context;
+                        if (parentSnapshotContext == null
+                        || context.ChangedIndexesTree.Count > parentSnapshotContext.ChangedIndexesTree.Count)
+                        {
+                            parentSnapshotContext = context;
+                        }
                     }
-                }
-                else
-                {
-                    throw new NotImplementedException("Current implementation of merge can only handle same stack level of source snapshots.");
+                    else
+                    {
+                        throw new NotImplementedException("Current implementation of merge can only handle same stack level of source snapshots.");
+                    }
                 }
             }
         }
@@ -201,116 +220,183 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 operationQueue.RemoveFirst();
 
                 TrackingMergeWorkerOperationAccessor operationAccessor = createNewOperationAccessor(operation);
-
-                // Index information
-                MemoryIndex targetIndex = operation.TargetIndex;
-
-                // Target array information
-                AssociativeArray targetArray = null;
-                List<ContainerContext> sourceArrays = new List<ContainerContext>();
-                bool arrayAlwaysDefined = ! operation.IsUndefined;
-
-                // Iterate sources
-                foreach (MergeOperationContext operationContext in operation.Indexes)
+                if (operation.IsDeleteOperation)
                 {
-                    // Retreive source context and definition
-                    MemoryIndex sourceIndex = operationContext.Index;
-                    SnapshotContext context = operationContext.SnapshotContext;
-                    IIndexDefinition sourceDefinition = context.SourceStructure.GetIndexDefinition(sourceIndex);
-
-                    // Provide custom operation for merge algorithm
-                    operationAccessor.addSource(operationContext, sourceDefinition);
-                    
-                    // Source array
-                    if (sourceDefinition.Array != null)
-                    {
-                        // Becomes target array when not set
-                        if (targetArray == null) {
-                            targetArray = sourceDefinition.Array;
-                        }
-
-                        // Save source array to merge descriptors
-                        IArrayDescriptor descriptor = context.SourceStructure.GetDescriptor(sourceDefinition.Array);
-                        sourceArrays.Add(new ContainerContext(context, descriptor, operationContext.OperationType));
-
-                        // Equeue all array indexes when whole subtree should be merged
-                        if (operationContext.OperationType == MergeOperationType.WholeSubtree) {
-                            foreach (var index in descriptor.Indexes) 
-                            {
-                                operation.TreeNode.GetOrCreateChild(index.Key);
-                            }
-                            operation.TreeNode.GetOrCreateAny();
-                        }
-                    }
-                    else
-                    {
-                        // Source do not contain array - at least one source is empty
-                        arrayAlwaysDefined = false;
-                    }
+                    processDeleteOperation(operation, operationAccessor);
                 }
-
-                IIndexDefinition targetDefinition;
-                IArrayDescriptor targetArrayDescriptor = null;
-                if (targetStructure.TryGetIndexDefinition(targetIndex, out targetDefinition))
+                else
                 {
-                    // Index is set in target snapshot
-                    if (targetDefinition.Array != null)
+                    processMergeOperation(operation, operationAccessor);
+                }
+            }
+        }
+
+        private void processMergeOperation(MergeOperation operation, TrackingMergeWorkerOperationAccessor operationAccessor)
+        {
+            MemoryIndex targetIndex = operation.TargetIndex;
+            AssociativeArray targetArray = null;
+            List<ContainerContext> sourceArrays = new List<ContainerContext>();
+            bool arrayAlwaysDefined = !operation.IsUndefined;
+            bool cotainsArray = false;
+
+            // Iterate sources
+            foreach (MergeOperationContext operationContext in operation.Indexes)
+            {
+                // Retreive source context and definition
+                MemoryIndex sourceIndex = operationContext.Index;
+                SnapshotContext context = operationContext.SnapshotContext;
+                IIndexDefinition sourceDefinition = context.SourceStructure.GetIndexDefinition(sourceIndex);
+
+                // Provide custom operation for merge algorithm
+                operationAccessor.addSource(operationContext, sourceDefinition);
+
+                // Source array
+                if (sourceDefinition.Array != null)
+                {
+                    // Becomes target array when not set
+                    if (targetArray == null && sourceIndex.Equals(targetIndex))
                     {
-                        // Target contains array - continue merging
-                        targetArray = targetDefinition.Array;
-                        targetArrayDescriptor = targetStructure.GetDescriptor(targetArray);
+                        targetArray = sourceDefinition.Array;
+                    }
+                    cotainsArray = true;
+
+                    // Save source array to merge descriptors
+                    IArrayDescriptor descriptor = context.SourceStructure.GetDescriptor(sourceDefinition.Array);
+                    sourceArrays.Add(new ContainerContext(context, descriptor, operationContext.OperationType));
+
+                    // Equeue all array indexes when whole subtree should be merged
+                    if (operationContext.OperationType == MergeOperationType.WholeSubtree)
+                    {
+                        foreach (var index in descriptor.Indexes)
+                        {
+                            operation.TreeNode.GetOrCreateChild(index.Key);
+                        }
+                        operation.TreeNode.GetOrCreateAny();
                     }
                 }
                 else
                 {
-                    // Index is not set in target snapshot - create it
+                    // Source do not contain array - at least one source is empty
+                    arrayAlwaysDefined = false;
+                }
+            }
+
+            IIndexDefinition targetDefinition;
+            IArrayDescriptor targetArrayDescriptor = null;
+            if (targetStructure.TryGetIndexDefinition(targetIndex, out targetDefinition))
+            {
+                // Index is set in target snapshot
+                if (targetDefinition.Array != null)
+                {
+                    // Target contains array - continue merging
+                    targetArray = targetDefinition.Array;
+                    targetArrayDescriptor = targetStructure.GetDescriptor(targetArray);
+                }
+            }
+            else
+            {
+                // Index is not set in target snapshot - create it
+                if (isStructureWriteable)
+                {
+                    writeableTargetStructure.NewIndex(targetIndex);
+                }
+                else
+                {
+                    throw new Exception("Error merging structure in readonly mode - undefined index " + targetIndex);
+                }
+            }
+
+            // Provide custom operation for merge algorithm
+            operationAccessor.provideCustomOperation(targetIndex);
+
+            // Process next array
+            if (cotainsArray)
+            {
+                if (targetArray == null)
+                {
+                    targetArray = targetSnapshot.CreateArray();
+                }
+
+                if (targetArrayDescriptor == null)
+                {
+                    // Target does not contain array - create and add new in target snapshot
                     if (isStructureWriteable)
                     {
-                        writeableTargetStructure.NewIndex(targetIndex);
+                        targetArrayDescriptor = Structure.CreateArrayDescriptor(targetArray, targetIndex);
+                        writeableTargetStructure.SetDescriptor(targetArray, targetArrayDescriptor);
+                        writeableTargetStructure.NewIndex(targetArrayDescriptor.UnknownIndex);
+                        writeableTargetStructure.SetArray(targetIndex, targetArray);
                     }
                     else
                     {
-                        throw new Exception("Error merging structure in readonly mode - undefined index " + targetIndex);
+                        throw new Exception("Error merging structure in readonly mode - target descriptor for " + targetIndex);
                     }
                 }
 
-                // Provide custom operation for merge algorithm
-                operationAccessor.provideCustomOperation(targetIndex);
+                // Create context and merge descriptors
+                var arrayContext = new ArrayTargetContainerContext(targetArrayDescriptor);
+                createAndEnqueueOperations(arrayContext, operation.TreeNode, sourceArrays, arrayAlwaysDefined);
 
-                // Process next array
-                if (targetArray != null)
+                if (isStructureWriteable)
                 {
-                    if (targetArrayDescriptor == null)
+                    // Ubdate current descriptor when changed
+                    IArrayDescriptor currentDescriptor = arrayContext.getCurrentDescriptor();
+                    if (currentDescriptor != targetArrayDescriptor)
                     {
-                        // Target does not contain array - create and add new in target snapshot
-                        if (isStructureWriteable)
-                        {
-                            targetArrayDescriptor = Structure.CreateArrayDescriptor(targetArray, targetIndex);
-                            writeableTargetStructure.SetDescriptor(targetArray, targetArrayDescriptor);
-                            writeableTargetStructure.NewIndex(targetArrayDescriptor.UnknownIndex);
-                            writeableTargetStructure.SetArray(targetIndex, targetArray);
-                        }
-                        else
-                        {
-                            throw new Exception("Error merging structure in readonly mode - target descriptor for " + targetIndex);
-                        }
-                    }
-
-                    // Create context and merge descriptors
-                    var arrayContext = new ArrayTargetContainerContext(targetArrayDescriptor);
-                    createAndEnqueueOperations(arrayContext, operation.TreeNode, sourceArrays, arrayAlwaysDefined);
-
-                    if (isStructureWriteable)
-                    {
-                        // Ubdate current descriptor when changed
-                        IArrayDescriptor currentDescriptor = arrayContext.getCurrentDescriptor();
-                        if (currentDescriptor != targetArrayDescriptor)
-                        {
-                            writeableTargetStructure.SetDescriptor(targetArray, currentDescriptor);
-                        }
+                        writeableTargetStructure.SetDescriptor(targetArray, currentDescriptor);
                     }
                 }
             }
+        }
+
+        private void processDeleteOperation(MergeOperation operation, TrackingMergeWorkerOperationAccessor operationAccessor)
+        {
+            MemoryIndex targetIndex = operation.TargetIndex;
+            IIndexDefinition targetDefinition;
+            if (targetStructure.TryGetIndexDefinition(targetIndex, out targetDefinition))
+            {
+
+                // Index is set in target snapshot
+                if (targetDefinition.Array != null)
+                {
+                    // Target contains array - continue deleting
+                    AssociativeArray targetArray = targetDefinition.Array;
+                    IArrayDescriptor targetArrayDescriptor = targetStructure.GetDescriptor(targetArray);
+
+                    foreach (var index in targetArrayDescriptor.Indexes)
+                    {
+                        // Enqueue delete operation for every child index
+                        MemoryIndex childIndex = index.Value;
+                        MergeOperation childOperation = new MergeOperation();
+                        childOperation.SetTargetIndex(childIndex);
+                        childOperation.SetDeleteOperation();
+                        operationQueue.AddLast(childOperation);
+                    }
+
+                    // Enqueue delete operation for unknown index
+                    MergeOperation unknownOperation = new MergeOperation();
+                    unknownOperation.SetTargetIndex(targetArrayDescriptor.UnknownIndex);
+                    unknownOperation.SetUndefined();
+                    unknownOperation.SetDeleteOperation();
+                    operationQueue.AddLast(unknownOperation);
+                }
+
+                operationAccessor.provideCustomDeleteOperation(targetIndex, targetDefinition);
+            }
+        }
+
+        protected SnapshotContext getDefaultAncestorContext()
+        {
+            SnapshotContext ancestorContext;
+            if (parentSnapshotContext == null)
+            {
+                ancestorContext = snapshotContexts[0];
+            }
+            else
+            {
+                ancestorContext = parentSnapshotContext;
+            }
+            return ancestorContext;
         }
 
         protected IReadonlyChangeTracker<T> getFirstCommonAncestor<T>(
@@ -367,49 +453,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTreeNode childTreeNode = childNode.Value;
 
                 MergeOperation operation = new MergeOperation();
-                bool childDefined = false;
+                bool isChildDefined = collectIndexes(childName, sourceContainers, operation);
 
-                // Collect source indexes from source collection
-                foreach (ContainerContext containerContext in sourceContainers)
+                if (isChildDefined)
                 {
-                    MemoryIndex sourceIndex;
-                    if (containerContext.IndexContainer.TryGetIndex(childName, out sourceIndex))
-                    {
-                        // Collection contains field - use it
-                        operation.Add(new MergeOperationContext(sourceIndex, containerContext.SnapshotContext));
-                        childDefined = true;
-                    }
-                    else
-                    {
-                        // Collection do not contain - use unknown index as source
-                        // When unknown index is the source - all subtree has to be merged into
-                        operation.Add(
-                            new MergeOperationContext(
-                                containerContext.IndexContainer.UnknownIndex, 
-                                containerContext.SnapshotContext, 
-                                MergeOperationType.WholeSubtree)
-                            );
-                        operation.SetUndefined();
-                    }
-                }
+                    // Child is defined at least in one collection - enqueue merge operation
 
-                // Child is defined at least in one collection - enqueue operation
-                if (childDefined)
-                {
                     MemoryIndex targetIndex;
-
                     // Use index from target collection or crete and add it to the target collection
                     if (!targetContainer.TryGetIndex(childName, out targetIndex))
                     {
-                        if (isStructureWriteable)
-                        {
-                            targetIndex = targetContainerContext.createMemoryIndex(childName);
-                            targetContainerContext.getWriteableSourceContainer().AddIndex(childName, targetIndex);
-                        }
-                        else
-                        {
-                            throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + targetIndex + ", index: " + childName);
-                        }
+                        targetIndex = createNewTargetIndex(targetContainerContext, childName);
                     }
 
                     // Set parameters and add it to collection
@@ -423,6 +477,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                     operationQueue.AddLast(operation);
                 }
+                else
+                {
+                    // Child is not defined - enqueue delete operation
+
+                    MemoryIndex targetIndex;
+                    if (targetContainer.TryGetIndex(childName, out targetIndex))
+                    {
+                        // Enque delete operation only if target index exists in paret snapshot
+                        operation.TreeNode = childTreeNode;
+                        operation.SetTargetIndex(targetIndex);
+                        operation.SetDeleteOperation();
+                        operationQueue.AddLast(operation);
+
+                        deleteChild(targetContainerContext, childName);
+                    }
+                }
+
             }
 
             // Enqueue merge operation for unknown index if is defined
@@ -442,6 +513,37 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                 operationQueue.AddLast(unknownOperation);
             }
+        }
+
+        private bool collectIndexes(string childName, List<ContainerContext> sourceContainers, MergeOperation operation)
+        {
+            bool childDefined = false;
+
+            // Collect source indexes from source collection
+            foreach (ContainerContext containerContext in sourceContainers)
+            {
+                MemoryIndex sourceIndex;
+                if (containerContext.IndexContainer.TryGetIndex(childName, out sourceIndex))
+                {
+                    // Collection contains field - use it
+                    operation.Add(new MergeOperationContext(sourceIndex, containerContext.SnapshotContext));
+                    childDefined = true;
+                }
+                else
+                {
+                    // Collection do not contain - use unknown index as source
+                    // When unknown index is the source - all subtree has to be merged into
+                    operation.Add(
+                        new MergeOperationContext(
+                            containerContext.IndexContainer.UnknownIndex,
+                            containerContext.SnapshotContext,
+                            MergeOperationType.WholeSubtree)
+                        );
+                    operation.SetUndefined();
+                }
+            }
+
+            return childDefined;
         }
     }
 }

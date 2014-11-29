@@ -2254,7 +2254,6 @@ function g() { $a = 'g'; f(); return $a; }
 
 $f = f();
 $g = g();
-
 "
 .AssertVariable("f").HasValues("f")
 .AssertVariable("g").HasValues("g")
@@ -2265,6 +2264,81 @@ $g = g();
         public void LocalVariableSeparation()
         {
             AnalysisTestUtils.RunTestCase(LocalVariableSeparation_CASE);
+        }
+
+        readonly static TestCase MergeReturn_CASE = @"
+
+function m($p) {
+    $a = 0;
+    if ($p) { return 1; }
+    else { return 2; }
+}
+
+$m = m($_POST[1]);
+
+"
+.AssertVariable("m").HasValues(1, 2)
+;
+
+
+        [TestMethod]
+        public void MergeReturn()
+        {
+            AnalysisTestUtils.RunTestCase(MergeReturn_CASE);
+        }
+
+        readonly static TestCase MergeDeleteArray_CASE = @"
+
+$arr[1][1] = 1;
+$alias = & $arr[1][1];
+$alias2 = & $alias;
+
+if ($_POST[1]) {
+    $arr = array();
+    $arr[2] = 2;
+}
+else {
+    $arr = array();
+    $arr[2] = 2;
+}
+
+$alias = 3;
+
+$a = $arr[1][1];
+$b = $arr[2];
+
+"
+.AssertVariable("a").HasUndefinedValue()
+.AssertVariable("b").HasValues(2)
+.AssertVariable("alias2").HasValues(3)
+;
+
+        [TestMethod]
+        public void MergeDeleteArray()
+        {
+            AnalysisTestUtils.RunTestCase(MergeDeleteArray_CASE);
+        }
+
+        readonly static TestCase MergeMethodCall_CASE = @"
+
+class A {
+    var $a = 1;
+    function f($a) { $this->a = $a; }
+}
+
+$obj = new A();
+$obj->f(2);
+$a = $obj->a;
+
+"
+.AssertVariable("a").HasValues(2)
+;
+
+
+        [TestMethod]
+        public void MergeMethodCall()
+        {
+            AnalysisTestUtils.RunTestCase(MergeMethodCall_CASE);
         }
 
         [TestMethod]

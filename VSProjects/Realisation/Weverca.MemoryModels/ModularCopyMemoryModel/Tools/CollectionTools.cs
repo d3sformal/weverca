@@ -59,6 +59,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Tools
             }
         }
 
+        public static void RemoveAll<T>(ICollection<T> targetSet, IEnumerable<T> values)
+        {
+            foreach (T value in values)
+            {
+                targetSet.Remove(value);
+            }
+        }
+
         /// <summary>
         /// Determines whether given collections contains the same values or not.
         /// </summary>

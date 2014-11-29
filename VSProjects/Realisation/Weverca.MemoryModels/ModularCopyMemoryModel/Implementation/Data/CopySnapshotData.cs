@@ -49,6 +49,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             CopySnapshotDataProxy proxy = CopySnapshotDataProxy.Convert(oldData);
             return new CopySnapshotDataProxy(snapshot, proxy);
         }
+
+        /// <inheritdoc />
+        public ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData)
+        {
+            SnapshotDataAssociativeContainer data = oldData as SnapshotDataAssociativeContainer;
+            if (data != null)
+            {
+                return new CopySnapshotDataProxy(snapshot, data);
+            }
+            else
+            {
+                throw new InvalidCastException("Argument is not of type SnapshotDataAssociativeContainer");
+            }
+        }
     }
 
     /// <summary>
@@ -85,6 +99,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         public CopySnapshotDataProxy(Snapshot snapshot)
         {
             snapshotData = new SnapshotDataAssociativeContainer(snapshot);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Uses given data instance as readonly source of data.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="oldData">The old data.</param>
+        public CopySnapshotDataProxy(Snapshot snapshot, SnapshotDataAssociativeContainer oldData)
+        {
+            snapshotData = oldData.Copy(snapshot);
         }
 
         /// <summary>

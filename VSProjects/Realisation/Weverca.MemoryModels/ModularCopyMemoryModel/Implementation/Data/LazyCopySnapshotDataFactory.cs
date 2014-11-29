@@ -49,6 +49,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             LazyCopySnapshotDataProxy proxy = LazyCopySnapshotDataProxy.Convert(oldData);
             return new LazyCopySnapshotDataProxy(snapshot, proxy);
         }
+
+        /// <inheritdoc />
+        public ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData)
+        {
+            SnapshotDataAssociativeContainer data = oldData as SnapshotDataAssociativeContainer;
+            if (data != null)
+            {
+                return new LazyCopySnapshotDataProxy(snapshot, data);
+            }
+            else
+            {
+                throw new InvalidCastException("Argument is not of type SnapshotDataAssociativeContainer");
+            }
+        }
     }
 
     /// <summary>
@@ -91,6 +105,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             this.snapshot = snapshot;
             isReadonly = false;
             readonlyInstance = snapshotData;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyCopySnapshotDataProxy"/> class.
+        /// Uses given data instance as readonly source of data.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="oldData">The old data.</param>
+        public LazyCopySnapshotDataProxy(Snapshot snapshot, SnapshotDataAssociativeContainer oldData)
+        {
+            readonlyInstance = oldData;
+            this.snapshot = snapshot;
         }
 
         /// <summary>

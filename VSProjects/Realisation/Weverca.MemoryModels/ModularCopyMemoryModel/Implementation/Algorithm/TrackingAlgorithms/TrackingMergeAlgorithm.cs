@@ -102,17 +102,28 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
 
         /// <inheritdoc />
-        public void MergeWithCall(Snapshot snapshot, List<Snapshot> snapshots)
+        public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             switch (snapshot.CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
                     {
-                        MergeWorker worker = new MergeWorker(snapshot, snapshots, true);
+                        TrackingMergeStructureWorker structureWorker = new TrackingMergeStructureWorker(snapshot, snapshots);
+                        structureWorker.SetParentSnapshot(callSnapshot);
+                        structureWorker.MergeStructure();
+                        structureWorker.StoreLocalArays();
+                        structure = structureWorker.Structure;
+
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
+                        dataWorker.SetParentSnapshot(callSnapshot);
+                        dataWorker.MergeData(structure);
+                        data = dataWorker.Data;
+
+                        /*MergeWorker worker = new MergeWorker(snapshot, snapshots, true);
                         worker.Merge();
 
                         structure = worker.Structure;
-                        data = worker.Data;
+                        data = worker.Data;*/
                     }
                     break;
 

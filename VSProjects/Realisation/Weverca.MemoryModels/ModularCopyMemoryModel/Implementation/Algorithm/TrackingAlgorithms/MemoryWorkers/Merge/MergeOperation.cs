@@ -30,9 +30,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// <value>
         ///   <c>true</c> if is undefined; otherwise, <c>false</c>.
         /// </value>
-        public bool IsUndefined { get; set; }
+        public bool IsUndefined { get; private set; }
 
-        public bool IsDefined { get; set; }
+        public bool IsDeleteOperation { get; private set; }
 
         /// <summary>
         /// Gets the target index of this operation
@@ -57,6 +57,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         public MergeOperation(MemoryIndex targetIndex)
         {
             IsUndefined = false;
+            IsDeleteOperation = false;
             TargetIndex = targetIndex;
         }
 
@@ -113,5 +114,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
 
         public MemoryIndexTreeNode TreeNode { get; set; }
+
+        internal void SetDeleteOperation()
+        {
+            IsDeleteOperation = true;
+        }
     }
 }
