@@ -36,15 +36,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         private LazyCopySet<MemoryIndex> temporaryVariables;
         private LazyCopySet<AssociativeArray> arrays;
 
+        public int StackLevel
+        {
+            get;
+            private set;
+        }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="LazyCopyStackContext"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyStackContext" /> class.
         /// </summary>
-        public LazyCopyStackContext()
+        /// <param name="stackLevel">The stack level.</param>
+        public LazyCopyStackContext(int stackLevel)
         {
             this.variables = new LazyCopyIndexContainer();
             this.controllVariables = new LazyCopyIndexContainer();
             this.temporaryVariables = new LazyCopySet<MemoryIndex>();
             this.arrays = new LazyCopySet<AssociativeArray>();
+            StackLevel = stackLevel;
         }
 
         /// <summary>
@@ -57,6 +65,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             this.controllVariables = context.controllVariables.Clone();
             this.temporaryVariables = context.temporaryVariables.Clone();
             this.arrays = context.arrays.Clone();
+            StackLevel = context.StackLevel;
         }
 
         /// <inheritdoc />

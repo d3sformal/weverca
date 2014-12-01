@@ -235,8 +235,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// </summary>
         /// <param name="extendedSnapshot">The extended snapshot.</param>
         /// <param name="sourceSnapshot">The source snapshot.</param>
+        /// <param name="calleeProgramPoint">The callee program point.</param>
         /// <param name="thisObject">Memory entry which contains references to this object for method calls.</param>
-        void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, MemoryEntry thisObject);
+        void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject);
 
         /// <summary>
         /// Data of the specified snapshot are merged together and inserted to the specified
@@ -246,6 +247,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <param name="snapshots">The snapshots.</param>
         void Merge(Snapshot snapshot, List<Snapshot> snapshots);
 
+        /// <summary>
+        /// Data of the specified snapshot are merged together and inserted to the specified
+        /// snapshot. This is the special case of mere - at subprogram orfunction entry.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="snapshots">The snapshots.</param>
+        /// <param name="extendedPoints">The extended points.</param>
+        void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints);
 
         /// <summary>
         /// Data of the specified snapshot are merged together and inserted to the specified
@@ -275,6 +284,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// </summary>
         /// <returns>The merged data.</returns>
         ISnapshotDataProxy GetMergedData();
+
+        /// <summary>
+        /// Gets the number of merged local level
+        /// </summary>
+        /// <returns>Number of merged local level</returns>
+        int GetMergedLocalLevelNumber();
     }
 
     /// <summary>

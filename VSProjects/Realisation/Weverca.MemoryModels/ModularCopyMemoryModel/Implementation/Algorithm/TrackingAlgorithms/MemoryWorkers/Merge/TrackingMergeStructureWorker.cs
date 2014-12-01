@@ -16,7 +16,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     class TrackingMergeStructureWorker : AbstractTrackingMergeWorker, IReferenceHolder
     {
         private IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor = null;
+        private bool ensureAllStackContexts;
         internal Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
+
+        public void SetEnsureAllStackContexts()
+        {
+            ensureAllStackContexts = true;
+        }
 
         public TrackingMergeStructureWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
             : base(targetSnapshot, sourceSnapshots, isCallMerge)
@@ -266,7 +272,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         internal class OperationAccessor : TrackingMergeWorkerOperationAccessor
         {
 
-            private ReferenceCollector references = new ReferenceCollector();
+            private ReferenceCollector references;
 
             private MergeOperation operation;
 
@@ -282,14 +288,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 this.targetSnapshot = targetSnapshot;
                 this.writeableTargetStructure = writeableTargetStructure;
                 this.mergeWorker = mergeWorker;
+
+                this.references = new ReferenceCollector(writeableTargetStructure);
             }
 
             public override void addSource(MergeOperationContext operationContext, IIndexDefinition sourceDefinition)
             {
                 if (sourceDefinition.Aliases != null)
                 {
-                    references.CollectMust(sourceDefinition.Aliases.MustAliases, targetSnapshot.CallLevel);
-                    references.CollectMay(sourceDefinition.Aliases.MayAliases, targetSnapshot.CallLevel);
+                    references.CollectMust(sourceDefinition.Aliases.MustAliases);
+                    references.CollectMay(sourceDefinition.Aliases.MayAliases);
                 }
                 else
                 {
@@ -352,6 +360,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)
         {
             targetContainerContext.getWriteableSourceContainer().RemoveIndex(childName);
+        }
+
+        protected override bool MissingStacklevel(int stackLevel)
+        {
+            if (ensureAllStackContexts)
+            {
+                writeableTargetStructure.AddStackLevel(stackLevel);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

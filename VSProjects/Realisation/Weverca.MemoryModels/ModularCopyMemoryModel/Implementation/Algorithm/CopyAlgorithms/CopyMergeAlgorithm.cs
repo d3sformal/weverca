@@ -39,6 +39,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
     {
         private ISnapshotStructureProxy structure;
         private ISnapshotDataProxy data;
+        private int localLevel;
 
         /// <inheritdoc />
         public IMergeAlgorithm CreateInstance()
@@ -67,13 +68,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
 
         /// <inheritdoc />
-        public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, MemoryEntry thisObject)
+        public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
             switch (extendedSnapshot.CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
                     structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
                     data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+                    localLevel = sourceSnapshot.CallLevel + 1;
 
                     structure.Writeable.AddLocalLevel();
                     break;
@@ -118,6 +120,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
 
         /// <inheritdoc />
+        public void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
         public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             switch (snapshot.CurrentMode)
@@ -158,6 +166,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public ISnapshotStructureProxy GetMergedStructure()
         {
             return structure;
+        }
+
+        /// <inheritdoc />
+        public int GetMergedLocalLevelNumber()
+        {
+            return localLevel;
         }
 
         /// <inheritdoc />

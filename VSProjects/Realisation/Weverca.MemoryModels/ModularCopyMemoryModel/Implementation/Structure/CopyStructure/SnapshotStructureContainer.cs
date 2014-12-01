@@ -155,6 +155,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
+        public override bool ContainsStackWithLevel(int level)
+        {
+            return memoryStack.Count < level;
+        }
+
+        /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyLocalContext
         {
             get
@@ -259,7 +265,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void AddLocalLevel()
         {
-            CopyStackContext context = new CopyStackContext();
+            CopyStackContext context = new CopyStackContext(localLevel);
             context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(localLevel));
             context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(localLevel));
 
@@ -696,5 +702,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         #endregion
+
+        public override void AddStackLevel(int level)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void SetLocalStackLevelNumber(int level)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,44 +1,25 @@
-/*
-Copyright (c) 2012-2014 Pavel Bastecky.
-
-This file is part of WeVerca.
-
-WeVerca is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version.
-
-WeVerca is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
-    class LazyCopyDictionary<K, V> : IEnumerable<KeyValuePair<K, V>>
+    class LazyDeepCopyDictionary<K, V> : IEnumerable<KeyValuePair<K, V>> where V : IGenericCloneable<V>
     {
         private Dictionary<K, V> dictionary;
 
         private bool copied;
 
-        public LazyCopyDictionary()
+        public LazyDeepCopyDictionary()
         {
             dictionary = new Dictionary<K, V>();
             copied = true;
         }
 
-        public LazyCopyDictionary(LazyCopyDictionary<K, V> dictionaryToCopy)
+        public LazyDeepCopyDictionary(LazyDeepCopyDictionary<K, V> dictionaryToCopy)
         {
             dictionary = dictionaryToCopy.dictionary;
             copied = false;
@@ -76,26 +57,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         public V this[K key]
         {
             get { return dictionary[key]; }
-            set { copy(); dictionary[key] = value; }
+            set { Copy(); dictionary[key] = value; }
         }
 
         public void Add(K key, V value)
         {
-            copy();
+            Copy();
             dictionary.Add(key, value);
         }
 
         public void Remove(K key)
         {
-            copy();
+            Copy();
             dictionary.Remove(key);
         }
 
-        private void copy()
+        public void Copy()
         {
             if (!copied)
             {
-                dictionary = new Dictionary<K, V>(dictionary);
+                Dictionary<K, V> oldDictionary = dictionary;
+                dictionary = new Dictionary<K, V>();
+
+                foreach (var item in oldDictionary)
+                {
+                    dictionary.Add(item.Key, item.Value.Clone());
+                }
+
                 copied = true;
             }
         }

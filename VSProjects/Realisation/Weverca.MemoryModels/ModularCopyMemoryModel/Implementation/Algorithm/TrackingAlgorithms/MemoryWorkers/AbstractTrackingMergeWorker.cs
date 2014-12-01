@@ -79,6 +79,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         protected abstract void deleteChild(ITargetContainerContext targetContainerContext, string childName);
 
+        protected abstract bool MissingStacklevel(int stackLevel);
+
         protected void createSnapshotContexts()
         {
             foreach (Snapshot sourceSnapshot in sourceSnapshots)
@@ -99,17 +101,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 foreach (SnapshotContext context in snapshotContexts)
                 {
-                    if (context.CallLevel == targetSnapshot.CallLevel)
+                    if (parentSnapshotContext == null
+                    || context.ChangedIndexesTree.Count > parentSnapshotContext.ChangedIndexesTree.Count)
                     {
-                        if (parentSnapshotContext == null
-                        || context.ChangedIndexesTree.Count > parentSnapshotContext.ChangedIndexesTree.Count)
-                        {
-                            parentSnapshotContext = context;
-                        }
-                    }
-                    else
-                    {
-                        throw new NotImplementedException("Current implementation of merge can only handle same stack level of source snapshots.");
+                        parentSnapshotContext = context;
                     }
                 }
             }
@@ -175,7 +170,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTreeStackContext treeStackContext = memoryStack.Value;
                 int stackLevel = memoryStack.Key;
 
-                if (targetSnapshot.CallLevel >= stackLevel)
+                bool processStackLevel = true;
+                if (!targetStructure.ContainsStackWithLevel(stackLevel))
+                {
+                    processStackLevel = MissingStacklevel(stackLevel);
+                }
+
+                if (processStackLevel)
                 {
                     List<ContainerContext> variablesContainers = new List<ContainerContext>();
                     List<ContainerContext> controllsContainers = new List<ContainerContext>();
@@ -185,7 +186,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                     foreach (SnapshotContext context in snapshotContexts)
                     {
-                        if (context.SourceStructure.CallLevel >= stackLevel)
+                        if (context.SourceStructure.ContainsStackWithLevel(stackLevel))
                         {
                             IReadonlyStackContext stackContext = context.SourceStructure.GetReadonlyStackContext(stackLevel);
 

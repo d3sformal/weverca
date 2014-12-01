@@ -36,15 +36,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         private CopySet<MemoryIndex> temporaryVariables;
         private CopySet<AssociativeArray> arrays;
 
+        /// <inheritdoc />
+        public int StackLevel
+        {
+            get;
+            private set;
+        }
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyStackContext"/> class.
+        /// Initializes a new instance of the <see cref="CopyStackContext" /> class.
         /// </summary>
-        public CopyStackContext()
+        /// <param name="stackLevel">The stack level.</param>
+        public CopyStackContext(int stackLevel)
         {
             this.variables = new CopyIndexContainer();
             this.controllVariables = new CopyIndexContainer();
             this.temporaryVariables = new CopySet<MemoryIndex>();
             this.arrays = new CopySet<AssociativeArray>();
+
+            StackLevel = stackLevel;
         }
 
         /// <summary>
@@ -57,6 +67,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             this.controllVariables = context.controllVariables.Clone();
             this.temporaryVariables = context.temporaryVariables.Clone();
             this.arrays = context.arrays.Clone();
+
+            StackLevel = context.StackLevel;
         }
 
         /// <inheritdoc />

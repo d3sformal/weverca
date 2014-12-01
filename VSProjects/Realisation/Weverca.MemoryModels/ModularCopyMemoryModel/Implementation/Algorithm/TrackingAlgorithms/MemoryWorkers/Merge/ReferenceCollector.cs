@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
@@ -15,7 +16,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
         HashSet<MemoryIndex> allReferences = new HashSet<MemoryIndex>();
         bool mustSet = false;
+        private IReadOnlySnapshotStructure structure;
 
+        public ReferenceCollector(IReadOnlySnapshotStructure structure)
+        {
+            this.structure = structure;
+        }
+        
         /// <summary>
         /// Copies the collected must references to given set of references.
         /// </summary>
@@ -49,14 +56,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// in may reference container collector removes it from collection of may aliases.
         /// </summary>
         /// <param name="references">The references.</param>
-        /// <param name="callLevel">The call level.</param>
-        public void CollectMust(IEnumerable<MemoryIndex> references, int callLevel)
+        public void CollectMust(IEnumerable<MemoryIndex> references)
         {
             if (!mustSet)
             {
                 foreach (MemoryIndex index in references)
                 {
-                    if (index.CallLevel <= callLevel)
+                    if (structure.ContainsStackWithLevel(index.CallLevel))
                     {
                         mustReferences.Add(index);
                         allReferences.Add(index);
@@ -69,7 +75,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 HashSet<MemoryIndex> newMust = new HashSet<MemoryIndex>();
                 foreach (MemoryIndex index in references)
                 {
-                    if (index.CallLevel <= callLevel)
+                    if (structure.ContainsStackWithLevel(index.CallLevel))
                     {
                         if (mustReferences.Contains(index))
                         {
@@ -89,12 +95,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// not inserted into any container.
         /// </summary>
         /// <param name="references">The references.</param>
-        /// <param name="callLevel">The call level.</param>
-        public void CollectMay(IEnumerable<MemoryIndex> references, int callLevel)
+        public void CollectMay(IEnumerable<MemoryIndex> references)
         {
             foreach (MemoryIndex index in references)
             {
-                if (index.CallLevel <= callLevel)
+                if (structure.ContainsStackWithLevel(index.CallLevel))
                 {
                     allReferences.Add(index);
                 }

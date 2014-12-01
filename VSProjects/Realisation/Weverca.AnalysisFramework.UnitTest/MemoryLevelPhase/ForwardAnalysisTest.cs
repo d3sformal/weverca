@@ -2341,6 +2341,28 @@ $a = $obj->a;
             AnalysisTestUtils.RunTestCase(MergeMethodCall_CASE);
         }
 
+        readonly static TestCase Recursion_CASE = @"
+
+function f($a) {
+    if ($a < 10) return f($a + 1);
+    else return $a;
+}
+
+$a = f(1);
+$t = 1;
+
+"
+.AssertVariable("t").HasValues(1)
+.ShareFunctionGraph("f")
+;
+
+
+        [TestMethod]
+        public void Recursion()
+        {
+            AnalysisTestUtils.RunTestCase(Recursion_CASE);
+        }
+
         [TestMethod]
         public void SwitchWithOneBreak3()
         {

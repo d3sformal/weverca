@@ -64,7 +64,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #region Structure Data
 
         private int localLevel = 0;
-        private LazyCopyList<LazyCopyStackContext> memoryStack;
+        private LazyDeepCopyDictionary<int, LazyCopyStackContext> memoryStack;
         private LazyCopyDictionary<AssociativeArray, IArrayDescriptor> arrayDescriptors;
         private LazyCopyDictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
         private LazyCopyDictionary<MemoryIndex, IIndexDefinition> indexDefinitions;
@@ -95,7 +95,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public static TrackingSnapshotStructureContainer CreateEmpty(Snapshot snapshot)
         {
             TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyCopyList<LazyCopyStackContext>();
+            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>();
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = new LazyCopyDictionary<MemoryIndex, IIndexDefinition>();
@@ -114,7 +114,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public static TrackingSnapshotStructureContainer CreateGlobal(Snapshot snapshot)
         {
             TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyCopyList<LazyCopyStackContext>();
+            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>();
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = new LazyCopyDictionary<MemoryIndex, IIndexDefinition>();
@@ -122,7 +122,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             data.classDecl = new LazyCopyDeclarationContainer<TypeValue>();
             data.callArrays = new LazyCopyDictionary<AssociativeArray, CopySet<Snapshot>>();
 
-            data.AddLocalLevel();
+            data.AddStackLevel(Snapshot.GLOBAL_CALL_LEVEL);
+            data.SetLocalStackLevelNumber(Snapshot.GLOBAL_CALL_LEVEL);
 
             return data;
         }
@@ -135,8 +136,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public TrackingSnapshotStructureContainer Copy(Snapshot snapshot)
         {
             TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyCopyList<LazyCopyStackContext>(this.memoryStack);
-            data.localLevel = this.memoryStack.Count;
+            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>(this.memoryStack);
+            data.localLevel = this.localLevel;
 
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>(this.objectDescriptors);
@@ -192,13 +193,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
+        public override bool ContainsStackWithLevel(int level)
+        {
+            return memoryStack.ContainsKey(level);
+        }
+
+        /// <inheritdoc />
         public override IReadonlyStackContext ReadonlyLocalContext
         {
             get
             {
-                if (memoryStack.Count > 0)
+                if (memoryStack.ContainsKey(localLevel))
                 {
-                    return memoryStack[localLevel - 1];
+                    return memoryStack[localLevel];
                 }
                 else
                 {
@@ -212,7 +219,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             get
             {
-                if (memoryStack.Count > 0)
+                if (memoryStack.ContainsKey(Snapshot.GLOBAL_CALL_LEVEL))
                 {
                     return memoryStack[Snapshot.GLOBAL_CALL_LEVEL];
                 }
@@ -226,13 +233,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override IEnumerable<IReadonlyStackContext> ReadonlyStackContexts
         {
-            get { return memoryStack; }
+            get { return memoryStack.Values; }
         }
 
         /// <inheritdoc />
         public override IReadonlyStackContext GetReadonlyStackContext(int level)
         {
-            if (memoryStack.Count > level)
+            if (memoryStack.ContainsKey(level))
             {
                 return memoryStack[level];
             }
@@ -248,9 +255,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             get
             {
                 memoryStack.Copy();
-                if (memoryStack.Count > 0)
+                if (memoryStack.ContainsKey(localLevel))
                 {
-                    return memoryStack[localLevel - 1];
+                    return memoryStack[localLevel];
                 }
                 else
                 {
@@ -265,7 +272,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             get
             {
                 memoryStack.Copy();
-                if (memoryStack.Count > 0)
+                if (memoryStack.ContainsKey(Snapshot.GLOBAL_CALL_LEVEL))
                 {
                     return memoryStack[Snapshot.GLOBAL_CALL_LEVEL];
                 }
@@ -281,14 +288,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             get
             {
-                memoryStack.Copy(); return memoryStack;
+                memoryStack.Copy(); return memoryStack.Values;
             }
         }
 
         /// <inheritdoc />
         public override IWriteableStackContext GetWriteableStackContext(int level)
         {
-            if (memoryStack.Count > level)
+            if (memoryStack.ContainsKey(level))
             {
                 memoryStack.Copy();
                 return memoryStack[level];
@@ -302,15 +309,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void AddLocalLevel()
         {
-            LazyCopyStackContext context = new LazyCopyStackContext();
-            context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(localLevel));
-            context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(localLevel));
+            throw new NotImplementedException("This operation is not supported by this structure container");
+        }
+
+        /// <inheritdoc />
+        public override void AddStackLevel(int level)
+        {
+            LazyCopyStackContext context = new LazyCopyStackContext(level);
+            context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(level));
+            context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(level));
 
             NewIndex(context.WriteableVariables.UnknownIndex);
             NewIndex(context.WriteableControllVariables.UnknownIndex);
 
-            memoryStack.Add(context);
-            localLevel++;
+            memoryStack.Add(level, context);
+        }
+
+        /// <inheritdoc />
+        public override void SetLocalStackLevelNumber(int level)
+        {
+            localLevel = level;
         }
 
         #endregion

@@ -148,5 +148,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             throw new Exception("Error merging structure in readonly mode - deleting index: " + childName);
         }
+
+        protected override bool MissingStacklevel(int stackLevel)
+        {
+            return false;
+        }
     }
 }

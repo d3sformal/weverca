@@ -696,11 +696,53 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <inheritdoc />
         protected override void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
         {
-            Logger.Log(this, "extend");
+            Logger.Log(this, "merge at subprogram");
 
-            CallLevel = maxCallLevel(inputs);
+            List<Snapshot> snapshots = new List<Snapshot>();
+            foreach (var item in inputs)
+            {
+                Snapshot s = SnapshotEntry.ToSnapshot(item);
+                snapshots.Add(s);
 
-            extendWithoutComputingCallLevel(inputs);
+                Logger.Log(this, "merge " + s.getSnapshotIdentification());
+            }
+
+            IMergeAlgorithm algorithm;
+            switch (CurrentMode)
+            {
+                case SnapshotMode.MemoryLevel:
+                    algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
+                    algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
+
+                    Structure = algorithm.GetMergedStructure();
+                    Data = algorithm.GetMergedData();
+                    CurrentData = Data;
+                    CallLevel = algorithm.GetMergedLocalLevelNumber();
+                    Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
+                    break;
+
+                case SnapshotMode.InfoLevel:
+                    algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
+                    algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
+
+                    Infos = algorithm.GetMergedData();
+                    CurrentData = Infos;
+                    Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
+                    break;
+
+                default:
+                    throw new NotSupportedException("Current mode: " + CurrentMode);
+            }
+
+            // Call levels of the caller should be always the same
+            Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
+
+
+            /*CallLevel = maxCallLevel(inputs);
+
+            extendWithoutComputingCallLevel(inputs);*/
         }
 
         /// <inheritdoc />
@@ -716,21 +758,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <inheritdoc />
         protected override void extendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
         {
-            Snapshot snapshot = SnapshotEntry.ToSnapshot(callerContext);
-            Logger.Log(this, "call extend: " + snapshot.getSnapshotIdentification() + " level: " + snapshot.CallLevel + " this: " + thisObject);
+            Snapshot callerSnapshot = SnapshotEntry.ToSnapshot(callerContext);
+            Logger.Log(this, "call extend: " + callerSnapshot.getSnapshotIdentification() + " level: " + callerSnapshot.CallLevel + " this: " + thisObject);
 
 
-            CallLevel = snapshot.CallLevel + 1;
+            /*CallLevel = callerSnapshot.CallLevel + 1;
 
             if (oldCallLevel != CallLevel && oldCallLevel != GLOBAL_CALL_LEVEL) 
             {
                 // The called function is shared and we are calling it repeatedly
                 // Pick the call level from the previous call of extendAsCall
                 CallLevel = oldCallLevel;
-            }
-
-            // Call levels of the caller should be always the same
-            Debug.Assert (oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
+            }*/
 
             IMergeAlgorithm algorithm;
             switch (CurrentMode)
@@ -738,18 +777,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 case SnapshotMode.MemoryLevel:
                     algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
-                    algorithm.ExtendAsCall(this, snapshot, thisObject);
+                    algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
 
                     Structure = algorithm.GetMergedStructure();
                     Data = algorithm.GetMergedData();
                     CurrentData = Data;
+                    CallLevel = algorithm.GetMergedLocalLevelNumber();
                     Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
                     break;
 
                 case SnapshotMode.InfoLevel:
                     algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
                     Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
-                    algorithm.ExtendAsCall(this, snapshot, thisObject);
+                    algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
 
                     Infos = algorithm.GetMergedData();
                     CurrentData = Infos;
@@ -766,6 +806,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     SnapshotEntry.CreateVariableEntry(new VariableIdentifier(Snapshot.THIS_VARIABLE_IDENTIFIER), GlobalContext.LocalOnly, this.CallLevel);
                 snapshotEntry.WriteMemory(this, thisObject);
             }
+
+            // Call levels of the caller should be always the same
+            Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
         }
 
         /// <summary>

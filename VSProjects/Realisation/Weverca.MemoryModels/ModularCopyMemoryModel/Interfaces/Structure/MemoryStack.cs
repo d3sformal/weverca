@@ -36,6 +36,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// </summary>
     public interface IReadonlyStackContext
     {
+
+        /// <summary>
+        /// Gets the stack level.
+        /// </summary>
+        /// <value>
+        /// The stacklevel.
+        /// </value>
+        int StackLevel { get; }
+
         /// <summary>
         /// Gets the readonly collection with associative container of definition of variables.
         /// </summary>

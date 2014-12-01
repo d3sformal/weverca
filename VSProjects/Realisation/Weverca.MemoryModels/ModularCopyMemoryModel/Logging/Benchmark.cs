@@ -32,6 +32,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         COMMIT,
         WIDEN_COMMIT,
         EXTEND_AS_CALL,
+        MERGE_AT_SUBPROGRAM,
         MERGE_WITH_CALL,
         COPY_MEMORY,
         DELETE_MEMORY,

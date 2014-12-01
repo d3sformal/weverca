@@ -147,6 +147,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopySet.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyStackContext.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyList.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyDeepCopyDictionary.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\TrackingSnapshotStructure.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\Algorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmFactories.cs" />

@@ -48,6 +48,11 @@ namespace Weverca.AnalysisFramework
         #region Private fields
 
         /// <summary>
+        /// Global identifier counter for ProgramPointGraph instances
+        /// </summary>
+        private static int PPG_ID = 1;
+
+        /// <summary>
         /// Context used for building program point graph
         /// </summary>
         private readonly PPGraphBuildingContext _context;
@@ -55,6 +60,11 @@ namespace Weverca.AnalysisFramework
         #endregion
 
         #region Public fields
+
+        /// <summary>
+        /// The program point graph unique identifier
+        /// </summary>
+        public readonly int ProgramPointGraphID;
 
         /// <summary>
         /// Context of this program point graph - consists of program points that have this graph
@@ -138,6 +148,8 @@ namespace Weverca.AnalysisFramework
         /// <param name="sourceObject">Object that is source for program point graph (Function declaration, GlobalCode,...)</param>
         private ProgramPointGraph(BasicBlock entryBlock, LangElement sourceObject)
         {
+            ProgramPointGraphID = PPG_ID++;
+
             Context = new PPGraphContext(this);
             SourceObject = sourceObject;
 
