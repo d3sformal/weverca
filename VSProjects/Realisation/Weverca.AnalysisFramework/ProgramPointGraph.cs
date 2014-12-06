@@ -34,6 +34,7 @@ using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.Memory;
 
 using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.AnalysisFramework.GraphVisualizer;
 
 namespace Weverca.AnalysisFramework
 {
@@ -418,6 +419,136 @@ namespace Weverca.AnalysisFramework
 
         #endregion
 
+        #region Graph Text Representation
+
+        /// <summary>
+        /// Builds the graph visualisation using given visualiser.
+        /// 
+        /// User of this method can specify types of program points which should be skipped - these nodes 
+        /// won't appear in final graph and all edges to this nodes will be connected with the nearest 
+        /// permitted parent.
+        /// </summary>
+        /// <param name="graphVisualizer">The graph visualizer.</param>
+        /// <param name="skipProgramPoints">Types of programpoints which should be skipped from the visualisation.</param>
+        public void BuildGraphVisualisation(IGraphVisualizer graphVisualizer, Type[] skipProgramPoints)
+        {
+            HashSet<ProgramPointGraph> processedGraphs = new HashSet<ProgramPointGraph>();
+            processedGraphs.Add(this);
+
+            BuildGraphVisualisation(graphVisualizer, skipProgramPoints, processedGraphs);
+        }
+
+        /// <summary>
+        /// Builds the graph visualisation.
+        /// </summary>
+        /// <param name="graphVisualizer">The graph visualizer.</param>
+        /// <param name="skipProgramPoints">The skip program points.</param>
+        /// <param name="processedGraphs">The processed graphs.</param>
+        private void BuildGraphVisualisation(IGraphVisualizer graphVisualizer, Type[] skipProgramPoints, HashSet<ProgramPointGraph> processedGraphs)
+        {
+            foreach (var point in Points)
+            {
+                bool skip = isTypeOf(point.GetType(), skipProgramPoints);
+
+                if (!skip)
+                {
+                    buildNodeVisualisation(point, graphVisualizer);
+                    buildEdgesVisualisation(point, graphVisualizer, skipProgramPoints);
+                    enqueBuildingExtensionVisualisations(point, graphVisualizer, skipProgramPoints, processedGraphs);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Enques the building extension visualisations recursively.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="graphVisualizer">The graph visualizer.</param>
+        /// <param name="skipProgramPoints">The skip program points.</param>
+        /// <param name="processedGraphs">The processed graphs.</param>
+        private static void enqueBuildingExtensionVisualisations(ProgramPointBase point, IGraphVisualizer graphVisualizer, Type[] skipProgramPoints, HashSet<ProgramPointGraph> processedGraphs)
+        {
+            bool hasBranches = false;
+            foreach (var extension in point.Extension.Branches)
+            {
+                var ppg = extension.Graph;
+                if (!processedGraphs.Contains(ppg))
+                {
+                    processedGraphs.Add(ppg);
+                    extension.Graph.BuildGraphVisualisation(graphVisualizer, skipProgramPoints, processedGraphs);
+
+                    buildNodeVisualisation(extension, graphVisualizer);
+                    buildEdgesVisualisation(extension, graphVisualizer, skipProgramPoints);
+                }
+
+                hasBranches = true;
+            }
+
+            if (hasBranches)
+            {
+                buildNodeVisualisation(point.Extension.Sink, graphVisualizer);
+                buildEdgesVisualisation(point.Extension.Sink, graphVisualizer, skipProgramPoints);
+            }
+        }
+
+        /// <summary>
+        /// Builds the edges visualisation.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="graphVisualizer">The graph visualizer.</param>
+        /// <param name="skipProgramPoints">The skip program points.</param>
+        private static void buildEdgesVisualisation(ProgramPointBase point, IGraphVisualizer graphVisualizer, Type[] skipProgramPoints)
+        {
+            HashSet<int> processed = new HashSet<int>();
+            LinkedList<ProgramPointBase> edgeQueue = new LinkedList<ProgramPointBase>();
+            foreach (var targetPoint in point.FlowChildren)
+            {
+                edgeQueue.AddLast(targetPoint);
+                processed.Add(targetPoint.ProgramPointID);
+            }
+
+            string id = "pp" + point.ProgramPointID.ToString();
+            while (edgeQueue.Count > 0)
+            {
+                ProgramPointBase targetPoint = edgeQueue.First.Value;
+                edgeQueue.RemoveFirst();
+
+                bool targetSkipped = isTypeOf(targetPoint.GetType(), skipProgramPoints);
+                if (!targetSkipped)
+                {
+                    string outId = "pp" + targetPoint.ProgramPointID;
+                    graphVisualizer.AddEdge(id, outId, "");
+                }
+                else
+                {
+                    foreach (var p in targetPoint.FlowChildren)
+                    {
+                        if (!processed.Contains(p.ProgramPointID))
+                        {
+                            edgeQueue.AddLast(p);
+                            processed.Add(p.ProgramPointID);
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Builds the node visualisation.
+        /// </summary>
+        /// <param name="point">The point.</param>
+        /// <param name="graphVisualizer">The graph visualizer.</param>
+        private static void buildNodeVisualisation(ProgramPointBase point, IGraphVisualizer graphVisualizer)
+        {
+            string id = "pp" + point.ProgramPointID.ToString();
+            string label = string.Format("{0}\n{1}",
+                point.GetType().Name.ToString(), point.ToString());
+
+            graphVisualizer.AddNode(id, label);
+        }
+
+        #endregion
+
         #region Private utilities
 
         /// <summary>
@@ -500,6 +631,25 @@ namespace Weverca.AnalysisFramework
             return childBlock;
         }
 
+        /// <summary>
+        /// Determines whether given type is child at least of one of specified types.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="parentTypes">The parent types.</param>
+        /// <returns></returns>
+        private static bool isTypeOf(Type type, Type[] parentTypes)
+        {
+            foreach (var parent in parentTypes)
+            {
+                if (parent.IsAssignableFrom(type))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+             
         #endregion
     }
 }

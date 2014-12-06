@@ -34,6 +34,8 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GraphVisualizer\DotGraphVisualizer.cs" />
+    <Compile Include="GraphVisualizer\IGraphVisualizer.cs" />
     <Compile Include="PPGraphContext.cs" />
     <Compile Include="CatchBlockDescription.cs" />
     <Compile Include="Expressions\Converter.cs" />

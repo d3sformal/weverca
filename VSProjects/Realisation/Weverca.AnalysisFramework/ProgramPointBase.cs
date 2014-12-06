@@ -42,6 +42,16 @@ namespace Weverca.AnalysisFramework
         #region Private members
 
         /// <summary>
+        /// Global identifier counter for ProgramPointBase instances
+        /// </summary>
+        private static int PP_ID = 1;
+
+        /// <summary>
+        /// The program point identifier
+        /// </summary>
+        private readonly int programPointId;
+
+        /// <summary>
         /// Children of this program point
         /// </summary>
         private List<ProgramPointBase> _flowChildren = new List<ProgramPointBase>();
@@ -164,8 +174,17 @@ namespace Weverca.AnalysisFramework
         /// </summary>
         internal virtual ForwardAnalysisServices Services { get; private set; }
 
+        /// <summary>
+        /// Gets the program point identifier.
+        /// </summary>
+        /// <value>
+        /// The program point identifier.
+        /// </value>
+        public int ProgramPointID { get { return programPointId; } }
+
         internal ProgramPointBase()
         {
+            programPointId = PP_ID++;
             Extension = new FlowExtension(this);
         }
 

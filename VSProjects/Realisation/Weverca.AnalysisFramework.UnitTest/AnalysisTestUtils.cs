@@ -34,6 +34,8 @@ using Weverca.AnalysisFramework.Expressions;
 using Weverca.Parsers;
 using Weverca.Taint;
 using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.AnalysisFramework.GraphVisualizer;
+using Weverca.Common;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -331,6 +333,8 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var ppg = GetAnalyzedGraph(testCase, analysis);
 
                 testCase.Assert(ppg);
+
+                testCase.VisualiseProgramPointGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
             }
         }
 
@@ -628,6 +632,9 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// </summary>
         private int _wideningLimit = -1;
 
+        private Type[] skipProgramPoints;
+        private string ppgFileName;
+
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
         {
             PhpCode = phpCode;
@@ -721,6 +728,14 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var type = outSet.CreateType(typeDeclaration);
                 outSet.DeclareGlobal(type);
             });
+            return this;
+        }
+
+        internal TestCase PrintProgramPointGraph(string ppgFileName, params Type[] skipProgramPoints)
+        {
+            this.ppgFileName = ppgFileName;
+            this.skipProgramPoints = skipProgramPoints;
+
             return this;
         }
 
@@ -889,6 +904,22 @@ namespace Weverca.AnalysisFramework.UnitTest
             if (PreviousTest != null)
             {
                 PreviousTest.Assert(ppg);
+            }
+        }
+
+        internal void VisualiseProgramPointGraph(ProgramPointGraph ppg, string graphvizPath)
+        {
+            if (ppgFileName != null)
+            {
+                string visualisationDir = new FileInfo(ppgFileName).Directory.FullName;
+                if (!Directory.Exists(visualisationDir))
+                {
+                    Directory.CreateDirectory(visualisationDir);
+                }
+
+                DotGraphVisualizer visualizer = new DotGraphVisualizer(graphvizPath);
+                ppg.BuildGraphVisualisation(visualizer, skipProgramPoints);
+                visualizer.CreateVisualization(ppgFileName);
             }
         }
 

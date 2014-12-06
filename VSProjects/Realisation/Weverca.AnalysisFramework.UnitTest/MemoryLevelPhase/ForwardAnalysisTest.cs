@@ -17,12 +17,14 @@ You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define ENABLE_GRAPH_VISUALISATION
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.AnalysisFramework.ProgramPoints;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -1401,8 +1403,12 @@ else {
 
 $arr = $x();
 $result = $arr[1];
-".AssertVariable("result").HasValues("f.index1", "g.index1")
-            ;
+".AssertVariable("result")
+ .HasValues("f.index1", "g.index1")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\ArrayMergeReturnValueTest", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+#endif
+;
 
         readonly static TestCase ArrayAliasedReturnValueTest_CASE = @"
 function f() {
@@ -2023,7 +2029,11 @@ $d = $ar['d'];
 .AssertVariable("bany").HasUndefinedAndValues("any")
 .AssertVariable("ca").HasUndefinedAndValues("cA")
 .AssertVariable("cany").HasUndefinedAndValues("any")
-.AssertVariable("d").HasValues("d");
+.AssertVariable("d").HasValues("d")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\Merge")
+#endif
+;
 
 
 
@@ -2348,7 +2358,7 @@ function f($a) {
     else return $a;
 }
 
-$a = f(1);
+//$a = f(1);
 $t = 1;
 
 "

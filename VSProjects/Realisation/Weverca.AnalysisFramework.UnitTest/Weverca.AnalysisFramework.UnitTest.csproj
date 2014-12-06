@@ -81,6 +81,10 @@
       <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
       <Name>Weverca.Analysis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
+      <Project>{3cee322a-b262-453b-9a92-47d39807e166}</Project>
+      <Name>Weverca.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>

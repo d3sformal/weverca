@@ -164,6 +164,7 @@
     <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmKey.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Benchmark.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\GraphLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Logger.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\Cloneable.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Measuring.cs" />
