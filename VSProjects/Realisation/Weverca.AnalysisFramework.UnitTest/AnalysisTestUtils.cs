@@ -36,6 +36,8 @@ using Weverca.Taint;
 using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.AnalysisFramework.GraphVisualizer;
 using Weverca.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 
 namespace Weverca.AnalysisFramework.UnitTest
 {
@@ -326,6 +328,10 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunTestCase(TestCase testCase)
         {
+
+            Snapshot.Visualizer.Enabled(testCase.IsSnapshotGraphVisualizationenabled());
+            Snapshot.Visualizer.Clear();
+
             var analyses = CreateAnalyses(testCase);
 
             foreach (var analysis in analyses)
@@ -334,7 +340,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
                 testCase.Assert(ppg);
 
-                testCase.VisualiseProgramPointGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
+                testCase.VisualizeProgramPointGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
+                testCase.VisualizeSnapshotGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
             }
         }
 
@@ -634,6 +641,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private Type[] skipProgramPoints;
         private string ppgFileName;
+        private string snapshotGraphFileName;
 
         internal TestCase(string phpCode, string variableName, string assertMessage, TestCase previousTest = null)
         {
@@ -738,6 +746,18 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             return this;
         }
+
+        internal TestCase PrintSnapshotGraph(string snapshotGraphFileName)
+        {
+            this.snapshotGraphFileName = snapshotGraphFileName;
+            return this;
+        }
+
+        internal bool IsSnapshotGraphVisualizationenabled()
+        {
+            return this.snapshotGraphFileName != null;
+        }
+
 
         #region Assert providers
 
@@ -907,7 +927,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             }
         }
 
-        internal void VisualiseProgramPointGraph(ProgramPointGraph ppg, string graphvizPath)
+        internal void VisualizeProgramPointGraph(ProgramPointGraph ppg, string graphvizPath)
         {
             if (ppgFileName != null)
             {
@@ -920,6 +940,22 @@ namespace Weverca.AnalysisFramework.UnitTest
                 DotGraphVisualizer visualizer = new DotGraphVisualizer(graphvizPath);
                 ppg.BuildGraphVisualisation(visualizer, skipProgramPoints);
                 visualizer.CreateVisualization(ppgFileName);
+            }
+        }
+
+        internal void VisualizeSnapshotGraph(ProgramPointGraph ppg, string graphvizPath)
+        {
+            if (snapshotGraphFileName != null)
+            {
+                string visualisationDir = new FileInfo(snapshotGraphFileName).Directory.FullName;
+                if (!Directory.Exists(visualisationDir))
+                {
+                    Directory.CreateDirectory(visualisationDir);
+                }
+
+                DotGraphVisualizer visualizer = new DotGraphVisualizer(graphvizPath);
+                Snapshot.Visualizer.BuildGraphVisualisation(visualizer);
+                visualizer.CreateVisualization(snapshotGraphFileName);
             }
         }
 

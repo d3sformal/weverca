@@ -68,6 +68,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public static IBenchmark Benchmark = new MemoryModelBenchmark();
 
         /// <summary>
+        ///  Gets the visualizer object to print out snashot graph
+        /// </summary>
+        public static IVisualizer Visualizer = new MemoryModelVisualizer();
+
+        /// <summary>
         /// Gets the snapshot data factory.
         /// </summary>
         /// <value>
@@ -338,6 +343,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
         protected override void startTransaction()
         {
+            Visualizer.StartTransaction(this);
             Benchmark.StartTransaction(this);
             Logger.Log(this, "Start mode: {0}", CurrentMode);
 
@@ -437,6 +443,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
+            Visualizer.FinishTransaction(this);
 
             oldStructure = null;
             oldMemory = null;
@@ -494,6 +501,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
+            Visualizer.FinishTransaction(this);
 
             oldStructure = null;
             oldMemory = null;
@@ -736,6 +744,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     throw new NotSupportedException("Current mode: " + CurrentMode);
             }
 
+            Visualizer.SetParents(this, snapshots.ToArray());
+            Visualizer.SetLabel(this, "merge at subprogram");
+
             // Call levels of the caller should be always the same
             Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
 
@@ -807,6 +818,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 snapshotEntry.WriteMemory(this, thisObject);
             }
 
+            Visualizer.SetParent(this, callerSnapshot);
+            Visualizer.SetLabel(this, "extend as call");
+
             // Call levels of the caller should be always the same
             Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
         }
@@ -870,6 +884,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             }
 
             CallLevel = tempCallLevel;
+
+            Visualizer.SetParents(this, snapshots.ToArray());
+            Visualizer.SetLabel(this, "merge with call level:" + CallLevel);
         }
 
         /// <summary>
@@ -1733,6 +1750,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
             }
+
+            Visualizer.SetParent(this, snapshot);
+            Visualizer.SetLabel(this, "extend");
         }
 
         /// <summary>
@@ -1784,6 +1804,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
             }
+            Visualizer.SetParents(this, snapshots.ToArray());
+            Visualizer.SetLabel(this, "merge");
         }
 
         /// <summary>

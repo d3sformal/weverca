@@ -170,8 +170,10 @@
     <Compile Include="ModularCopyMemoryModel\Logging\Measuring.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelBenchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelLogger.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelVisualizer.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\SnapshotLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\TransactionEntry.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\Visualizer.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\IReferenceHolder.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MemoryIndex.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MemoryIndexTree.cs" />

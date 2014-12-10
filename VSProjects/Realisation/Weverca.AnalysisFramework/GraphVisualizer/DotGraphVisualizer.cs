@@ -43,6 +43,14 @@ namespace Weverca.AnalysisFramework.GraphVisualizer
                 sourceNode, targetNode, label));
         }
 
+        /// <inheritdoc />
+        public void AddMarkedEdge(string sourceNode, string targetNode, string label)
+        {
+            edgesBuilder.AppendLine(string.Format(
+                "{0} -> {1}[headport=n, tailport=s,label=\"{2}\",style=dashed,arrowType=empty]",
+                sourceNode, targetNode, label));
+        }
+
         /// <summary>
         /// Creates and stores graph into the given file.
         /// </summary>

@@ -1407,6 +1407,7 @@ $result = $arr[1];
  .HasValues("f.index1", "g.index1")
 #if ENABLE_GRAPH_VISUALISATION
 .PrintProgramPointGraph(@"ppg\ArrayMergeReturnValueTest", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\ArrayMergeReturnValueTest")
 #endif
 ;
 
