@@ -476,10 +476,9 @@ namespace Weverca.AnalysisFramework
                 {
                     processedGraphs.Add(ppg);
                     extension.Graph.BuildGraphVisualisation(graphVisualizer, skipProgramPoints, processedGraphs);
-
-                    buildNodeVisualisation(extension, graphVisualizer);
-                    buildEdgesVisualisation(extension, graphVisualizer, skipProgramPoints);
                 }
+                buildNodeVisualisation(extension, graphVisualizer);
+                buildEdgesVisualisation(extension, graphVisualizer, skipProgramPoints);
 
                 hasBranches = true;
             }
