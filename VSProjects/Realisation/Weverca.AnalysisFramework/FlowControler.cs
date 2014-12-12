@@ -221,12 +221,6 @@ namespace Weverca.AnalysisFramework
             }
         }
 
-
-        internal void InitializeNewPoint(ProgramPointBase point)
-        {
-            InitializeNewPoint (point, CurrentPPG);
-        }
-
         internal void InitializeNewPoint(ProgramPointBase point, ProgramPointGraph owningGraph)
         {
             point.Initialize(Services.CreateEmptySet(), Services.CreateEmptySet());
