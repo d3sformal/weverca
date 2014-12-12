@@ -331,12 +331,54 @@ namespace Weverca.AnalysisFramework
 
         /// <summary>
 		/// Worklist algorithm that tries to reorder program points in the worklist in order to not process program point
-		/// if it is reachable from other program points in the worklist - if the output of these program points is
-		/// changed, the program point must be recomputed.
+		/// if it is reachable from other program points in the worklist. It is useless to process this program point - if the output of
+        /// a program point that precedes the progrma point in the worklist will be changed, the program point will have to be again processed.
 		/// 
 		/// To reorder program points, it uses the concept of worklist segments. Fixpoint of all program points in the segment
 		/// must be reached before the program point after the segment is processed.
 		/// Segments are created during creating of control-flow graph, e.g., for if, while, for, and foreach statemetns.
+        /// 
+        /// It works in the following way: for each segment, there is a program point afterSegment. First, this program point is added
+        /// to the current worklist queue and added to the set unreachableAfterSegmentPoints - they will be processed after fixpoint of the segment
+        /// is reached and they are reachable from some program point in the segment. Then, it is created new queue for program points 
+        /// in the segment and this queue is used for processing program points of this segment. If the queue becomes empty, it means 
+        /// that the fixpoint of the segment is reached. The queue for this segment is removed and the processing continues with
+        /// the previsous queue. 
+        /// 
+        /// Note that the previsous queue contains the program point afterSegment, but this program point will be processed only if
+        /// it is reachable from some program point in the segment.
+        /// 
+        /// Note that if the program point already is in the worklist, it is not added again.
+        /// 
+        /// Example 1:
+        /// (1) if () {
+        /// (2)     $a = 1;
+        /// (3) } else {
+        /// (4)     while (true) {
+        /// (5)        $i++;
+        /// (6)     }
+        /// (7)    $a = 2;
+        /// (8) }
+        /// (9) $b = 1;
+        /// 
+        /// 1. Adding children of program point (1): program point (9) ends the segment of the if statement. It is added to the queue queue1 and to the unreachableAfterSegmentPoints.
+        /// New queue queue2 is created. Program points (2), (4) are added to queue2.
+        /// 
+        /// 2. Adding children of PP (2): child is PP (9). It already is in the worklist, it is not added. But it is removed from unreachableAfterSegmentPoints.
+        /// 
+        /// 3. Adding children of PP (4): program point (7) ends the segment of the while statement. It is added to the queue2 and to  unreachableAfterSegmentPoints.
+        /// Queue3 is created for the new segment. Program point (5) is added.
+        /// 
+        /// 4. Removing queue3: when the fixpoint is reached, the queue3 is empty, it is removed and queue2 is used.
+        /// Note that PP (7) is in queue2, but as it is not reachable the while, it is still in unreachableAfterSegmentPoints and it is not processed.
+        /// 
+        /// 5. Removing queue2: PP (7) is the only program point is queue2, however, because it is also in unreachableAfterSegmentPoints, queue2 is considered empty
+        /// and it is removed and queue1 is used.
+        /// 
+        /// 6. PP (9) is in queue1 and it is not in unreachableAfterSegmentPoints - it is fetched by getWork.
+        /// 
+        /// End Example 1
+        /// 
 		/// 
         /// TODO: ordering for backward analysis!
         /// </summary>
@@ -344,7 +386,11 @@ namespace Weverca.AnalysisFramework
 		{
             private readonly bool nextPhase;
 			private WorkQueue hQueue = new WorkQueue (null);
-            private readonly HashSet<ProgramPointBase> unreachablePoints = new HashSet<ProgramPointBase>();
+            /// <summary>
+            /// Program points that were added to the worklist because they are ends of segments in the worklist 
+            /// and which are not yet reachable.
+            /// </summary>
+            private readonly HashSet<ProgramPointBase> unreachableAfterSegmentPoints = new HashSet<ProgramPointBase>();
 			private ProgramPointBase exitPoint;
 
             internal WorkListReorderingSegments(bool nextPhase, AnalysisDirection Direction) : base(Direction) { this.nextPhase = nextPhase; }
@@ -361,23 +407,27 @@ namespace Weverca.AnalysisFramework
 
 
 
-            private void AddPoint(ProgramPointBase work)
+            private bool AddPoint(ProgramPointBase work)
             {
 				if (work == exitPoint)
-					return;
-                unreachablePoints.Remove(work);
+					return false;
+                unreachableAfterSegmentPoints.Remove(work);
+                // Do not add program point that is already in the worklist.
                 if ((!nextPhase || !unreachable(work)) && _containedPoints.Add(work))
                 {
                     hQueue._queue.Enqueue(work);
+                    return true;
                 }
+
+                return false;
             }
 
             public override void AddChildren(ProgramPointBase work)
             {
 				if (work is RCallPoint) 
 				{
-					AddPoint(work.Extension.Sink);
-					unreachablePoints.Add(work.Extension.Sink);
+					if (AddPoint(work.Extension.Sink))
+					    unreachableAfterSegmentPoints.Add(work.Extension.Sink);
 
 					// create queue for the branching
 					hQueue = new WorkQueue(hQueue);
@@ -386,8 +436,8 @@ namespace Weverca.AnalysisFramework
                 if (work.AfterWorklistSegment != null) 
                 { 
                     // add point after branching
-                    AddPoint(work.AfterWorklistSegment);
-                    unreachablePoints.Add(work.AfterWorklistSegment);
+                    if (AddPoint(work.AfterWorklistSegment))
+                        unreachableAfterSegmentPoints.Add(work.AfterWorklistSegment);
 
                     // create queue for the branching
                     hQueue = new WorkQueue(hQueue);
@@ -407,7 +457,7 @@ namespace Weverca.AnalysisFramework
                 return (point.InSet == null) && (point.OutSet == null);
             }
 
-            public override bool HasWork { get { return _containedPoints.Except(unreachablePoints).Count() > 0; } }
+            public override bool HasWork { get { return _containedPoints.Except(unreachableAfterSegmentPoints).Count() > 0; } }
 
             
 
@@ -425,9 +475,9 @@ namespace Weverca.AnalysisFramework
 					result = hQueue._queue.Dequeue ();
 
 				_containedPoints.Remove (result);
-                if (unreachablePoints.Contains(result))
+                if (unreachableAfterSegmentPoints.Contains(result))
                 {
-                    unreachablePoints.Remove(result);
+                    unreachableAfterSegmentPoints.Remove(result);
                     return GetWork();
                 }
 

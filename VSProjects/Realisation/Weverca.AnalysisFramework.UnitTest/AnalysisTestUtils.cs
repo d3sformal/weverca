@@ -338,10 +338,10 @@ namespace Weverca.AnalysisFramework.UnitTest
             {
                 var ppg = GetAnalyzedGraph(testCase, analysis);
 
-                testCase.Assert(ppg);
-
                 testCase.VisualizeProgramPointGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
                 testCase.VisualizeSnapshotGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
+
+                testCase.Assert(ppg);
             }
         }
 

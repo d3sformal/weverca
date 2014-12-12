@@ -49,7 +49,7 @@ namespace Weverca.Analysis
         {
             GlobalsInitializer();
             this.SimplifyLimit = simplifyLimit;
-			this.WideningLimit = 5;
+			this.WideningLimit = 2;
         }
 
         #region ForwardAnalysis override
