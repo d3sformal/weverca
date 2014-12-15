@@ -54,7 +54,15 @@ public class Runner {
 	}
 	
 	private synchronized void runWevercaMetrics(ArrayList<String> params, OutputProcessor output) throws  AnalyzerNotFoundException {
-		doRunWeverca(params, output, "_____wevercaoutput_metrics.txt");
+
+		/*System.out.println("-----------------------------------------------------------");
+		System.out.println("metrics");
+		for (String param : params) {
+			System.out.println(param);
+		}
+		
+		System.out.println("------------------------------------------------------------");*/
+		//doRunWeverca(params, output, "_____wevercaoutput_metrics.txt");
 	}
 	
 	private synchronized void runWevercaStaticAnalysis(ArrayList<String> params, OutputProcessor output) throws  AnalyzerNotFoundException {

@@ -168,6 +168,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         {
             WideningLimit = limit;
         }
+
+
+        public void SetSimplifyLimit(int limit)
+        {
+            SimplifyLimit = limit;
+        }
     }
 
     internal class WevercaFlowResolverTest : Weverca.Analysis.FlowResolver.FlowResolver
@@ -343,6 +349,8 @@ namespace Weverca.AnalysisFramework.UnitTest
 
                 testCase.Assert(ppg);
             }
+
+            Snapshot.Benchmark.WriteResultsToFile("benchmark.csv");
         }
 
         internal static void RunInfoLevelBackwardPropagationCase(TestCase testCase)
@@ -639,6 +647,8 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// </summary>
         private int _wideningLimit = -1;
 
+        private int _simplifyLimit = -1;
+
         private Type[] skipProgramPoints;
         private string ppgFileName;
         private string snapshotGraphFileName;
@@ -701,6 +711,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         internal TestCase WideningLimit(int limit)
         {
             _wideningLimit = limit;
+            return this;
+        }
+
+        internal TestCase SimplifyLimit(int limit)
+        {
+            _simplifyLimit = limit;
             return this;
         }
 
@@ -991,6 +1007,9 @@ namespace Weverca.AnalysisFramework.UnitTest
 
             if (_wideningLimit > 0)
                 analysis.SetWideningLimit(_wideningLimit);
+
+            if (_simplifyLimit > 0)
+                analysis.SetSimplifyLimit(_simplifyLimit);
 
             if (PreviousTest != null)
             {

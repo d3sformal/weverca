@@ -62,6 +62,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// </summary>
         /// <param name="limit">Count of commits</param>
         void SetWideningLimit(int limit);
+
+        /// <summary>
+        /// Sets limit count of size of memory entry to aply simplification.
+        /// </summary>
+        /// <param name="limit">The limit.</param>
+        void SetSimplifyLimit(int limit);
     }
 
     class SimpleAnalysis : ForwardAnalysisBase, TestAnalysisSettings
@@ -120,6 +126,12 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
 
         #endregion
+
+
+        public void SetSimplifyLimit(int limit)
+        {
+            SimplifyLimit = limit;
+        }
     }
 
     class SimpleInfo : InfoDataBase

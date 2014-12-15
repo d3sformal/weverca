@@ -29,6 +29,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using PHP.Core;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
+using Weverca.AnalysisFramework.GraphVisualizer;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
@@ -621,7 +622,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public override void RemoveArray(MemoryIndex index, AssociativeArray arrayValue)
         {
             arrayDescriptors.Remove(arrayValue);
-
+            
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {

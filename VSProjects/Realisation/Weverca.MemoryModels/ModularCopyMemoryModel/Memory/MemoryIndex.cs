@@ -78,6 +78,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public int CallLevel { get; private set; }
 
         /// <summary>
+        /// Precomputed hash code to speed up test
+        /// </summary>
+        private int hashCode;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MemoryIndex"/> class with empty path.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
@@ -145,10 +150,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 
             MemoryIndex otherIndex = obj as MemoryIndex;
 
-            if (otherIndex == null || otherIndex.Length != this.Length)
+            if (otherIndex == null || otherIndex.hashCode != this.hashCode || otherIndex.Length != this.Length)
             {
                 return false;
-            }
+            }   
 
             if (otherIndex.GetType() != this.GetType() || otherIndex.CallLevel != this.CallLevel)
             {
@@ -174,16 +179,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// </returns>
         public override int GetHashCode()
         {
-            int hashcode = this.GetType().GetHashCode() + CallLevel;
-            foreach (IndexSegment name in MemoryPath)
-            {
-                uint val = (uint)(hashcode ^ name.GetHashCode());
-
-                //Left bit rotation - there is no built implementation in C#
-                hashcode = (int)((val << 1) | (val >> (32 - 1)));
-            }
-
-            return hashcode;
+            return this.hashCode;
         }
 
         /// <summary>
@@ -336,6 +332,37 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             }
         }
 
+        /// <summary>
+        /// Returns computed a hash code for this instance.
+        /// 
+        /// Difference betwen this method and GetHashCode is that this method construct hash code which is
+        /// cached within the instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        protected virtual int computeHashCode()
+        {
+            int hashcode = this.GetType().GetHashCode() + CallLevel;
+            foreach (IndexSegment name in MemoryPath)
+            {
+                uint val = (uint)(hashcode ^ name.GetHashCode());
+
+                //Left bit rotation - there is no built implementation in C#
+                hashcode = (int)((val << 1) | (val >> (32 - 1)));
+            }
+
+            return hashcode;
+        }
+
+        /// <summary>
+        /// Computes the and store hash code into cache to speed comparsion of two emory indexes.
+        /// </summary>
+        protected void computeAndStoreHashCode()
+        {
+            this.hashCode = computeHashCode();
+        }
+
         public abstract void Accept(MemoryIndexVisitor visitor);
     }
 
@@ -403,9 +430,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>
         /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
         /// </returns>
-        public override int GetHashCode()
+        protected override int computeHashCode()
         {
-            return base.GetHashCode() ^ MemoryRoot.GetHashCode();
+            return base.computeHashCode() ^ MemoryRoot.GetHashCode();
         }
 
         /// <summary>
@@ -526,6 +553,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(pathName, Snapshot.GLOBAL_CALL_LEVEL)
         {
             Object = obj;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -537,6 +565,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(parentIndex, pathName)
         {
             Object = parentIndex.Object;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -548,6 +577,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(parentIndex, path)
         {
             Object = parentIndex.Object;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -559,6 +589,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(parentIndex, callLevel)
         {
             Object = parentIndex.Object;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -567,9 +598,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>
         /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
         /// </returns>
-        public override int GetHashCode()
+        protected override int computeHashCode()
         {
-            return base.GetHashCode() ^ Object.GetHashCode();
+            return base.computeHashCode() ^ Object.GetHashCode();
         }
 
         /// <summary>
@@ -722,6 +753,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public VariableIndex(IndexSegment root, int callLevel)
             : base(root, callLevel)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -732,6 +764,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public VariableIndex(VariableIndex parentIndex, IndexSegment pathName)
             : base(parentIndex, pathName)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -742,6 +775,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public VariableIndex(VariableIndex parentIndex, List<IndexSegment> path)
             : base(parentIndex, path)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -752,6 +786,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public VariableIndex(VariableIndex parentIndex, int callLevel)
             : base(parentIndex, callLevel)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -880,6 +915,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             rootId = GLOBAL_ROOT_ID;
             GLOBAL_ROOT_ID++;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -891,6 +927,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(parentIndex, pathName)
         {
             rootId = parentIndex.rootId;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -902,6 +939,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(path, parentIndex.CallLevel)
         {
             rootId = parentIndex.rootId;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -913,6 +951,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             : base(parentIndex.MemoryPath, callLevel)
         {
             rootId = parentIndex.rootId;
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -921,9 +960,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <returns>
         /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
         /// </returns>
-        public override int GetHashCode()
+        protected override int computeHashCode()
         {
-            return base.GetHashCode() ^ rootId.GetHashCode();
+            return base.computeHashCode() ^ rootId.GetHashCode();
         }
 
         /// <summary>
@@ -1051,6 +1090,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public ControlIndex(IndexSegment root, int callLevel)
             : base(root, callLevel)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -1061,6 +1101,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public ControlIndex(ControlIndex parentIndex, IndexSegment pathName)
             : base(parentIndex, pathName)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -1071,6 +1112,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public ControlIndex(ControlIndex parentIndex, List<IndexSegment> path)
             : base(parentIndex, path)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>
@@ -1081,6 +1123,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public ControlIndex(ControlIndex parentIndex, int callLevel)
             : base(parentIndex, callLevel)
         {
+            computeAndStoreHashCode();
         }
 
         /// <summary>

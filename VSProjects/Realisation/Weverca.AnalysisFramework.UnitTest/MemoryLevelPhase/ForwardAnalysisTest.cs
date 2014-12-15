@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define ENABLE_GRAPH_VISUALISATION
+// #define ENABLE_GRAPH_VISUALISATION
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -605,7 +605,9 @@ foreach($arr as $value){
         $test=$value;
     }
 }
-".AssertVariable("test").HasValues("init", "val1", "val2", "val3");
+".AssertVariable("test").HasValues("init", "val1", "val2", "val3")
+ .SimplifyLimit(4)
+ ;
         [TestMethod]
         public void ForeachIteration()
         {
@@ -1343,7 +1345,7 @@ while(true){
 $test='NotAffected';
 
 $i=0;
-while($i<2){
+while($i<2000){
     ++$i;
 }
 $test2='Reachable';
@@ -1351,7 +1353,7 @@ $test2='Reachable';
 ".AssertVariable("test").HasValues("NotAffected")
  .AssertVariable("test2").HasValues("Reachable")
             //|.WideningLimit(20)
- .WideningLimit(1) // for debuging
+ .WideningLimit(20) // for debuging
 ;
 
         readonly static TestCase FunctionTest_CASE = @"
@@ -1777,8 +1779,8 @@ $e = $arr[7];
             .AssertVariable("b").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("b").HasValues(1) if assignments to $arr[] would be modeled precisely
             .AssertVariable("c").HasValues(5)
             .AssertVariable("d").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("d").HasValues(6) if assignments to $arr[] would be modeled precisely
-            .AssertVariable("e").HasUndefinedAndValues(7, 6, 1, 0);// .AssertVariable("e").HasValues(7) if assignments to $arr[] would be modeled precisely
-
+            .AssertVariable("e").HasUndefinedAndValues(7, 6, 1, 0) // .AssertVariable("e").HasValues(7) if assignments to $arr[] would be modeled precisely
+            .SimplifyLimit(5);
         #region Switch tests
 
         /// <summary>
@@ -2131,7 +2133,8 @@ $cany = $ar['c']['any'];
 
 ".AssertVariable("bany").HasUndefinedAndValues("any", "alias_any")
  .AssertVariable("cany").HasUndefinedAndValues("any", "alias_any")
- .AssertVariable("mustAlias").HasValues("alias_any");
+ .AssertVariable("mustAlias").HasValues("alias_any")
+ ;
 
 
         readonly static TestCase LoopMerge_CASE = @"
@@ -2139,10 +2142,6 @@ $cany = $ar['c']['any'];
 $any = $_POST[0];
 
 $x = 0;
-$ar[0] = array();
-$ar[1] = array();
-$ar[2] = array();
-
 while($x < 3) {
 
     $ar[$x] = array();
@@ -2182,7 +2181,14 @@ $cany = $ar[$y]['c']['any'];
 .AssertVariable("bb").HasUndefinedAndValues("bB")
 .AssertVariable("bany").HasUndefinedAndValues("any1", "any2", "any3")
 .AssertVariable("ca").HasUndefinedAndValues("cA")
-.AssertVariable("cany").HasUndefinedAndValues("any1", "any2", "any3");
+.AssertVariable("cany").HasUndefinedAndValues("any1", "any2", "any3")
+.WideningLimit(10)
+.SimplifyLimit(4)
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\LoopMerge", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\LoopMerge")
+#endif
+;
 
         [TestMethod]
         public void Merge()
@@ -2359,12 +2365,16 @@ function f($a) {
     else return $a;
 }
 
-//$a = f(1);
+$a = f(1);
 $t = 1;
 
 "
 .AssertVariable("t").HasValues(1)
 .ShareFunctionGraph("f")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\Recursion", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\Recursion")
+#endif
 ;
 
 
@@ -2788,6 +2798,57 @@ $result = isset($_SESSION[1]);
         public void AssumptionsAnyArrayIsset()
         {
             AnalysisTestUtils.RunTestCase(AssumptionsAnyArrayIsset_CASE);
+        }
+
+
+
+        readonly static TestCase FunctionInCycle_CASE = @"
+
+function f($a){
+if ($a) { $x = 1; }
+else { $x = 2; }
+
+return $x;
+}
+
+$i = 0;
+while($i < 5) {
+f($_POST[$i]);
+$i++;
+}
+
+$t = 1;
+"
+.AssertVariable("t").HasValues(1)
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\FunctionInCycle", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\FunctionInCycle")
+#endif
+;
+
+        readonly static TestCase MultiCycle_CASE = @"
+
+while ($i < 10) {
+    $ii = 0;
+    while ($ii < 3) {
+        $ii++;
+    }
+    $i++;
+}
+$t = 1;
+"
+.AssertVariable("t").HasValues(1)
+.AssertVariable("ii").HasValues(3)
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\MultiCycle", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\MultiCycle")
+#endif
+;
+        
+        [TestMethod]
+        public void MultiCycle()
+        {
+            AnalysisTestUtils.RunTestCase(MultiCycle_CASE);
         }
 
 

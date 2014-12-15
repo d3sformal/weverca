@@ -87,7 +87,7 @@ namespace Weverca.AnalysisFramework.GraphVisualizer
         {
             StringBuilder builder = new StringBuilder();
 
-            builder.AppendLine("digraph g {node [shape=box] graph[rankdir=\"TB\", concentrate=true];");
+            builder.AppendLine("digraph g {node [shape=box] graph[rankdir=\"TB\", concentrate=false];");
             builder.AppendLine(nodesBuilder.ToString());
             builder.AppendLine(edgesBuilder.ToString());
             builder.AppendLine("}");

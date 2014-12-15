@@ -101,17 +101,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 
         public void InsertedIndex(MemoryIndex index)
         {
-            indexChanges.Add(index);
+            if (!(index is TemporaryIndex))
+                indexChanges.Add(index);
         }
 
         public void DeletedIndex(MemoryIndex index)
         {
-            indexChanges.Add(index);
+            if (!(index is TemporaryIndex))
+                indexChanges.Add(index);
         }
 
         public void ModifiedIndex(MemoryIndex index)
         {
-            indexChanges.Add(index);
+            if (!(index is TemporaryIndex))
+                indexChanges.Add(index);
         }
 
         public void RemoveIndexChange(MemoryIndex index)

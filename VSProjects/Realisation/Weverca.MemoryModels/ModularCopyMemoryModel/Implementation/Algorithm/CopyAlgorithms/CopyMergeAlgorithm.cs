@@ -122,7 +122,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <inheritdoc />
         public void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints)
         {
-            throw new NotImplementedException();
+            Merge(snapshot, snapshots);
         }
 
         /// <inheritdoc />

@@ -18,6 +18,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
+using PHP.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,6 +41,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private ISnapshotDataProxy newData, oldData;
         private bool areSame;
         private Snapshot snapshot;
+        private IIndexDefinition emptyDefinition;
 
         /// <inheritdoc />
         public ICommitAlgorithm CreateInstance()
@@ -50,6 +52,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// <inheritdoc />
         public void SetStructure(ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure)
         {
+            emptyDefinition = newStructure.CreateIndexDefinition();
+
             this.newStructure = newStructure;
             this.oldStructure = oldStructure;
         }
@@ -66,8 +70,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             this.snapshot = snapshot;
 
-            if (snapshot.NumberOfTransactions > 1)
-            {
+            /*if (snapshot.NumberOfTransactions > 1)
+            {*/
                 switch (snapshot.CurrentMode)
                 {
                     case SnapshotMode.MemoryLevel:
@@ -81,11 +85,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     default:
                         throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
                 }
-            }
+            /*}
             else
             {
                 areSame = false;
-            }
+            }*/
         }
 
         /// <inheritdoc />
@@ -114,9 +118,222 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return !areSame;
         }
 
-        private HashSet<MemoryIndex> getChanges<T, C>(IReadonlyChangeTracker<C> trackerA, IReadonlyChangeTracker<C> trackerB)
+        private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
-            HashSet<MemoryIndex> values = new HashSet<MemoryIndex>();
+            if (newStructure.IsReadonly && newData.IsReadonly)
+            {
+                bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
+                return !differs;
+            }
+            else
+            {
+                bool areSame = snapshot.NumberOfTransactions > 1;
+                if (!newData.IsReadonly)
+                {
+                    if (widen)
+                    {
+                        widenAndSimplifyData(simplifyLimit, assistant);
+                    }
+                    else
+                    {
+                        simplifyData(simplifyLimit, assistant);
+                    }
+
+                    if (areSame)
+                    {
+                        areSame = compareData();
+                    }
+
+                    newData.Writeable.SetDiffersOnCommit(!areSame);
+                }
+
+                if (!newStructure.IsReadonly)
+                {
+                    clearStructureTracker();
+
+                    if (areSame)
+                    {
+                        areSame = compareStructure();
+                    }
+
+                    newStructure.Writeable.SetDiffersOnCommit(!areSame);
+                }
+                return areSame;
+            }
+        }
+
+        private bool compareDataAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
+        {
+            if (newData.IsReadonly)
+            {
+                bool differs = newData.Readonly.DiffersOnCommit;
+                return !differs;
+            }
+            else
+            {
+                bool areSame = snapshot.NumberOfTransactions > 1;
+                if (!newData.IsReadonly)
+                {
+                    if (widen)
+                    {
+                        widenAndSimplifyData(simplifyLimit, assistant);
+                    }
+                    else
+                    {
+                        simplifyData(simplifyLimit, assistant);
+                    }
+
+                    if (areSame)
+                    {
+                        areSame = compareData();
+                    }
+
+                    newData.Writeable.SetDiffersOnCommit(!areSame);
+                }
+                return areSame;
+            }
+        }
+
+        private void widenAndSimplifyData(int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            List<MemoryIndex> indexes = new List<MemoryIndex>();
+            CollectionTools.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
+
+            var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
+            var currentTracker = newData.Writeable.WriteableChangeTracker;
+
+            foreach (MemoryIndex index in indexes)
+            {
+                MemoryEntry newEntry = getMemoryEntryOrEmpty(index, newData.Readonly);
+                MemoryEntry accEntryValue = newEntry;
+
+                if (newEntry != null && newEntry.Count > simplifyLimit)
+                {
+                    MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
+                    accEntryValue = simplifiedEntry;
+                }
+
+                MemoryEntry oldEntry = getMemoryEntryOrEmpty(index, oldData.Readonly);
+                if (!compareMemoryEntries(newEntry, oldEntry))
+                {
+                    MemoryEntry widenedEntry = assistant.Widen(oldEntry, newEntry);
+                    accEntryValue = widenedEntry;
+                }
+
+                if (previousTracker != null)
+                {
+                    MemoryEntry previousEntry = getMemoryEntryOrEmpty(index, previousTracker.Container);
+                    if (compareMemoryEntries(previousEntry, accEntryValue))
+                    {
+                        currentTracker.RemoveIndexChange(index);
+                    }
+                }
+
+                if (accEntryValue != newEntry)
+                {
+                    setNewMemoryEntry(index, newEntry, accEntryValue);
+                }
+            }
+        }
+
+        private void simplifyData(int simplifyLimit, MemoryAssistantBase assistant)
+        {
+            List<MemoryIndex> indexes = new List<MemoryIndex>();
+            CollectionTools.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
+            
+            var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
+            var currentTracker = newData.Writeable.WriteableChangeTracker;
+
+            foreach (MemoryIndex index in indexes)
+            {
+                MemoryEntry newEntry = getMemoryEntryOrEmpty(index, newData.Readonly);
+                if (newEntry != null && newEntry.Count > simplifyLimit)
+                {
+                    MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
+                    setNewMemoryEntry(index, newEntry, simplifiedEntry);
+
+                    newEntry = simplifiedEntry;
+                }
+
+                if (previousTracker != null)
+                {
+                    MemoryEntry previousEntry = getMemoryEntryOrEmpty(index, previousTracker.Container);
+                    if (compareMemoryEntries(previousEntry, newEntry))
+                    {
+                        currentTracker.RemoveIndexChange(index);
+                    }
+                }
+            }
+        }
+
+        private void clearStructureTracker()
+        {
+            var previousTracker = newStructure.Readonly.ReadonlyChangeTracker.PreviousTracker;
+            if (previousTracker != null)
+            {
+                List<MemoryIndex> indexes = new List<MemoryIndex>();
+                CollectionTools.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
+
+                IReadOnlySnapshotStructure previousStructure = previousTracker.Container;
+                foreach (MemoryIndex index in indexes)
+                {
+                    IIndexDefinition newDefinition = getIndexDefinitionOrUndefined(index, newStructure.Readonly);
+                    IIndexDefinition previousDefinition = getIndexDefinitionOrUndefined(index, previousStructure);
+
+                    if (compareIndexDefinitions(newDefinition, previousDefinition))
+                    {
+                        newStructure.Writeable.WriteableChangeTracker.RemoveIndexChange(index);
+                    }
+                }
+            }
+        }
+
+        private void clearDataTracker()
+        {
+            var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
+            if (previousTracker != null)
+            {
+                List<MemoryIndex> indexes = new List<MemoryIndex>();
+                CollectionTools.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
+
+                IReadOnlySnapshotData previousData = previousTracker.Container;
+                foreach (MemoryIndex index in indexes)
+                {
+                    if (index is TemporaryIndex)
+                    {
+                        newStructure.Writeable.WriteableChangeTracker.RemoveIndexChange(index);
+                    }
+                    else
+                    {
+                        MemoryEntry newEntry = getMemoryEntryOrEmpty(index, newData.Readonly);
+                        MemoryEntry previousEntry = getMemoryEntryOrEmpty(index, previousData);
+
+                        if (compareMemoryEntries(newEntry, previousEntry))
+                        {
+                            newData.Writeable.WriteableChangeTracker.RemoveIndexChange(index);
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+
+
+        private bool compareData()
+        {
+            HashSet<MemoryIndex> indexChanges = new HashSet<MemoryIndex>();
+            /*HashSet<QualifiedName> functionChanges = new HashSet<QualifiedName>();
+            HashSet<QualifiedName> classChanges = new HashSet<QualifiedName>();
+
+            collectChanges(
+                newData.Readonly.ReadonlyChangeTracker,
+                oldData.Readonly.ReadonlyChangeTracker,
+                indexChanges, functionChanges, classChanges);*/
+
+            var trackerA = newData.Readonly.ReadonlyChangeTracker;
+            var trackerB = oldData.Readonly.ReadonlyChangeTracker;
             while (trackerA != trackerB)
             {
                 if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
@@ -126,199 +343,78 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     trackerB = swap;
                 }
 
-                CollectionTools.AddAll(values, trackerA.IndexChanges);
+                foreach (MemoryIndex index in trackerA.IndexChanges)
+                {
+                    if (!indexChanges.Contains(index))
+                    {
+                        MemoryEntry newEntry = getMemoryEntryOrEmpty(index, newData.Readonly);
+                        MemoryEntry oldEntry = getMemoryEntryOrEmpty(index, oldData.Readonly);
+
+                        if (!compareMemoryEntries(newEntry, oldEntry))
+                        {
+                            return false;
+                        }
+
+                        indexChanges.Add(index);
+                    }
+                }
+
                 trackerA = trackerA.PreviousTracker;
             }
 
-            return values;
+
+            /*foreach (MemoryIndex index in indexChanges)
+            {
+                if (index is TemporaryIndex)
+                {
+                    continue;
+                }
+
+                MemoryEntry newEntry = getMemoryEntryOrEmpty(index, newData.Readonly);
+                MemoryEntry oldEntry = getMemoryEntryOrEmpty(index, oldData.Readonly);
+
+                if (!compareMemoryEntries(newEntry, oldEntry))
+                {
+                    return false;
+                }
+            }*/
+
+            return true;
         }
 
-        private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
+        private bool compareStructure()
         {
-            if (snapshot.NumberOfTransactions == 1)
+            HashSet<MemoryIndex> indexChanges = new HashSet<MemoryIndex>();
+            var trackerA = newStructure.Readonly.ReadonlyChangeTracker;
+            var trackerB = oldStructure.Readonly.ReadonlyChangeTracker;
+            while (trackerA != trackerB)
             {
-                return false;
-            }
-
-            if (newStructure.IsReadonly && newData.IsReadonly)
-            {
-                bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
-                return !differs;
-            }
-
-
-            bool areEqual = true;
-
-            var previousStructure = newStructure.Readonly.ReadonlyChangeTracker.PreviousTracker;
-            if (previousStructure != null)
-            {
-                areEqual = areEqual && !previousStructure.Container.DiffersOnCommit;
-            }
-
-            var previousData = newData.Readonly.ChangeTracker.PreviousTracker;
-            if (previousData != null)
-            {
-                areEqual = areEqual && !previousData.Container.DiffersOnCommit;
-            }
-
-            if (areEqual || widen)
-            {
-                HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
-
-                CollectionTools.AddAll(usedIndexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
-                CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
-
-                CollectionTools.AddAll(usedIndexes, newData.Readonly.ChangeTracker.IndexChanges);
-                CollectionTools.AddAll(usedIndexes, oldData.Readonly.ChangeTracker.IndexChanges);
-
-                IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
-
-                foreach (MemoryIndex index in usedIndexes)
+                if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
                 {
-                    if (index is TemporaryIndex)
-                    {
-                        continue;
-                    }
+                    var swap = trackerA;
+                    trackerA = trackerB;
+                    trackerB = swap;
+                }
 
-                    IIndexDefinition newDefinition = getIndexDefinitionOrUndefined(index, newStructure, emptyDefinition);
-                    IIndexDefinition oldDefinition = getIndexDefinitionOrUndefined(index, oldStructure, emptyDefinition);
-
-                    if (widen)
+                foreach (MemoryIndex index in trackerA.IndexChanges)
+                {
+                    if (!indexChanges.Contains(index))
                     {
-                        if (!compareData(index, simplifyLimit, assistant))
+                        IIndexDefinition newDefinition = getIndexDefinitionOrUndefined(index, newStructure.Readonly);
+                        IIndexDefinition oldDefinition = getIndexDefinitionOrUndefined(index, oldStructure.Readonly);
+
+                        if (!compareIndexDefinitions(newDefinition, oldDefinition))
                         {
-                            widenData(index, simplifyLimit, assistant);
+                            return false;
                         }
-                    }
 
-                    if (!compareIndexDefinitions(newDefinition, oldDefinition)
-                        || !compareData(index, simplifyLimit, assistant))
-                    {
-                        areEqual = false;
-                        if (!widen)
-                        {
-                            break;
-                        }
+                        indexChanges.Add(index);
                     }
                 }
+
+                trackerA = trackerA.PreviousTracker;
             }
-
-            if (!newStructure.IsReadonly)
-            {
-                newStructure.Writeable.SetDiffersOnCommit(!areEqual);
-            }
-
-            if (!newData.IsReadonly)
-            {
-                newData.Writeable.SetDiffersOnCommit(!areEqual);
-            }
-
-            return areEqual;
-        }
-
-        private bool compareDataAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
-        {
-            if (snapshot.NumberOfTransactions == 1)
-            {
-                return false;
-            }
-
-            if (newData.IsReadonly)
-            {
-                bool differs = newData.Readonly.DiffersOnCommit;
-                return !differs;
-            }
-
-            bool areEqual = true;
-
-            var previousData = newData.Readonly.ChangeTracker.PreviousTracker;
-            if (previousData != null)
-            {
-                areEqual = areEqual && !previousData.Container.DiffersOnCommit;
-            }
-
-            if (areEqual || widen)
-            {
-                HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
-
-                CollectionTools.AddAll(usedIndexes, newData.Readonly.ChangeTracker.IndexChanges);
-
-                foreach (MemoryIndex index in usedIndexes)
-                {
-                    if (widen)
-                    {
-                        if (!compareData(index, simplifyLimit, assistant))
-                        {
-                            widenData(index, simplifyLimit, assistant);
-                        }
-                    }
-
-                    if (!compareData(index, simplifyLimit, assistant))
-                    {
-                        areEqual = false;
-                        if (!widen)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!newData.IsReadonly)
-            {
-                newData.Writeable.SetDiffersOnCommit(!areEqual);
-            }
-
-            return areEqual;
-        }
-
-        private void widenData(MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
-        {
-            MemoryEntry newEntry = null;
-            if (!newData.Readonly.TryGetMemoryEntry(index, out newEntry))
-            {
-                newEntry = snapshot.EmptyEntry;
-            }
-
-            MemoryEntry oldEntry = null;
-            if (!oldData.Readonly.TryGetMemoryEntry(index, out oldEntry))
-            {
-                oldEntry = snapshot.EmptyEntry;
-            }
-
-            MemoryEntry widenedEntry = assistant.Widen(oldEntry, newEntry);
-            MemoryEntry entry = setNewMemoryEntry(index, newEntry, widenedEntry);
-        }
-
-        private bool compareData(MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)
-        {
-            MemoryEntry newEntry = null;
-            if (!newData.Readonly.TryGetMemoryEntry(index, out newEntry))
-            {
-                newEntry = snapshot.EmptyEntry;
-            }
-
-            MemoryEntry oldEntry = null;
-            if (!oldData.Readonly.TryGetMemoryEntry(index, out oldEntry))
-            {
-                oldEntry = snapshot.EmptyEntry;
-            }
-
-            if (oldEntry.Equals(newEntry))
-            {
-                return true;
-            }
-            else if (newEntry.Count > simplifyLimit)
-            {
-                MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
-                MemoryEntry entry = setNewMemoryEntry(index, newEntry, simplifiedEntry);
-
-                return oldEntry.Equals(entry);
-            }
-            else
-            {
-                return false;
-            }
+            return true;
         }
 
         private MemoryEntry setNewMemoryEntry(MemoryIndex index, MemoryEntry currentEntry, MemoryEntry modifiedEntry)
@@ -326,15 +422,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             CollectComposedValuesVisitor currentVisitor = new CollectComposedValuesVisitor();
             currentVisitor.VisitMemoryEntry(currentEntry);
 
-            CollectComposedValuesVisitor mdifiedVisitor = new CollectComposedValuesVisitor();
-            mdifiedVisitor.VisitMemoryEntry(modifiedEntry);
+            CollectComposedValuesVisitor modifiedVisitor = new CollectComposedValuesVisitor();
+            modifiedVisitor.VisitMemoryEntry(modifiedEntry);
 
-            if (currentVisitor.Arrays.Count != mdifiedVisitor.Arrays.Count)
+            if (currentVisitor.Arrays.Count != modifiedVisitor.Arrays.Count)
             {
                 snapshot.DestroyArray(index);
             }
 
-            if (mdifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
+            if (modifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
             {
                 IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(currentVisitor.Objects);
                 snapshot.Structure.Writeable.SetObjects(index, objects);
@@ -344,15 +440,63 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return modifiedEntry;
         }
 
-        private IIndexDefinition getIndexDefinitionOrUndefined(MemoryIndex index, ISnapshotStructureProxy snapshotStructure, IIndexDefinition emptyDefinition)
+        private IIndexDefinition getIndexDefinitionOrUndefined(MemoryIndex index, IReadOnlySnapshotStructure snapshotStructure)
         {
             IIndexDefinition definition = null;
-            if (!snapshotStructure.Readonly.TryGetIndexDefinition(index, out definition))
+            if (!snapshotStructure.TryGetIndexDefinition(index, out definition))
             {
-                definition = emptyDefinition;
+                definition = null;
             }
 
             return definition;
+        }
+
+        private MemoryEntry getMemoryEntryOrEmpty(MemoryIndex index, IReadOnlySnapshotData snapshotdata)
+        {
+            MemoryEntry entry = null;
+            if (!snapshotdata.TryGetMemoryEntry(index, out entry))
+            {
+                entry = null;
+            }
+
+            return entry;
+        }
+
+        private bool compareMemoryEntries(MemoryEntry newEntry, MemoryEntry oldEntry)
+        {
+            if (newEntry == oldEntry)
+            {
+                return true;
+            }
+
+            if (newEntry == null || oldEntry == null)
+            {
+                return false;
+            }
+
+            if (newEntry.Count != oldEntry.Count)
+            {
+                return false;
+            }
+
+            if (newEntry.ContainsAssociativeArray != oldEntry.ContainsAssociativeArray)
+            {
+                return false;
+            }
+
+            HashSet<Value> oldValues = new HashSet<Value>(oldEntry.PossibleValues);
+            foreach (Value value in newEntry.PossibleValues)
+            {
+                if (!(value is AssociativeArray))
+                {
+                    if (!oldValues.Contains(value))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         private bool compareIndexDefinitions(IIndexDefinition newDefinition, IIndexDefinition oldDefinition)
@@ -362,16 +506,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 return true;
             }
 
+            if (newDefinition == null || oldDefinition == null)
+            {
+                return false;
+            }
+
             if (newDefinition.Array != oldDefinition.Array)
             {
-                if (newDefinition.Array != null && oldDefinition.Array != null)
-                {
-                    if (!newDefinition.Array.Equals(oldDefinition.Array))
-                    {
-                        return false;
-                    }
-                }
-                else
+                if (newDefinition.Array == null || oldDefinition.Array == null)
                 {
                     return false;
                 }
@@ -439,6 +581,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
 
             return true;
+        }
+
+        protected void collectChanges<T>(
+            IReadonlyChangeTracker<T> trackerA,
+            IReadonlyChangeTracker<T> trackerB,
+            ICollection<MemoryIndex> indexChanges,
+            ICollection<QualifiedName> functionChanges,
+            ICollection<QualifiedName> classChanges)
+        {
+            while (trackerA != trackerB)
+            {
+                if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
+                {
+                    var swap = trackerA;
+                    trackerA = trackerB;
+                    trackerB = swap;
+                }
+
+                CollectionTools.AddAll(indexChanges, trackerA.IndexChanges);
+                CollectionTools.AddAllIfNotNull(functionChanges, trackerA.FunctionChanges);
+                CollectionTools.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
+                
+                trackerA = trackerA.PreviousTracker;
+            }
         }
     }
 }

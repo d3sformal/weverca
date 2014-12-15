@@ -129,18 +129,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <inheritdoc />
-        public override IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker
+        public override IReadonlyChangeTracker<IReadOnlySnapshotData> ReadonlyChangeTracker
         {
             get
             {
                 return tracker;
             }
+        }        
+        
+        /// <inheritdoc />
+        public override IWriteableChangeTracker<IReadOnlySnapshotData> WriteableChangeTracker
+        {
+            get { return tracker; }
         }
 
         /// <inheritdoc />
         public override void ReinitializeTracker(IReadOnlySnapshotData parentSnapshotData)
         {
-            tracker = new ChangeTracker<IReadOnlySnapshotData>(this.DataId, this, parentSnapshotData.ChangeTracker);
+            tracker = new ChangeTracker<IReadOnlySnapshotData>(this.DataId, this, parentSnapshotData.ReadonlyChangeTracker);
         }
     }
 }

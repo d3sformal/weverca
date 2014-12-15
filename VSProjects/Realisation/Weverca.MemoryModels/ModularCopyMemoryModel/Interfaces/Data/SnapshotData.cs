@@ -116,12 +116,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         bool DiffersOnCommit { get; }
 
         /// <summary>
-        /// Gets the index change tracker.
+        /// Gets the readonly index change tracker.
         /// </summary>
         /// <value>
         /// The index change tracker.
         /// </value>
-        IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker { get; }
+        IReadonlyChangeTracker<IReadOnlySnapshotData> ReadonlyChangeTracker { get; }
 
         /// <summary>
         /// Gets the list of indexes for which are defined data in this container.
@@ -180,7 +180,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         void RemoveMemoryEntry(MemoryIndex index);
 
         /// <summary>
+        /// Gets the writeable change tracker with lists of modified indexes.
+        /// </summary>
+        /// <value>
+        /// The writeable change tracker.
+        /// </value>
+        IWriteableChangeTracker<IReadOnlySnapshotData> WriteableChangeTracker { get; }
 
+        /// <summary>
         /// Reinitializes the index change tracker and sets the parent tracker to be given structure tracker.
         /// </summary>
         /// <param name="parentSnapshotData">The parent snapshot data.</param>
@@ -262,7 +269,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         public abstract void RemoveMemoryEntry(MemoryIndex index);
 
         /// <inheritdoc />
-        public virtual IReadonlyChangeTracker<IReadOnlySnapshotData> ChangeTracker
+        public virtual IReadonlyChangeTracker<IReadOnlySnapshotData> ReadonlyChangeTracker
+        {
+            get { return null; }
+        }
+
+        /// <inheritdoc />
+        public virtual IWriteableChangeTracker<IReadOnlySnapshotData> WriteableChangeTracker
         {
             get { return null; }
         }

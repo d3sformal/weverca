@@ -19,7 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#define MEMORY_BENCHMARK
-//#define BENCHMARK
+// #define BENCHMARK
 
 using System;
 using System.Collections.Generic;
@@ -33,8 +33,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
     class MemoryModelBenchmark : IBenchmark
     {
-
-        Dictionary<Snapshot, Measuring> transactions = new Dictionary<Snapshot, Measuring>();
+        Measuring currentTransaction;
+        Snapshot currentSnapshot;
+        //Dictionary<Snapshot, Measuring> transactions = new Dictionary<Snapshot, Measuring>();
         Dictionary<AlgorithmKey, Measuring> runningAlgorithms = new Dictionary<AlgorithmKey, Measuring>();
         Dictionary<AlgorithmType, AlgorithmEntry> algorithms = new Dictionary<AlgorithmType, AlgorithmEntry>();
 
@@ -58,11 +59,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         public void StartTransaction(Snapshot snapshot)
         {
 #if BENCHMARK
-            Measuring transaction = new Measuring();
-            transactions.Add(snapshot, transaction);
-            transaction.MemoryStart = getMemoryUssage();
-            transaction.Stopwatch.Start();
-            transactionStarts++;
+
+            if (currentSnapshot == null)
+            {
+                Measuring transaction = new Measuring();
+                transaction.MemoryStart = getMemoryUssage();
+                transaction.Stopwatch.Start();
+                transactionStarts++;
+
+                currentSnapshot = snapshot;
+                currentTransaction = transaction;
+            }
+            else
+            {
+                throw new Exception("");
+            }
+
 #endif
         }
 
@@ -71,16 +83,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 #if BENCHMARK
             double usedMemory = getMemoryUssage();
 
-            Measuring transaction;
-            if (transactions.TryGetValue(snapshot, out transaction))
+            if (this.currentSnapshot == snapshot)
             {
+                Measuring transaction = currentTransaction;
                 transaction.Stopwatch.Stop();
                 transactionStops++;
                 transactionTime += transaction.Stopwatch.Elapsed.TotalMilliseconds;
                 transactionMemory += usedMemory - transaction.MemoryStart;
-
-                transactions.Remove(snapshot);
             }
+            else
+            {
+                throw new Exception("Snapshot transactions does not match");
+            }
+
+            this.currentSnapshot = null;
+            currentTransaction = null;
 #endif
         }
 
@@ -139,6 +156,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         public void WriteResultsToFile(string benchmarkFile)
         {
+#if BENCHMARK
             System.IO.File.Delete(benchmarkFile);
             using (System.IO.StreamWriter w = System.IO.File.AppendText(benchmarkFile))
             {
@@ -174,6 +192,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                     w.WriteLine(line);
                 }
             }
+#endif
         }
 
         private double getMemoryUssage()

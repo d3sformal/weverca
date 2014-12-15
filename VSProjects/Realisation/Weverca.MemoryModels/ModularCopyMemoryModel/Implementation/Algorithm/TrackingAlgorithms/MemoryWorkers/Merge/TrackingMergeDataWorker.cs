@@ -44,7 +44,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private void collectDataChanges()
         {
             SnapshotContext ancestorContext = getDefaultAncestorContext();
-            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = ancestorContext.SourceData.ChangeTracker;
+            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = ancestorContext.SourceData.ReadonlyChangeTracker;
 
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
             changes.Add(snapshotContexts[0].ChangedIndexesTree);
@@ -60,7 +60,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                ancestor = getFirstCommonAncestor(context.SourceData.ChangeTracker, ancestor, currentChanges, changes);
+                ancestor = getFirstCommonAncestor(context.SourceData.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
             commonAncestor = ancestor;
         }

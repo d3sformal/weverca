@@ -23,8 +23,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         void SetLabel(Snapshot snapshot, string label);
 
+        void SetCommitDiffers(Snapshot snapshot, bool differs);
+
+        void SetNumberOfTransactions(Snapshot snapshot, int numberOfTransactions);
+
         void Clear();
 
         void Enabled(bool enabled);
+
+
     }
 }

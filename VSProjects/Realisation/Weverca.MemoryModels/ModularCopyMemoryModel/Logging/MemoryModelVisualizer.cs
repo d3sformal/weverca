@@ -19,6 +19,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             public string Id;
             public string Name;
             public string Label;
+            public bool Differs;
+            public int NumberOfTransactions = 0;
 
             public int PreviousStructureId = -1;
             public int PreviousDataId = -1;
@@ -35,7 +37,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         private SnapshotNode currentNode;
         private Snapshot currentSnapshot = null;
-        private bool enabled = false;
+        private bool enabled = true;
 
 #endif
 
@@ -72,14 +74,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             {
                 SnapshotNode node = item.Value;
 
-                bool skipNode = node.IsStructureReadonly && node.IsDataReadonly;
+                bool skipNode = node.IsStructureReadonly && node.IsDataReadonly && node.Label == "extend";
                 if (!skipNode)
                 {
                     string structureState = node.IsStructureReadonly ? "Readonly" : "Writeable";
                     string dataState = node.IsDataReadonly ? "Readonly" : "Writeable";
+                    string commitState = node.Differs ? "DIFFERENT" : "SAME";
 
-                    string label = string.Format("{0}\n{1}\nStructure: {2} | Data: {3}",
-                        node.Name, node.Label, structureState, dataState);
+                    string label = string.Format("{0}\n{1}\nStructure: {2} | Data: {3}\nTransactions: {4} {5}",
+                        node.Name, node.Label, structureState, dataState, node.NumberOfTransactions, commitState);
 
                     visualizer.AddNode(node.Id, label);
 
@@ -99,7 +102,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                         SnapshotNode parentNode;
                         if (nodes.TryGetValue(nodeId, out parentNode))
                         {
-                            bool skipParent = parentNode.IsStructureReadonly && parentNode.IsDataReadonly;
+                            bool skipParent = parentNode.IsStructureReadonly && parentNode.IsDataReadonly && parentNode.Label == "extend";
                             if (!skipParent)
                             {
                                 visualizer.AddEdge(parentNode.Id, node.Id, "");
@@ -197,7 +200,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                     currentNode.PreviousStructureId = structureTracker.PreviousTracker.TrackerId;
                 }
 
-                var dataTracker = snapshot.Data.Readonly.ChangeTracker;
+                var dataTracker = snapshot.Data.Readonly.ReadonlyChangeTracker;
                 if (!dataMapping.ContainsKey(dataTracker.TrackerId))
                 {
                     dataMapping.Add(dataTracker.TrackerId, currentNode.Id);
@@ -231,6 +234,48 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             if (this.currentSnapshot == snapshot)
             {
                 currentNode.Label = label;
+            }
+            else
+            {
+                throw new Exception("Snapshot transactions does not match");
+            }
+#endif
+        }
+
+
+        public void SetCommitDiffers(Snapshot snapshot, bool differs)
+        {
+#if MEMORY_VISUALIZER
+
+            if (!enabled)
+            {
+                return;
+            }
+
+            if (this.currentSnapshot == snapshot)
+            {
+                currentNode.Differs = differs;
+            }
+            else
+            {
+                throw new Exception("Snapshot transactions does not match");
+            }
+#endif
+        }
+
+
+        public void SetNumberOfTransactions(Snapshot snapshot, int numberOfTransactions)
+        {
+#if MEMORY_VISUALIZER
+
+            if (!enabled)
+            {
+                return;
+            }
+
+            if (this.currentSnapshot == snapshot)
+            {
+                currentNode.NumberOfTransactions = numberOfTransactions;
             }
             else
             {

@@ -304,6 +304,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             Data = SnapshotDataFactory.CreateEmptyInstance(this);
             Infos = SnapshotDataFactory.CreateEmptyInstance(this);
+            CurrentData = Data;
             Structure = SnapshotStructureFactory.CreateGlobalContextInstance(this);
             createdAliases = new List<IMemoryAlias>();
             NumberOfTransactions = 0;
@@ -443,6 +444,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
+
+            Visualizer.SetCommitDiffers(this, differs);
+            Visualizer.SetNumberOfTransactions(this, NumberOfTransactions);
             Visualizer.FinishTransaction(this);
 
             oldStructure = null;
@@ -501,6 +505,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Logger.Log("\n---------------------------------\n");
 
             Benchmark.FinishTransaction(this);
+
+            Visualizer.SetCommitDiffers(this, differs);
+            Visualizer.SetNumberOfTransactions(this, NumberOfTransactions);
             Visualizer.FinishTransaction(this);
 
             oldStructure = null;
@@ -648,6 +655,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             Logger.Log(this, "Init array " + createdArray);
             TemporaryIndex arrayIndex = CreateTemporary();
+
+            IArrayDescriptor exist;
+            if (Structure.Readonly.TryGetDescriptor(createdArray, out exist))
+            {
+                Logger.Log(this, "This array has been already initialised: " + createdArray);
+            }
 
             IArrayDescriptor descriptor = Structure.CreateArrayDescriptor(createdArray, arrayIndex);
             Structure.Writeable.NewIndex(descriptor.UnknownIndex);

@@ -844,16 +844,25 @@ namespace Weverca.AnalysisFramework.Memory
 
             AssociativeArray createdArray;
 
-            if (_allocatedArrays.IsAllocated()) 
+            //FIXME: allocation site removed because of invalidating inner constraint of MM
+            /* $ar[$x] = array();
+             * 
+             * 1) In first iteration creates new parent array for $ar and new array for $ar[0]
+             * 
+             * 2) In second iteration MM does not need to create new array for $ar - allocation site returnes wrong
+             * array for $ar[0] and breaks memory interpretation
+             */
+
+            /*if (_allocatedArrays.IsAllocated()) 
             {
                 createdArray = _allocatedArrays.GetSite();
                 _allocatedArrays.NextPosition();
                 initializeArray(createdArray);
                 return createdArray;
-            }
+            }*/
 
             createdArray = new AssociativeArray();
-            _allocatedArrays.AddSite(createdArray);
+            //_allocatedArrays.AddSite(createdArray);
 
             _statistics.Report(Statistic.CreatedArrayValues);
 
