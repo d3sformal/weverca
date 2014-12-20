@@ -411,7 +411,7 @@ namespace Weverca.AnalysisFramework
             {
 				if (work == exitPoint)
 					return false;
-                unreachableAfterSegmentPoints.Remove(work);
+                
                 // Do not add program point that is already in the worklist.
                 if ((!nextPhase || !unreachable(work)) && _containedPoints.Add(work))
                 {
@@ -445,7 +445,8 @@ namespace Weverca.AnalysisFramework
 
                 foreach (var child in GetOutputPoints(work))
                 {
-                        AddPoint(child);
+                    unreachableAfterSegmentPoints.Remove(child);
+                    AddPoint(child);
                 }
             }
 

@@ -122,8 +122,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             if (newStructure.IsReadonly && newData.IsReadonly)
             {
-                bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
-                return !differs;
+                if (snapshot.NumberOfTransactions > 1)
+                {
+                    bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
+                    return !differs;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {

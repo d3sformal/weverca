@@ -22,6 +22,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             public bool Differs;
             public int NumberOfTransactions = 0;
 
+            public int SnapshotId = 0;
+
             public int PreviousStructureId = -1;
             public int PreviousDataId = -1;
 
@@ -61,7 +63,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         }
 
 
-        public void BuildGraphVisualisation(IGraphVisualizer visualizer)
+        public void BuildGraphVisualisation(IGraphVisualizer visualizer, int snapshotRangeMin = -1, int snapshotRangeMax = -1)
         {
 #if MEMORY_VISUALIZER
 
@@ -75,6 +77,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                 SnapshotNode node = item.Value;
 
                 bool skipNode = node.IsStructureReadonly && node.IsDataReadonly && node.Label == "extend";
+
+                if (snapshotRangeMin > -1 && node.SnapshotId < snapshotRangeMin)
+                {
+                    skipNode = true;
+                }
+                else if (snapshotRangeMax > -1 && node.SnapshotId > snapshotRangeMax)
+                {
+                    skipNode = true;
+                }
+
                 if (!skipNode)
                 {
                     string structureState = node.IsStructureReadonly ? "Readonly" : "Writeable";
@@ -164,6 +176,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             if (this.currentSnapshot == null)
             {
                 currentNode = new SnapshotNode();
+                currentNode.SnapshotId = snapshot.SnapshotId;
                 this.currentSnapshot = snapshot;
             }
             else
@@ -173,7 +186,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 #endif
         }
 
-        public void FinishTransaction(Snapshot snapshot)
+        public void FinishTransaction(Snapshot snapshot, string customNodeId = null)
         {
 #if MEMORY_VISUALIZER
 
@@ -189,6 +202,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
                 currentNode.IsStructureReadonly = snapshot.Structure.IsReadonly;
                 currentNode.IsDataReadonly = snapshot.CurrentData.IsReadonly;
+
+                if (customNodeId != null)
+                {
+                    currentNode.Id = customNodeId;
+                    currentNode.Name = currentNode.Name + " " + customNodeId;
+                    currentNode.IsStructureReadonly = false;
+                }
 
                 var structureTracker = snapshot.Structure.Readonly.ReadonlyChangeTracker;
                 if (!structureMapping.ContainsKey(structureTracker.TrackerId))

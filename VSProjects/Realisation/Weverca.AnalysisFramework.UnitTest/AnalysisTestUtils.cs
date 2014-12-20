@@ -326,6 +326,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             test.ApplyTestSettings((TestAnalysisSettings)analysis);
 
             test.EnvironmentInitializer(analysis.EntryInput);
+
             analysis.Analyse();
 
             return analysis.ProgramPointGraph;

@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-// #define ENABLE_GRAPH_VISUALISATION
+ #define ENABLE_GRAPH_VISUALISATION
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -2360,6 +2360,7 @@ $a = $obj->a;
 
         readonly static TestCase Recursion_CASE = @"
 
+$t2 = 2;
 function f($a) {
     if ($a < 10) return f($a + 1);
     else return $a;
@@ -2370,6 +2371,7 @@ $t = 1;
 
 "
 .AssertVariable("t").HasValues(1)
+.AssertVariable("t2").HasValues(2)
 .ShareFunctionGraph("f")
 #if ENABLE_GRAPH_VISUALISATION
 .PrintProgramPointGraph(@"ppg\Recursion", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
@@ -2382,6 +2384,103 @@ $t = 1;
         public void Recursion()
         {
             AnalysisTestUtils.RunTestCase(Recursion_CASE);
+        }
+
+
+        readonly static TestCase InfiniteRecursion_CASE = @"
+
+$t2 = 2;
+function f($a) {
+    return f($a + 1);
+}
+
+$a = f(1);
+$t = 1;
+
+"
+.AssertVariable("t").HasUndefinedValue()
+.ShareFunctionGraph("f")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\InfiniteRecursion", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\InfiniteRecursion")
+#endif
+;
+
+
+        [TestMethod]
+        public void InfiniteRecursion()
+        {
+            AnalysisTestUtils.RunTestCase(InfiniteRecursion_CASE);
+        }
+
+        readonly static TestCase IndirectRecursion_CASE = @"
+
+$t2 = 2;
+function f($a) {
+    if ($a < 10) return g($a + 1);
+    else return $a;
+}
+function g($a) {
+    return f($a);
+}
+
+$a = f(1);
+$t = 1;
+
+"
+.AssertVariable("t").HasValues(1)
+.ShareFunctionGraph("f")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\IndirectRecursion", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+.PrintSnapshotGraph(@"memory\IndirectRecursion")
+#endif
+;
+
+
+        [TestMethod]
+        public void IndirectRecursion()
+        {
+            AnalysisTestUtils.RunTestCase(IndirectRecursion_CASE);
+        }
+
+        readonly static TestCase RecursionWithCall_CASE = @"
+function f($a, $test) {
+  if ($test) {
+    return $a;
+  }
+  return 0;
+}
+
+function g($a, $test) {
+    $b = f($a, $test);
+    $x = 1;
+    return $b;
+}
+
+function rec($a, $test) {
+  $b = g($a - 1, $test);
+  if ($b) {
+    return rec($b, $test);
+  }
+  return 0;
+}
+
+rec(3, $_POST[1]);
+$t = 1;
+"
+            .AssertVariable("t").HasValues(1)
+            .ShareFunctionGraph("rec")
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\RecursionWithCall", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+            .PrintSnapshotGraph(@"memory\RecursionWithCall")
+#endif
+;
+
+
+        [TestMethod]
+        public void RecursionWithCall()
+        {
+            AnalysisTestUtils.RunTestCase(RecursionWithCall_CASE);
         }
 
         [TestMethod]

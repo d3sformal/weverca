@@ -33,6 +33,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
+using Weverca.AnalysisFramework.GraphVisualizer;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
@@ -453,6 +454,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             oldMemory = null;
             oldInfos = null;
 
+
+            bool test = false;
+            if (test)
+            {
+                DotGraphVisualizer visualizer = new DotGraphVisualizer(@"..\..\..\..\..\Tools\dot_graphviz\dot.exe");
+                Snapshot.Visualizer.BuildGraphVisualisation(visualizer, 20500);
+                visualizer.CreateVisualization("visualization/nocc");
+            }
+
             return differs;
         }
 
@@ -762,6 +772,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             // Call levels of the caller should be always the same
             Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
 
 
             /*CallLevel = maxCallLevel(inputs);
@@ -836,6 +847,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             // Call levels of the caller should be always the same
             Debug.Assert(oldCallLevel == GLOBAL_CALL_LEVEL || oldCallLevel == CallLevel);
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
         }
 
         /// <summary>
@@ -900,6 +912,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             Visualizer.SetParents(this, snapshots.ToArray());
             Visualizer.SetLabel(this, "merge with call level:" + CallLevel);
+
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
         }
 
         /// <summary>
@@ -1790,6 +1804,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 Logger.Log(this, "merge " + s.getSnapshotIdentification());
             }
 
+            Visualizer.SetParents(this, snapshots.ToArray());
+            Visualizer.SetLabel(this, "merge");
+            
             IMergeAlgorithm algorithm;
             switch (CurrentMode)
             {
@@ -1817,8 +1834,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 default:
                     throw new NotSupportedException("Current mode: " + CurrentMode);
             }
-            Visualizer.SetParents(this, snapshots.ToArray());
-            Visualizer.SetLabel(this, "merge");
+
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
         }
 
         /// <summary>

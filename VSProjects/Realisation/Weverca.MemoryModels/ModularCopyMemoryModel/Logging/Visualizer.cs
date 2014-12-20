@@ -9,13 +9,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
     public interface IVisualizer
     {
-        void BuildGraphVisualisation(IGraphVisualizer visualizer);
+        void BuildGraphVisualisation(IGraphVisualizer visualizer, int snapshotRangeMin = -1, int snapshotRangeMax = -1);
 
         void InitializeSnapshot(Snapshot snapshot);
 
         void StartTransaction(Snapshot snapshot);
 
-        void FinishTransaction(Snapshot snapshot);
+        void FinishTransaction(Snapshot snapshot, string customNodeId = null);
 
         void SetParents(Snapshot snapshot, Snapshot[] parents);
 
@@ -30,7 +30,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         void Clear();
 
         void Enabled(bool enabled);
-
-
     }
 }
