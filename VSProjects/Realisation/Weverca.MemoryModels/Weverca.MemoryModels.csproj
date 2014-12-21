@@ -110,6 +110,9 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\MergeWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReadWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReferenceCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\TrackingCallMergeDataWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\MemoryAliasInfo.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\TrackingCallMergeStructureWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\MergeOperation.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\ReferenceCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\SnapshotContext.cs" />

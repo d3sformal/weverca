@@ -11,16 +11,16 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
-    class TrackingMergeDataWorker : AbstractTrackingMergeWorker
+    class TrackingCallMergeDataWorker : AbstractTrackingMergeWorker
     {
         public ISnapshotDataProxy Data { get; set; }
         private IWriteableSnapshotData writeableTargetData;
-        private IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor;
+        private Snapshot callSnapshot;
 
-        public TrackingMergeDataWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
-            : base(targetSnapshot, sourceSnapshots, isCallMerge)
+        public TrackingCallMergeDataWorker(Snapshot targetSnapshot, Snapshot callSnapshot, List<Snapshot> sourceSnapshots)
+            : base(targetSnapshot, sourceSnapshots, true)
         {
-
+            this.callSnapshot = callSnapshot;
         }
 
         public void MergeData(ISnapshotStructureProxy targetStructure)
@@ -31,7 +31,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             isStructureWriteable = false;
 
             createSnapshotContexts();
-            collectDataChangesAndFindAncestor();
+            collectDataChanges();
+
             createNewData();
 
             mergeObjectDefinitions();
@@ -40,36 +41,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             processMergeOperations();
         }
 
-        private void collectDataChangesAndFindAncestor()
+        private void collectDataChanges()
         {
-            SnapshotContext ancestorContext = snapshotContexts[0];
-            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = ancestorContext.SourceData.ReadonlyChangeTracker;
-
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
-            changes.Add(snapshotContexts[0].ChangedIndexesTree);
+            var ancestor = callSnapshot.Data.Readonly.ReadonlyChangeTracker;
             for (int x = 0; x < snapshotContexts.Count; x++)
             {
                 SnapshotContext context = snapshotContexts[x];
 
-                if (context == ancestorContext)
-                {
-                    continue;
-                }
-
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
+                // collectSingleFunctionChanges(context.SourceData.ReadonlyChangeTracker, currentChanges, changes);
                 ancestor = getFirstCommonAncestor(context.SourceData.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
-            commonAncestor = ancestor;
         }
 
         private void createNewData()
         {
-            Data = Snapshot.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.Data);
             writeableTargetData = Data.Writeable;
-
-            writeableTargetData.ReinitializeTracker(commonAncestor.Container);
         }
 
         protected override TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation)
@@ -140,7 +131,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         protected override MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName)
         {
-            throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + childName);
+            //throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + childName);
+            return null;
         }
 
         protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)

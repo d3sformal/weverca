@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License
 along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 */
 
- #define ENABLE_GRAPH_VISUALISATION
+ //#define ENABLE_GRAPH_VISUALISATION
 
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -914,14 +914,14 @@ $resultB = $resultG[2];
         /// </summary>
         #region Shared functions aliasing global context
         readonly static TestCase SharedFunctionAliasingGlobal_CASE = @"
-function sharedFn($arg){
+function sharedFn(& $arg){
     $arg = 'fromSharedFunc';
 }
 
 $a = 'initA';
 $b = 'initB';
-sharedFn(&$a);
-sharedFn(&$b);
+sharedFn($a);
+sharedFn($b);
 "
         .AssertVariable("a").HasValues("initA", "fromSharedFunc")
             //b has undefined value because weak update must be performed
@@ -2481,6 +2481,71 @@ $t = 1;
         public void RecursionWithCall()
         {
             AnalysisTestUtils.RunTestCase(RecursionWithCall_CASE);
+        }
+
+        readonly static TestCase SharedFunctionSeparation_CASE = @"
+function shared($val, & $glob1, & $glob2) {
+  $glob1 = 'S' . $val;
+}
+
+function regular($val, & $glob1, & $glob2) {
+  $glob2 = 'R' . $val;
+}
+
+function f($val, $func, & $loc, & $glob1, & $glob2) {
+  $loc = $val;
+  $func($val, $glob1, $glob2);
+  return $val;
+}
+
+function g($val, $func, & $loc, & $glob1, & $glob2) {
+  $loc = $val;
+  $func($val, $glob1, $glob2);
+  return $val;
+}
+
+$func = '';
+if ($_POST[1]) {
+  $func = 'shared';
+}
+else {
+  $func = 'regular';
+}
+
+$f1loc = 'G';
+$f1globS = 'G';
+$f1globR = 'G';
+$f1ret = f('F1', $func, $f1loc, $f1globS, $f1globR);
+
+$f2loc = 'G';
+$f2globS = 'G';
+$f2globR = 'G';
+$f2ret = g('F2', $func, $f2loc, $f2globS, $f2globR);
+"
+.AssertVariable("f1ret").HasValues("F1")
+.AssertVariable("f1loc").HasValues("F1")
+.AssertVariable("f1globS").HasValues("G", "SF1", "SF2")
+.AssertVariable("f1globR").HasValues("G", "RF1")
+
+.AssertVariable("f2ret").HasValues("F2")
+.AssertVariable("f2loc").HasValues("F2")
+.AssertVariable("f2globS").HasUndefinedAndValues("G", "SF1", "SF2")
+.AssertVariable("f2globR").HasUndefinedAndValues("G", "RF2")
+
+.ShareFunctionGraph("shared")
+.SimplifyLimit(10)
+.WideningLimit(10)
+#if ENABLE_GRAPH_VISUALISATION
+.PrintProgramPointGraph(@"ppg\SharedFunctionSeparation", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
+    .PrintSnapshotGraph(@"memory\SharedFunctionSeparation")
+#endif
+;
+
+
+        [TestMethod]
+        public void SharedFunctionSeparation()
+        {
+            AnalysisTestUtils.RunTestCase(SharedFunctionSeparation_CASE);
         }
 
         [TestMethod]

@@ -1,4 +1,4 @@
-﻿#define MEMORY_VISUALIZER
+﻿// #define MEMORY_VISUALIZER
 
 using System;
 using System.Collections.Generic;

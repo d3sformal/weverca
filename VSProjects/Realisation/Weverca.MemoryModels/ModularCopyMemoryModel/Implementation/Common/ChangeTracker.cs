@@ -28,14 +28,18 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 {
-    public enum ChangeType 
+    public enum TrackerConnectionType
     {
-        Inserted, Deleted, Modified
+        EXTEND, CALL_EXTEND, MERGE, SUBPROGRAM_MERGE, CALL_MERGE
     }
 
     public interface IReadonlyChangeTracker<C>
     {
+        TrackerConnectionType ConnectionType { get; }
+
         int TrackerId { get; }
+
+        int CallLevel { get; }
 
         C Container { get; }
 
@@ -50,6 +54,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 
     public interface IWriteableChangeTracker<C> : IReadonlyChangeTracker<C>
     {
+        void SetCallLevel(int callLevel);
+        void SetConnectionType(TrackerConnectionType connectionType);
+
         void InsertedIndex(MemoryIndex index);
         void DeletedIndex(MemoryIndex index);
         void ModifiedIndex(MemoryIndex index);
@@ -68,8 +75,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         HashSet<QualifiedName> functionChanges;
         HashSet<QualifiedName> classChanges;
 
+
+        public TrackerConnectionType ConnectionType { get; private set; }
+        public int CallLevel { get; private set; }
         public int TrackerId { get; private set; }
         public C Container { get; private set; }
+
+        public IReadonlyChangeTracker<C> PreviousTracker { get; private set; }
 
         public IEnumerable<MemoryIndex> IndexChanges
         {
@@ -86,12 +98,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             get { return classChanges; }
         }
 
-        public IReadonlyChangeTracker<C> PreviousTracker { get; private set; }
-
-
-
         public ChangeTracker(int trackerId, C container, IReadonlyChangeTracker<C> previousTracker)
         {
+            ConnectionType = TrackerConnectionType.EXTEND;
+            CallLevel = previousTracker != null ? previousTracker.CallLevel : Snapshot.GLOBAL_CALL_LEVEL;
+
             TrackerId = trackerId;
             Container = container;
             PreviousTracker = previousTracker;
@@ -154,6 +165,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             {
                 classChanges.Remove(className);
             }
+        }
+
+        public void SetCallLevel(int callLevel)
+        {
+            CallLevel = callLevel;
+        }
+
+        public void SetConnectionType(TrackerConnectionType connectionType)
+        {
+            ConnectionType = connectionType;
         }
     }
 }

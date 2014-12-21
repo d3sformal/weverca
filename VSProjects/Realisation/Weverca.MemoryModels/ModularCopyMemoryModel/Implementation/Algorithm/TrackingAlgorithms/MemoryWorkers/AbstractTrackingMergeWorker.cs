@@ -31,7 +31,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         protected bool isCallMerge;
 
         protected List<SnapshotContext> snapshotContexts = new List<SnapshotContext>();
-        protected SnapshotContext parentSnapshotContext;
         protected MemoryIndexTree changeTree = new MemoryIndexTree();
 
         protected HashSet<QualifiedName> functionChages = new HashSet<QualifiedName>();
@@ -63,7 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             this.isCallMerge = isCallMerge;
         }
 
-        public void SetParentSnapshot(Snapshot parentSnapshot)
+        /*public void SetParentSnapshot(Snapshot parentSnapshot)
         {
             SnapshotContext context = new SnapshotContext(parentSnapshot);
             context.SourceStructure = parentSnapshot.Structure.Readonly;
@@ -71,7 +70,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             context.CallLevel = parentSnapshot.CallLevel;
 
             parentSnapshotContext = context;
-        }
+        }*/
 
         protected abstract TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation);
 
@@ -92,21 +91,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 context.ChangedIndexesTree = new MemoryIndexTree();
 
                 snapshotContexts.Add(context);
-            }
-        }
-
-        protected void selectParentSnapshot()
-        {
-            if (parentSnapshotContext == null)
-            {
-                foreach (SnapshotContext context in snapshotContexts)
-                {
-                    if (parentSnapshotContext == null
-                    || context.ChangedIndexesTree.Count > parentSnapshotContext.ChangedIndexesTree.Count)
-                    {
-                        parentSnapshotContext = context;
-                    }
-                }
             }
         }
 
@@ -386,20 +370,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
-        protected SnapshotContext getDefaultAncestorContext()
-        {
-            SnapshotContext ancestorContext;
-            if (parentSnapshotContext == null)
-            {
-                ancestorContext = snapshotContexts[0];
-            }
-            else
-            {
-                ancestorContext = parentSnapshotContext;
-            }
-            return ancestorContext;
-        }
-
         protected IReadonlyChangeTracker<T> getFirstCommonAncestor<T>(
             IReadonlyChangeTracker<T> trackerA,
             IReadonlyChangeTracker<T> trackerB,
@@ -438,6 +408,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return trackerA;
         }
 
+        protected void collectSingleFunctionChanges<T>(IReadonlyChangeTracker<T> tracker, MemoryIndexTree currentChanges, List<MemoryIndexTree> changes)
+        {
+            int functionCallLevel = tracker.CallLevel;
+
+            while (tracker != null && tracker.CallLevel == functionCallLevel && tracker.ConnectionType != TrackerConnectionType.SUBPROGRAM_MERGE)
+            {
+                CollectionTools.AddAll(currentChanges, tracker.IndexChanges);
+                CollectionTools.AddAll(this.changeTree, tracker.IndexChanges);
+
+                CollectionTools.AddAllIfNotNull(functionChages, tracker.FunctionChanges);
+                CollectionTools.AddAllIfNotNull(classChanges, tracker.ClassChanges);
+
+                tracker = tracker.PreviousTracker;
+            }
+        }
+
         private void createAndEnqueueOperations(
             ITargetContainerContext targetContainerContext, 
             MemoryIndexTreeNode treeNode,
@@ -465,6 +451,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     if (!targetContainer.TryGetIndex(childName, out targetIndex))
                     {
                         targetIndex = createNewTargetIndex(targetContainerContext, childName);
+
+                        if (targetIndex == null)
+                        {
+                            continue;
+                        }
                     }
 
                     // Set parameters and add it to collection

@@ -38,10 +38,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     /// </summary>
     public class TrackingSnapshotStructureFactory : ISnapshotStructureFactory
     {
+        private TrackingSnapshotStructureProxy emptyProxyInstance;
+
+        public TrackingSnapshotStructureFactory()
+        {
+            emptyProxyInstance = TrackingSnapshotStructureProxy.CreateEmpty(null);
+        }
+
         /// <inheritdoc />
         public ISnapshotStructureProxy CreateEmptyInstance(Snapshot snapshot)
         {
-            return TrackingSnapshotStructureProxy.CreateEmpty(snapshot);
+            return emptyProxyInstance.Copy(snapshot);
         }
 
         /// <inheritdoc />

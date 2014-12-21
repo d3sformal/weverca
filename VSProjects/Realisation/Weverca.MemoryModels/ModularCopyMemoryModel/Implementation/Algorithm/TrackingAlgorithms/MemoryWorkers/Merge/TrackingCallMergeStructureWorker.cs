@@ -14,15 +14,17 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
-    class TrackingMergeStructureWorker : AbstractTrackingMergeWorker, IReferenceHolder
+    class TrackingCallMergeStructureWorker : AbstractTrackingMergeWorker, IReferenceHolder
     {
-        private IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor = null;
+        private Snapshot callSnapshot;
 
         internal Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
-
-        public TrackingMergeStructureWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
-            : base(targetSnapshot, sourceSnapshots, isCallMerge)
+        
+        public TrackingCallMergeStructureWorker(Snapshot targetSnapshot, Snapshot callSnapshot,  List<Snapshot> sourceSnapshots)
+            : base(targetSnapshot, sourceSnapshots, true)
         {
+            this.callSnapshot = callSnapshot;
+
             MemoryAliases = new Dictionary<MemoryIndex, MemoryAliasInfo>();
         }
 
@@ -31,84 +33,44 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             isStructureWriteable = true;
 
             createSnapshotContexts();
-            collectStructureChangesAndFindAncestor();
+            collectStructureChanges();
 
             createNewStructure();
-            createStackLevels();
 
             mergeDeclarations();
             mergeObjectDefinitions();
             mergeMemoryStacksRoots();
 
             processMergeOperations();
+
             updateAliases();
+            storeLocalArays();
 
             ensureTrackingChanges();
         }
 
-        private void collectStructureChangesAndFindAncestor()
+        private void collectStructureChanges()
         {
-            SnapshotContext ancestorContext = snapshotContexts[0];
-            IReadonlyChangeTracker<IReadOnlySnapshotStructure> ancestor = ancestorContext.SourceStructure.ReadonlyChangeTracker;
-
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
-            changes.Add(snapshotContexts[0].ChangedIndexesTree);
+            var ancestor = callSnapshot.Structure.Readonly.ReadonlyChangeTracker;
             for (int x = 0; x < snapshotContexts.Count; x++)
             {
                 SnapshotContext context = snapshotContexts[x];
-                if (context == ancestorContext)
-                {
-                    continue;
-                }
 
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
+                //collectSingleFunctionChanges(context.SourceStructure.ReadonlyChangeTracker, currentChanges, changes);
                 ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
-
-            commonAncestor = ancestor;
         }
 
         private void createNewStructure()
         {
-            Structure = Snapshot.SnapshotStructureFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Structure = Snapshot.SnapshotStructureFactory.CopyInstance(targetSnapshot, callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
-
-            writeableTargetStructure.ReinitializeTracker(commonAncestor.Container);
-        }
-
-        private void createStackLevels()
-        {
-            int localLevel = -1;
-            bool isLocalLevelFound = false;
-            foreach (var context in sourceSnapshots)
-            {
-                foreach (var stack in context.Structure.Readonly.ReadonlyStackContexts)
-                {
-                    if (!targetStructure.ContainsStackWithLevel(stack.StackLevel))
-                    {
-                        writeableTargetStructure.AddStackLevel(stack.StackLevel);
-                    }
-                }
-
-                if (localLevel != context.Structure.Readonly.CallLevel)
-                {
-                    if (!isLocalLevelFound)
-                    {
-                        localLevel = context.Structure.Readonly.CallLevel;
-                        isLocalLevelFound = true;
-                    }
-                    else
-                    {
-                        throw new Exception("Can not merge structures with different local velel.");
-                    }
-                }
-            }
-            writeableTargetStructure.SetLocalStackLevelNumber(localLevel);
-            writeableTargetStructure.WriteableChangeTracker.SetCallLevel(localLevel);
         }
 
         private void updateAliases()
@@ -183,6 +145,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             foreach (QualifiedName name in classChanges)
             {
                 writeableTargetStructure.WriteableChangeTracker.ModifiedClass(name);
+            }
+        }
+
+        private void storeLocalArays()
+        {
+            foreach (var context in snapshotContexts)
+            {
+                foreach (AssociativeArray array in context.SourceStructure.ReadonlyLocalContext.ReadonlyArrays)
+                {
+                    Structure.Writeable.AddCallArray(array, context.SourceSnapshot);
+                }
             }
         }
 
@@ -262,27 +235,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return aliasInfo;
         }
 
-        internal class MemoryAliasInfo
-        {
-            private HashSet<MemoryIndex> removedAliases;
-            public IMemoryAliasBuilder Aliases { get; set; }
-            public bool IsTargetOfMerge { get; set; }
-            public IEnumerable<MemoryIndex> RemovedAliases { get { return removedAliases; } }
-
-            public MemoryAliasInfo(IMemoryAliasBuilder aliases, bool isTargetOfMerge)
-            {
-                this.Aliases = aliases;
-                this.IsTargetOfMerge = isTargetOfMerge;
-                this.removedAliases = new HashSet<MemoryIndex>();
-            }
-
-            public void AddRemovedAlias(MemoryIndex alias)
-            {
-                removedAliases.Add(alias);
-            }
-        }
-
-        internal class OperationAccessor : TrackingMergeWorkerOperationAccessor
+        private class OperationAccessor : TrackingMergeWorkerOperationAccessor
         {
 
             private ReferenceCollector references;
@@ -290,12 +243,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             private MergeOperation operation;
 
             private Snapshot targetSnapshot;
-            private TrackingMergeStructureWorker mergeWorker;
+            private TrackingCallMergeStructureWorker mergeWorker;
 
             private bool hasAliasesAlways = true;
             private IWriteableSnapshotStructure writeableTargetStructure;
 
-            public OperationAccessor(MergeOperation operation, Snapshot targetSnapshot, IWriteableSnapshotStructure writeableTargetStructure, TrackingMergeStructureWorker mergeWorker)
+            public OperationAccessor(MergeOperation operation, Snapshot targetSnapshot, IWriteableSnapshotStructure writeableTargetStructure, TrackingCallMergeStructureWorker mergeWorker)
             {
                 this.operation = operation;
                 this.targetSnapshot = targetSnapshot;

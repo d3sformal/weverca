@@ -105,6 +105,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public static AlgorithmFactories InfoAlgorithmFactories
             = Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithmFactories.Factories;
 
+        private static bool hasInitialProxyInstances = false;
+        private static ISnapshotDataProxy initialSnapshotDataInstance = null;
+        private static ISnapshotStructureProxy initialSnapshotStructureInstance = null;
+
         /// <summary>
         /// Gets the algorithm factories for the current memory mode.
         /// </summary>
@@ -303,10 +307,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             CallLevel = GLOBAL_CALL_LEVEL;
             oldCallLevel = GLOBAL_CALL_LEVEL;
 
-            Data = SnapshotDataFactory.CreateEmptyInstance(this);
-            Infos = SnapshotDataFactory.CreateEmptyInstance(this);
+            if (!Snapshot.hasInitialProxyInstances)
+            {
+                Snapshot.initialSnapshotStructureInstance = SnapshotStructureFactory.CreateGlobalContextInstance(this);
+                Snapshot.initialSnapshotDataInstance = SnapshotDataFactory.CreateEmptyInstance(this);
+
+                Snapshot.hasInitialProxyInstances = true;
+            }
+
+            Data = SnapshotDataFactory.CopyInstance(this, Snapshot.initialSnapshotDataInstance);
+            Infos = SnapshotDataFactory.CopyInstance(this, Snapshot.initialSnapshotDataInstance);
             CurrentData = Data;
-            Structure = SnapshotStructureFactory.CreateGlobalContextInstance(this);
+            Structure = SnapshotStructureFactory.CopyInstance(this, Snapshot.initialSnapshotStructureInstance);
             createdAliases = new List<IMemoryAlias>();
             NumberOfTransactions = 0;
 
