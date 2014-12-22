@@ -95,17 +95,23 @@ class NOCC_MailParts {
                         $partNumber = $partNumber . '.';
                 }
                 // if it's an alternative, we skip the text part to only keep the HTML part
+                // WEVERCA
+                /*
                 if (($internetMediaType->isAlternativeMultipart()) && (($i + 1) < $num_parts))
                     $this->_fillArrayWithParts($parts, new NOCC_MailStructure($this_part->parts[++$i]), $partNumber . ($i + 1));
                 else
                     $this->_fillArrayWithParts($parts, new NOCC_MailStructure($this_part->parts[$i]), $partNumber . ($i + 1));
+                    */
             }
         }
         else if ($internetMediaType->isMessage()) { //if message...
             if (isset($this_part->parts[0]->parts)) {
                 $num_parts = count($this_part->parts[0]->parts);
+                // WEVERCA
+                /*
                 for ($i = 0; $i < $num_parts; $i++)
                     $this->_fillArrayWithParts($parts, new NOCC_MailStructure($this_part->parts[0]->parts[$i]), $partNumber . '.' . ($i + 1));
+                    */
             }
             if ($internetMediaType->isRfc822Message()) { //if RFC822 message...
                 if (empty($partNumber)) {
@@ -121,7 +127,10 @@ class NOCC_MailParts {
             }
             $part = new NOCC_MailPart($mailstructure, $partNumber);
             array_unshift($parts, $part);
+            $c = 1;
         }
+        
+        $c = 1;
     }
 }
 ?>

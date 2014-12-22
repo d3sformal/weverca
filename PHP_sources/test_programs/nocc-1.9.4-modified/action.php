@@ -18,6 +18,7 @@
 
 require_once './common.php';
 
+
 // Remove any attachments from disk and from our session
 //clear_attachments();
 
@@ -109,7 +110,7 @@ switch($action) {
         try {
             $attachmentParts = array();
             $content = aff_mail($pop, $_REQUEST['mail'], NOCC_Request::getBoolValue('verbose'), $attachmentParts);
-
+            
             // Display or hide distant HTML images
             if (!NOCC_Request::getBoolValue('display_images')) {
                 $content['body'] = NOCC_Security::disableHtmlImages($content['body']);
@@ -117,6 +118,8 @@ switch($action) {
             display_embedded_html_images($content, $attachmentParts);
         }
         catch (Exception $ex) {
+        	// Weverca
+        	die();
             //TODO: Show error without NoccException!
             $ev = new NoccException($ex->getMessage());
 	    // Weverca
@@ -128,9 +131,9 @@ switch($action) {
 	     */
             break;
         }
-
+        
         // Here we display the message
-        require './html/header.php';
+        include './html/header.php';
         require './html/menu_mail.php';
         require './html/submenu_mail.php';
         require './html/html_mail.php';

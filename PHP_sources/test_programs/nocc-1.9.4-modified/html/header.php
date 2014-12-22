@@ -1,17 +1,22 @@
 <?php
+// Weverca
+
   if (!isset($conf->loaded))
     die('Hacking attempt');
-
+    
 if (file_exists('./utils/proxy.php'))
     require_once './utils/proxy.php';
 else
     die('./utils/proxy.php is missing');
 
+//WEVERCA
 header("Content-type: text/html; Charset=UTF-8");
 
 // Don't call getPref unless session has been initialised enough for
 // prefs.php to find it's prefs file.
-$header_display_address = NOCC_MailAddress::simplify(get_default_from_address());
+// Weverca
+$header_display_address = NOCC_MailAddress::simplify("mail");
+//$header_display_address = NOCC_MailAddress::simplify(get_default_from_address());
 
 $theme = new NOCC_Theme($_SESSION['nocc_theme']);
 
