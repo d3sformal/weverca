@@ -60,9 +60,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                //collectSingleFunctionChanges(context.SourceStructure.ReadonlyChangeTracker, currentChanges, changes);
-                ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyChangeTracker, ancestor, currentChanges, changes);
+                collectSingleFunctionChanges(callSnapshot, context.SourceStructure.ReadonlyChangeTracker, currentChanges, changes);
+                //ancestor = getFirstCommonAncestor(context.SourceStructure.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
+
+            if (targetSnapshot.StructureCallChanges != null)
+            {
+                CollectionTools.AddAll(this.changeTree, targetSnapshot.StructureCallChanges);
+            }
+
+            targetSnapshot.StructureCallChanges = changeTree.Changes;
         }
 
         private void createNewStructure()

@@ -595,7 +595,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             IReadonlyChangeTracker<T> trackerB,
             ICollection<MemoryIndex> indexChanges,
             ICollection<QualifiedName> functionChanges,
-            ICollection<QualifiedName> classChanges)
+            ICollection<QualifiedName> classChanges) where T : class
         {
             while (trackerA != trackerB)
             {

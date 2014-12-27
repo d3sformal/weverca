@@ -136,11 +136,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         data = dataWorker.Data;
 
                         localLevel = structure.Readonly.CallLevel;
-                        structure.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
-                        structure.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.SUBPROGRAM_MERGE);
+                        var structureTracker = structure.Writeable.WriteableChangeTracker;
+                        structureTracker.SetCallLevel(localLevel);
+                        structureTracker.SetConnectionType(TrackerConnectionType.SUBPROGRAM_MERGE);
 
-                        data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
-                        data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.SUBPROGRAM_MERGE);
+                        var dataTracker = data.Writeable.WriteableChangeTracker;
+                        dataTracker.SetCallLevel(localLevel);
+                        dataTracker.SetConnectionType(TrackerConnectionType.SUBPROGRAM_MERGE);
+
+                        for (int x = 0; x < snapshots.Count; x++)
+                        {
+                            Snapshot callSnapshot = (Snapshot) extendedPoints[x].OutSet.Snapshot;
+                            Snapshot mergeAncestor = snapshots[x];
+
+                            structureTracker.AddCallTracker(callSnapshot, mergeAncestor.Structure.Readonly.ReadonlyChangeTracker);
+                            dataTracker.AddCallTracker(callSnapshot, mergeAncestor.Data.Readonly.ReadonlyChangeTracker);
+                        }
                     }
                     break;
 

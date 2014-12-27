@@ -374,7 +374,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             IReadonlyChangeTracker<T> trackerA,
             IReadonlyChangeTracker<T> trackerB,
             MemoryIndexTree currentChanges, List<MemoryIndexTree> changes
-            )
+            ) where T : class
         {
             bool swapped = false;
             while (trackerA != trackerB)
@@ -408,19 +408,41 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return trackerA;
         }
 
-        protected void collectSingleFunctionChanges<T>(IReadonlyChangeTracker<T> tracker, MemoryIndexTree currentChanges, List<MemoryIndexTree> changes)
+        protected void collectSingleFunctionChanges<T>(
+            Snapshot callSnapshot, IReadonlyChangeTracker<T> tracker,
+            MemoryIndexTree currentChanges, List<MemoryIndexTree> changes)
+
+            where T : class
         {
             int functionCallLevel = tracker.CallLevel;
 
-            while (tracker != null && tracker.CallLevel == functionCallLevel && tracker.ConnectionType != TrackerConnectionType.SUBPROGRAM_MERGE)
+            bool done = false;
+            while (!done && tracker != null && tracker.CallLevel == functionCallLevel)
             {
-                CollectionTools.AddAll(currentChanges, tracker.IndexChanges);
-                CollectionTools.AddAll(this.changeTree, tracker.IndexChanges);
+                if (tracker.ConnectionType != TrackerConnectionType.SUBPROGRAM_MERGE)
+                {
+                    done = tracker.ConnectionType == TrackerConnectionType.CALL_EXTEND;
 
-                CollectionTools.AddAllIfNotNull(functionChages, tracker.FunctionChanges);
-                CollectionTools.AddAllIfNotNull(classChanges, tracker.ClassChanges);
+                    CollectionTools.AddAll(currentChanges, tracker.IndexChanges);
+                    CollectionTools.AddAll(this.changeTree, tracker.IndexChanges);
 
-                tracker = tracker.PreviousTracker;
+                    CollectionTools.AddAllIfNotNull(functionChages, tracker.FunctionChanges);
+                    CollectionTools.AddAllIfNotNull(classChanges, tracker.ClassChanges);
+
+                    tracker = tracker.PreviousTracker;
+                }
+                else
+                {
+                    IReadonlyChangeTracker<T> callTracker;
+                    if (tracker.TryGetCallTracker(callSnapshot, out callTracker))
+                    {
+                        tracker = callTracker;
+                    }
+                    else
+                    {
+                        tracker = tracker.PreviousTracker;
+                    }
+                }
             }
         }
 

@@ -8,6 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
@@ -52,9 +53,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 MemoryIndexTree currentChanges = context.ChangedIndexesTree;
                 changes.Add(currentChanges);
 
-                // collectSingleFunctionChanges(context.SourceData.ReadonlyChangeTracker, currentChanges, changes);
-                ancestor = getFirstCommonAncestor(context.SourceData.ReadonlyChangeTracker, ancestor, currentChanges, changes);
+                collectSingleFunctionChanges(callSnapshot, context.SourceData.ReadonlyChangeTracker, currentChanges, changes);
+                //ancestor = getFirstCommonAncestor(context.SourceData.ReadonlyChangeTracker, ancestor, currentChanges, changes);
             }
+
+            if (targetSnapshot.DataCallChanges != null)
+            {
+                CollectionTools.AddAll(this.changeTree, targetSnapshot.DataCallChanges);
+            }
+
+            targetSnapshot.DataCallChanges = changeTree.Changes;
         }
 
         private void createNewData()

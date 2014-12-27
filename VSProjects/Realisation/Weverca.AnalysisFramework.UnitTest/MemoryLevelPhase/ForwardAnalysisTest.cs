@@ -801,7 +801,7 @@ $resultB=sharedFn('ValueB');
             // {resultA: 'InitA', resultB: 'InitB'} {resultA: 'ValueA','ValueB', resultB: 'ValueA','ValueB'}
             // after the merge, resultB assign is processed.
             // .AssertVariable("resultA").HasValues("ValueA", "ValueB") This is incorrect because of global contexts cannot be distinguished
-.AssertVariable("resultA").HasValues("InitA", "ValueA", "ValueB")
+.AssertVariable("resultA").HasValues("ValueA")
 .AssertVariable("resultB").HasValues("ValueA", "ValueB")
 .ShareFunctionGraph("sharedFn")
 ;
@@ -815,7 +815,7 @@ $resultA=sharedFn('ValueA');
 $resultB=sharedFn('ValueB');
 
 "
-.AssertVariable("resultA").HasUndefinedAndValues("ValueA", "ValueB")
+.AssertVariable("resultA").HasValues("ValueA")
 .AssertVariable("resultB").HasValues("ValueA", "ValueB")
 .ShareFunctionGraph("sharedFn")
 ;
@@ -1113,7 +1113,7 @@ $c=  $result[3];
 .AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
- .MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
+.MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
  ;
 
         #endregion
@@ -2517,20 +2517,24 @@ $f1globS = 'G';
 $f1globR = 'G';
 $f1ret = f('F1', $func, $f1loc, $f1globS, $f1globR);
 
-$f2loc = 'G';
-$f2globS = 'G';
-$f2globR = 'G';
+//$f2loc = 'G';
+//$f2globS = 'G';
+//$f2globR = 'G';
 $f2ret = g('F2', $func, $f2loc, $f2globS, $f2globR);
+
+shared('G', $sha1, $sha2);
 "
 .AssertVariable("f1ret").HasValues("F1")
 .AssertVariable("f1loc").HasValues("F1")
-.AssertVariable("f1globS").HasValues("G", "SF1", "SF2")
+.AssertVariable("f1globS").HasValues("G", "SF1", "SF2", "SG")
 .AssertVariable("f1globR").HasValues("G", "RF1")
 
 .AssertVariable("f2ret").HasValues("F2")
 .AssertVariable("f2loc").HasValues("F2")
-.AssertVariable("f2globS").HasUndefinedAndValues("G", "SF1", "SF2")
-.AssertVariable("f2globR").HasUndefinedAndValues("G", "RF2")
+.AssertVariable("f2globS").HasUndefinedAndValues("SF1", "SF2", "SG")
+.AssertVariable("f2globR").HasUndefinedAndValues("RF2")
+
+.AssertVariable("sha1").HasUndefinedAndValues("SF1", "SF2", "SG")
 
 .ShareFunctionGraph("shared")
 .SimplifyLimit(10)

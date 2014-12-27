@@ -19,7 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#define MEMORY_BENCHMARK
-// #define BENCHMARK
+#define BENCHMARK
 
 using System;
 using System.Collections.Generic;
@@ -72,7 +72,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             }
             else
             {
-                throw new Exception("");
+                FinishTransaction(snapshot);
+                //throw new Exception("");
             }
 
 #endif
@@ -93,7 +94,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             }
             else
             {
-                throw new Exception("Snapshot transactions does not match");
+                //throw new Exception("Snapshot transactions does not match");
             }
 
             this.currentSnapshot = null;

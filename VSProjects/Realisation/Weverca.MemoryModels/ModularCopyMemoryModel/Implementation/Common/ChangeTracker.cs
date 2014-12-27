@@ -24,6 +24,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
@@ -34,6 +35,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
     }
 
     public interface IReadonlyChangeTracker<C>
+        where C : class
     {
         TrackerConnectionType ConnectionType { get; }
 
@@ -50,9 +52,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         IEnumerable<QualifiedName> FunctionChanges { get; }
 
         IEnumerable<QualifiedName> ClassChanges { get; }
+
+        bool TryGetCallTracker(Snapshot callSnapshot, out IReadonlyChangeTracker<C> callTracker);
     }
 
     public interface IWriteableChangeTracker<C> : IReadonlyChangeTracker<C>
+        where C : class
     {
         void SetCallLevel(int callLevel);
         void SetConnectionType(TrackerConnectionType connectionType);
@@ -67,13 +72,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 
         void RemoveFunctionChange(QualifiedName functionName);
         void RemoveClassChange(QualifiedName className);
+
+        void AddCallTracker(Snapshot callSnapshot, IReadonlyChangeTracker<C> callTracker);
     }
 
     public class ChangeTracker<C> : IReadonlyChangeTracker<C>, IWriteableChangeTracker<C>
+        where C : class
     {
         HashSet<MemoryIndex> indexChanges;
         HashSet<QualifiedName> functionChanges;
         HashSet<QualifiedName> classChanges;
+        Dictionary<Snapshot, IReadonlyChangeTracker<C>> callRouting;
 
 
         public TrackerConnectionType ConnectionType { get; private set; }
@@ -175,6 +184,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         public void SetConnectionType(TrackerConnectionType connectionType)
         {
             ConnectionType = connectionType;
+        }
+
+        public void AddCallTracker(Snapshot callSnapshot, IReadonlyChangeTracker<C> callTracker)
+        {
+            if (callRouting == null)
+            {
+                callRouting = new Dictionary<Snapshot, IReadonlyChangeTracker<C>>();
+            }
+
+            callRouting.Add(callSnapshot, callTracker);
+        }
+
+
+        public bool TryGetCallTracker(Snapshot callSnapshot, out IReadonlyChangeTracker<C> callTracker)
+        {
+            if (callRouting != null)
+            {
+                return callRouting.TryGetValue(callSnapshot, out callTracker);
+            }
+            else
+            {
+                callTracker = null;
+                return false;
+            }
         }
     }
 }
