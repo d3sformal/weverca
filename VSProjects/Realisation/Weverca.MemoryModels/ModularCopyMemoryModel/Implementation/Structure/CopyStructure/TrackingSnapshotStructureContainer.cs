@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #region Structure Data
 
         private int localLevel = 0;
-        private LazyDeepCopyDictionary<int, LazyCopyStackContext> memoryStack;
+        private LazyDeepCopyDictionary<int, IWriteableStackContext> memoryStack;
         private LazyCopyDictionary<AssociativeArray, IArrayDescriptor> arrayDescriptors;
         private LazyCopyDictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
         private LazyCopyDictionary<MemoryIndex, IIndexDefinition> indexDefinitions;
@@ -82,8 +82,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        private TrackingSnapshotStructureContainer(Snapshot snapshot)
-            : base(snapshot)
+        private TrackingSnapshotStructureContainer(Snapshot snapshot, ISnapshotStructureProxy proxy)
+            : base(snapshot, proxy)
         {
             changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(StructureId, this, null);
         }
@@ -93,10 +93,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static TrackingSnapshotStructureContainer CreateEmpty(Snapshot snapshot)
+        public static TrackingSnapshotStructureContainer CreateEmpty(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>();
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot, proxy);
+            data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>();
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = new LazyCopyDictionary<MemoryIndex, IIndexDefinition>();
@@ -108,36 +108,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <summary>
-        /// Creates the structure with memory stack with global level only.
-        /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New structure with memory stack with global level only.</returns>
-        public static TrackingSnapshotStructureContainer CreateGlobal(Snapshot snapshot)
-        {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>();
-            data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
-            data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
-            data.indexDefinitions = new LazyCopyDictionary<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new LazyCopyDeclarationContainer<FunctionValue>();
-            data.classDecl = new LazyCopyDeclarationContainer<TypeValue>();
-            data.callArrays = new LazyCopyDictionary<AssociativeArray, CopySet<Snapshot>>();
-
-            data.AddStackLevel(Snapshot.GLOBAL_CALL_LEVEL);
-            data.SetLocalStackLevelNumber(Snapshot.GLOBAL_CALL_LEVEL);
-
-            return data;
-        }
-
-        /// <summary>
         /// Creates new structure object as copy of this structure which contains the same data as this instace.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public TrackingSnapshotStructureContainer Copy(Snapshot snapshot)
+        public TrackingSnapshotStructureContainer Copy(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot);
-            data.memoryStack = new LazyDeepCopyDictionary<int, LazyCopyStackContext>(this.memoryStack);
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot, proxy);
+            data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>(this.memoryStack);
             data.localLevel = this.localLevel;
 
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);
@@ -316,7 +294,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void AddStackLevel(int level)
         {
-            LazyCopyStackContext context = new LazyCopyStackContext(level);
+            IWriteableStackContext context = StructureProxy.CreateWriteableStackContext(level);
             context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(level));
             context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(level));
 
@@ -385,7 +363,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 			if (indexDefinitions.ContainsKey(index))
 				return;
 
-            CopyIndexDefinition data = new CopyIndexDefinition();
+            IIndexDefinition data = StructureProxy.CreateIndexDefinition();
             indexDefinitions.Add(index, data);
             changeTracker.InsertedIndex(index);
         }
@@ -453,7 +431,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 }
             }
 
-            return new CopyObjectValueContainer();
+            return StructureProxy.CreateObjectValueContainer();
         }
 
         /// <inheritdoc />
@@ -468,13 +446,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = new CopyIndexDefinition();
+                data = StructureProxy.CreateIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetObjects(objects);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
 
             changeTracker.ModifiedIndex(index);
         }
@@ -598,13 +576,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = new CopyIndexDefinition();
+                data = StructureProxy.CreateIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetArray(arrayValue);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
             changeTracker.ModifiedIndex(index);
 
             IArrayDescriptor descriptor;
@@ -626,13 +604,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = new CopyIndexDefinition();
+                data = StructureProxy.CreateIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetArray(null);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
             changeTracker.ModifiedIndex(index);
             GetWriteableStackContext(index.CallLevel).WriteableArrays.Remove(arrayValue);
         }
@@ -765,13 +743,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = new CopyIndexDefinition();
+                data = StructureProxy.CreateIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetAliases(alias);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
             changeTracker.ModifiedIndex(index);
         }
 

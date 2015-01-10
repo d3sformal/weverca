@@ -787,7 +787,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             }
 
             /// <summary>
-            /// Allews descendant implementation to continue traversing memory by indexing values ar accesing their fields.
+            /// Allows descendant implementation to continue traversing memory by indexing values ar accesing their fields.
             /// </summary>
             /// <param name="parentIndex">Index of the parent.</param>
             /// <param name="values">The values.</param>

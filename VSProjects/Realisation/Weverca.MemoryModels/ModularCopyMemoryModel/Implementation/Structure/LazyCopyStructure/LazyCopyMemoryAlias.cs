@@ -1,58 +1,41 @@
-/*
-Copyright (c) 2012-2014 Pavel Bastecky.
-
-This file is part of WeVerca.
-
-WeVerca is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version.
-
-WeVerca is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Weverca.AnalysisFramework.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
-    class CopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
+    class LazyCopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
     {
         private MemoryIndex sourceIndex;
-        private CopySet<MemoryIndex> mayAliases;
-        private CopySet<MemoryIndex> mustAliases;
+        private LazyCopySet<MemoryIndex> mayAliases;
+        private LazyCopySet<MemoryIndex> mustAliases;
+        private IWriteableSnapshotStructure associatedStructure;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyMemoryAlias"/> class.
         /// </summary>
-        public CopyMemoryAlias()
+        public LazyCopyMemoryAlias(IWriteableSnapshotStructure associatedStructure)
         {
-            mayAliases = new CopySet<MemoryIndex>();
-            mustAliases = new CopySet<MemoryIndex>();
+            mayAliases = new LazyCopySet<MemoryIndex>();
+            mustAliases = new LazyCopySet<MemoryIndex>();
+            this.associatedStructure = associatedStructure;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyMemoryAlias"/> class.
         /// </summary>
         /// <param name="memoryAlias">The memory alias.</param>
-        public CopyMemoryAlias(CopyMemoryAlias memoryAlias)
+        public LazyCopyMemoryAlias(IWriteableSnapshotStructure associatedStructure, LazyCopyMemoryAlias memoryAlias)
         {
             this.sourceIndex = memoryAlias.sourceIndex;
             this.mayAliases = memoryAlias.mayAliases.Clone();
             this.mustAliases = memoryAlias.mustAliases.Clone();
+            this.associatedStructure = associatedStructure;
         }
 
         /// <inheritdoc />
@@ -76,7 +59,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IMemoryAliasBuilder Builder(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyMemoryAlias(this);
+            if (targetStructure == associatedStructure)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyMemoryAlias(targetStructure, this);
+            }
         }
 
         /// <inheritdoc />
@@ -100,7 +90,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IMemoryAlias Build(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyMemoryAlias(this);
+            if (targetStructure == associatedStructure)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyMemoryAlias(targetStructure, this);
+            }
         }
     }
 }

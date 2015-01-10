@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 
@@ -34,6 +35,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
         private static readonly AlgorithmFactories copyAlgorithmFactories = new AlgorithmFactoriesBuilder()
         {
             AssignAlgorithmFactory = new CopyAssignAlgorithm(),
+            //AssignAlgorithmFactory = new LazyAssignAlgorithm(),
             CommitAlgorithmFactory = new TrackingCommitAlgorithm(),
             MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             //MergeAlgorithmFactory = new CopyMergeAlgorithm(),

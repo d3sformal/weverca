@@ -50,7 +50,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public IObjectValueContainerBuilder Builder()
+        public IObjectValueContainerBuilder Builder(IWriteableSnapshotStructure targetStructure)
         {
             return new CopyObjectValueContainer(this);
         }
@@ -62,7 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
 
         /// <inheritdoc />
-        public IObjectValueContainer Build()
+        public IObjectValueContainer Build(IWriteableSnapshotStructure targetStructure)
         {
             return new CopyObjectValueContainer(this);
         }

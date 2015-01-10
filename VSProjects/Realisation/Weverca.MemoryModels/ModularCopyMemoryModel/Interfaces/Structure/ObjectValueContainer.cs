@@ -42,7 +42,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Gets container builder to create new imutable instance with modified data.
         /// </summary>
         /// <returns>New builder to modify this descriptor.</returns>
-        IObjectValueContainerBuilder Builder();
+        IObjectValueContainerBuilder Builder(IWriteableSnapshotStructure targetStructure);
     }
 
     /// <summary>
@@ -54,6 +54,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Gets the imutable version of this collection.
         /// </summary>
         /// <returns>The imutable version of this collection.</returns>
-        IObjectValueContainer Build();
+        IObjectValueContainer Build(IWriteableSnapshotStructure targetStructure);
     }
 }

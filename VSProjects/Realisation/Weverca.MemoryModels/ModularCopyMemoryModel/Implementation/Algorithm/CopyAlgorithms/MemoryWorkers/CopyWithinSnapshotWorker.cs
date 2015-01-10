@@ -92,6 +92,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             if (!sourceIndex.IsPrefixOf(targetIndex) && !targetIndex.IsPrefixOf(sourceIndex))
             {
 
+                var writeablestrucutre = snapshot.Structure.Writeable;
+
                 MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(sourceIndex);
 
                 CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(snapshot, this, targetIndex);
@@ -99,20 +101,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 if (isMust && visitor.GetValuesCount() == 1 && objectValues.Count == 1)
                 {
-                    IObjectValueContainerBuilder objectsValues = snapshot.Structure.Readonly.GetObjects(targetIndex).Builder();
+                    IObjectValueContainerBuilder objectsValues = snapshot.Structure.Readonly.GetObjects(targetIndex).Builder(writeablestrucutre);
 
                     ObjectValue value = objectValues.First();
                     objectsValues.Add(value);
-                    snapshot.Structure.Writeable.SetObjects(targetIndex, objectsValues.Build());
+                    writeablestrucutre.SetObjects(targetIndex, objectsValues.Build(writeablestrucutre));
                 }
                 else if (objectValues.Count > 0)
                 {
-                    IObjectValueContainerBuilder objectsValues = snapshot.Structure.Readonly.GetObjects(targetIndex).Builder();
+                    IObjectValueContainerBuilder objectsValues = snapshot.Structure.Readonly.GetObjects(targetIndex).Builder(writeablestrucutre);
                     foreach (ObjectValue value in objectValues)
                     {
                         objectsValues.Add(value);
                     }
-                    snapshot.Structure.Writeable.SetObjects(targetIndex, objectsValues.Build());
+                    writeablestrucutre.SetObjects(targetIndex, objectsValues.Build(writeablestrucutre));
                 }
 
                 if (!isMust)

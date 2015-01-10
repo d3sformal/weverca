@@ -76,8 +76,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        private SnapshotStructureContainer(Snapshot snapshot)
-            : base(snapshot)
+        private SnapshotStructureContainer(Snapshot snapshot, ISnapshotStructureProxy proxy)
+            : base(snapshot, proxy)
         {
         }
 
@@ -86,9 +86,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static SnapshotStructureContainer CreateEmpty(Snapshot snapshot)
+        public static SnapshotStructureContainer CreateEmpty(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
@@ -105,9 +105,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New structure with memory stack with global level only.</returns>
-        public static SnapshotStructureContainer CreateGlobal(Snapshot snapshot)
+        public static SnapshotStructureContainer CreateGlobal(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
@@ -126,9 +126,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public SnapshotStructureContainer Copy(Snapshot snapshot)
+        public SnapshotStructureContainer Copy(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             foreach (CopyStackContext context in this.memoryStack)
             {
@@ -405,10 +405,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 data = new CopyIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetObjects(objects);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
         }
 
         #endregion
@@ -532,10 +532,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 data = new CopyIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetArray(arrayValue);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
 
             IArrayDescriptor descriptor;
             if (TryGetDescriptor(arrayValue, out descriptor))
@@ -559,10 +559,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 data = new CopyIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetArray(null);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
             GetWriteableStackContext(index.CallLevel).WriteableArrays.Remove(arrayValue);
         }
 
@@ -689,10 +689,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 data = new CopyIndexDefinition();
             }
 
-            IIndexDefinitionBuilder builder = data.Builder();
+            IIndexDefinitionBuilder builder = data.Builder(this);
             builder.SetAliases(alias);
 
-            indexDefinitions[index] = builder.Build();
+            indexDefinitions[index] = builder.Build(this);
         }
 
         /// <inheritdoc />

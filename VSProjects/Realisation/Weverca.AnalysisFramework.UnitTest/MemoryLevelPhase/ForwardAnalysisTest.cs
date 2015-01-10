@@ -279,6 +279,36 @@ $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
 
+        readonly static TestCase CycledObjectFieldAssign_CASE = @"
+class Obj{
+    var $a;
+    var $obj;
+}
+
+$obj=new Obj();
+$obj->obj = $obj;
+
+$obj->obj->a = 1;
+
+$FieldValue=$obj->a;
+".AssertVariable("FieldValue").HasValues(1);
+
+
+        readonly static TestCase CycledObjectFieldAssign2_CASE = @"
+class Obj{
+    var $a;
+    var $obj;
+}
+
+$obj=new Obj();
+$obj->obj = $obj;
+
+$obj->obj->obj->a = 1;
+
+$FieldValue=$obj->a;
+".AssertVariable("FieldValue").HasValues(1);
+
+
         readonly static TestCase StringIndex_CASE = @"
 $string='test';
 $res1=$string[0];
@@ -2106,7 +2136,7 @@ $eany = $ar['e']['any'];
 .AssertVariable("cany").HasUndefinedAndValues("any", "alias_any")
 .AssertVariable("d").HasValues("alias_d")
 .AssertVariable("eany").HasValues("alias_eAny")
-.AssertVariable("mustAlias").HasValues("alias_any", "alias_eAny");
+.AssertVariable("mustAlias").HasValues("alias_any");
 
         readonly static TestCase MergeIndirectAliases_CASE = @"
 $any = $_POST[0];
@@ -3670,11 +3700,23 @@ f();
         {
             AnalysisTestUtils.RunTestCase(MergedFunctionDeclarations_CASE);
         }
-
+        
         [TestMethod]
         public void ObjectFieldMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectFieldMerge_CASE);
+        }
+
+        [TestMethod]
+        public void CycledObjectFieldAssign()
+        {
+            AnalysisTestUtils.RunTestCase(CycledObjectFieldAssign_CASE);
+        }
+
+        [TestMethod]
+        public void CycledObjectFieldAssign2()
+        {
+            AnalysisTestUtils.RunTestCase(CycledObjectFieldAssign2_CASE);
         }
 
         [TestMethod]

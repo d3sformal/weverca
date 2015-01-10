@@ -1,57 +1,38 @@
-/*
-Copyright (c) 2012-2014 Pavel Bastecky.
-
-This file is part of WeVerca.
-
-WeVerca is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version.
-
-WeVerca is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
-    class CopyIndexDefinition : IIndexDefinition, IIndexDefinitionBuilder
+    class LazyCopyIndexDefinition : IIndexDefinition, IIndexDefinitionBuilder
     {
         private IMemoryAlias aliases;
         private IObjectValueContainer objects;
         private AssociativeArray arrayValue;
+        private IWriteableSnapshotStructure associatedStructure;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyIndexDefinition"/> class.
         /// </summary>
-        public CopyIndexDefinition()
+        public LazyCopyIndexDefinition(IWriteableSnapshotStructure associatedStructure)
         {
-
+            this.associatedStructure = associatedStructure;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyIndexDefinition"/> class.
         /// </summary>
         /// <param name="indexDefinition">The index definition.</param>
-        public CopyIndexDefinition(CopyIndexDefinition indexDefinition)
+        public LazyCopyIndexDefinition(IWriteableSnapshotStructure writeableSnapshotStrucure, LazyCopyIndexDefinition indexDefinition)
         {
             this.aliases = indexDefinition.aliases;
             this.objects = indexDefinition.objects;
             this.arrayValue = indexDefinition.arrayValue;
+            this.associatedStructure = associatedStructure;
         }
 
         /// <inheritdoc />
@@ -75,7 +56,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IIndexDefinitionBuilder Builder(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyIndexDefinition(this);
+            if (associatedStructure == targetStructure)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyIndexDefinition(targetStructure, this);
+            }
         }
 
         /// <inheritdoc />
@@ -99,7 +87,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IIndexDefinition Build(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyIndexDefinition(this);
+            if (associatedStructure == targetStructure)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyIndexDefinition(targetStructure, this);
+            }
         }
     }
 }

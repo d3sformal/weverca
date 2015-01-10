@@ -95,7 +95,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static CopySnapshotStructureProxy CreateGlobal(Snapshot snapshot)
         {
             CopySnapshotStructureProxy proxy = new CopySnapshotStructureProxy();
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(snapshot);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(snapshot, proxy);
             return proxy;
         }
 
@@ -107,7 +107,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static CopySnapshotStructureProxy CreateEmpty(Snapshot snapshot)
         {
             CopySnapshotStructureProxy proxy = new CopySnapshotStructureProxy();
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(snapshot);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(snapshot, proxy);
             return proxy;
         }
 
@@ -119,7 +119,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public CopySnapshotStructureProxy Copy(Snapshot snapshot)
         {
             CopySnapshotStructureProxy proxy = new CopySnapshotStructureProxy();
-            proxy.snapshotStructure = this.snapshotStructure.Copy(snapshot);
+            proxy.snapshotStructure = this.snapshotStructure.Copy(snapshot, proxy);
             return proxy;
         }
 
@@ -132,7 +132,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static ISnapshotStructureProxy CreateWithData(Snapshot snapshot, SnapshotStructureContainer data)
         {
             CopySnapshotStructureProxy proxy = new CopySnapshotStructureProxy();
-            proxy.snapshotStructure = data.Copy(snapshot);
+            proxy.snapshotStructure = data.Copy(snapshot, proxy);
             return proxy;
         }
 
@@ -215,6 +215,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public IIndexDefinition CreateIndexDefinition()
         {
             return new CopyIndexDefinition();
+        }
+
+
+        public IWriteableStackContext CreateWriteableStackContext(int level)
+        {
+            return new CopyStackContext(level);
+        }
+
+        public IObjectValueContainer CreateObjectValueContainer()
+        {
+            return new CopyObjectValueContainer();
         }
     }
 }

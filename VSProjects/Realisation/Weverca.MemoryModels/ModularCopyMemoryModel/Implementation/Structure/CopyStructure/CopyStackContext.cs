@@ -118,5 +118,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             get { return arrays; }
         }
+
+        /// <inheritdoc />
+        public IWriteableStackContext Clone()
+        {
+            return new CopyStackContext(this);
+        }
     }
 }

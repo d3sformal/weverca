@@ -131,7 +131,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 // Merge object descriptor and prepare operations of modified fields
                 if (targetDescriptor != null)
                 {
-                    ObjectTargetContainerContext objectContext = new ObjectTargetContainerContext(targetDescriptor);
+                    ObjectTargetContainerContext objectContext = new ObjectTargetContainerContext(writeableTargetStructure, targetDescriptor);
                     createAndEnqueueOperations(objectContext, treeNode, sourceContainers, alwaysDefined);
 
                     // Save updated descriptor if instance changed or is not stored in target
@@ -319,7 +319,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 }
 
                 // Create context and merge descriptors
-                var arrayContext = new ArrayTargetContainerContext(targetArrayDescriptor);
+                var arrayContext = new ArrayTargetContainerContext(writeableTargetStructure, targetArrayDescriptor);
                 createAndEnqueueOperations(arrayContext, operation.TreeNode, sourceArrays, arrayAlwaysDefined);
 
                 if (isStructureWriteable)

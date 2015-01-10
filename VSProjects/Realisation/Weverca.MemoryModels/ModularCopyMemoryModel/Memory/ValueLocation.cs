@@ -25,9 +25,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 {
     /// <summary>
     /// Represents data structure to provide alternative memory locations which is not based on memory index model

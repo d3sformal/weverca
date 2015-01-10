@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
@@ -105,10 +106,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static TrackingSnapshotStructureProxy CreateGlobal(Snapshot snapshot)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy();
-            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateGlobal(snapshot);
-            proxy.readonlyInstance = proxy.snapshotStructure;
+            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(snapshot, proxy);
             proxy.isReadonly = false;
             proxy.snapshot = snapshot;
+
+            proxy.snapshotStructure.AddStackLevel(Snapshot.GLOBAL_CALL_LEVEL);
+            proxy.snapshotStructure.SetLocalStackLevelNumber(Snapshot.GLOBAL_CALL_LEVEL);
+
+            proxy.readonlyInstance = proxy.snapshotStructure;
             return proxy;
         }
 
@@ -120,7 +125,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static TrackingSnapshotStructureProxy CreateEmpty(Snapshot snapshot)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy();
-            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(snapshot);
+            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(snapshot, proxy);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
             proxy.snapshot = snapshot;
@@ -180,7 +185,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
                 {
                     if (isReadonly)
                     {
-                        snapshotStructure = readonlyInstance.Copy(snapshot);
+                        snapshotStructure = readonlyInstance.Copy(snapshot, this);
                         readonlyInstance = snapshotStructure;
                         isReadonly = false;
                     }
@@ -202,7 +207,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IObjectDescriptor CreateObjectDescriptor(ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex)
         {
-            CopyObjectDescriptor descriptor = new CopyObjectDescriptor();
+            LazyCopyObjectDescriptor descriptor = new LazyCopyObjectDescriptor(snapshotStructure);
             descriptor.SetObjectValue(createdObject);
             descriptor.SetType(type);
             descriptor.SetUnknownIndex(memoryIndex);
@@ -212,7 +217,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, MemoryIndex memoryIndex)
         {
-            CopyArrayDescriptor descriptor = new CopyArrayDescriptor();
+            LazyCopyArrayDescriptor descriptor = new LazyCopyArrayDescriptor(snapshotStructure);
             descriptor.SetArrayValue(createdArray);
             descriptor.SetParentIndex(memoryIndex);
             descriptor.SetUnknownIndex(memoryIndex.CreateUnknownIndex());
@@ -222,7 +227,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IMemoryAlias CreateMemoryAlias(Memory.MemoryIndex index)
         {
-            CopyMemoryAlias aliases = new CopyMemoryAlias();
+            LazyCopyMemoryAlias aliases = new LazyCopyMemoryAlias(snapshotStructure);
             aliases.SetSourceIndex(index);
             return aliases;
         }
@@ -230,7 +235,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects)
         {
-            CopyObjectValueContainer container = new CopyObjectValueContainer();
+            LazyCopyObjectValueContainer container = new LazyCopyObjectValueContainer(snapshotStructure);
             container.AddAll(objects);
             return container;
         }
@@ -238,7 +243,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <inheritdoc />
         public IIndexDefinition CreateIndexDefinition()
         {
-            return new CopyIndexDefinition();
+            return new LazyCopyIndexDefinition(snapshotStructure);
+        }
+
+
+        public IWriteableStackContext CreateWriteableStackContext(int level)
+        {
+            return new CopyStackContext(level);
+        }
+
+        public IObjectValueContainer CreateObjectValueContainer()
+        {
+            return new LazyCopyObjectValueContainer(snapshotStructure);
         }
     }
 }

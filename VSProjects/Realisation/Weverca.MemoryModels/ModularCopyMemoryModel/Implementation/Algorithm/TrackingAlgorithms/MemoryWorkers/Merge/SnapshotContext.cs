@@ -68,10 +68,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     {
         private IObjectDescriptor objectDescriptor;
         private IObjectDescriptorBuilder builder;
+        private IWriteableSnapshotStructure structure;
 
-        public ObjectTargetContainerContext(IObjectDescriptor objectDescriptor)
+        public ObjectTargetContainerContext(IWriteableSnapshotStructure structure, IObjectDescriptor objectDescriptor)
         {
             this.objectDescriptor = objectDescriptor;
+            this.structure = structure;
         }
 
         public IReadonlyIndexContainer getSourceContainer()
@@ -83,7 +85,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             if (builder == null)
             {
-                builder = objectDescriptor.Builder();
+                builder = objectDescriptor.Builder(structure);
             }
 
             return builder;
@@ -97,7 +99,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
             else
             {
-                return builder.Build();
+                return builder.Build(structure);
             }
         }
 
@@ -172,10 +174,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     {
         private IArrayDescriptor arrayDescriptor;
         private IArrayDescriptorBuilder builder;
+        private IWriteableSnapshotStructure strucure;
 
-        public ArrayTargetContainerContext(IArrayDescriptor arrayDescriptor)
+        public ArrayTargetContainerContext(IWriteableSnapshotStructure strucure, IArrayDescriptor arrayDescriptor)
         {
             this.arrayDescriptor = arrayDescriptor;
+            this.strucure = strucure;
         }
 
         public IReadonlyIndexContainer getSourceContainer()
@@ -187,7 +191,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             if (builder == null)
             {
-                builder = arrayDescriptor.Builder();
+                builder = arrayDescriptor.Builder(strucure);
             }
 
             return builder;
@@ -201,7 +205,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
             else
             {
-                return builder.Build();
+                return builder.Build(strucure);
             }
         }
 

@@ -84,7 +84,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
     /// 
     /// This interface allows modification of inner structure.
     /// </summary>
-    public interface IWriteableStackContext
+    public interface IWriteableStackContext : IReadonlyStackContext, IGenericCloneable<IWriteableStackContext>
     {
         /// <summary>
         /// Gets the writeable collection with associative container of definition of variables.

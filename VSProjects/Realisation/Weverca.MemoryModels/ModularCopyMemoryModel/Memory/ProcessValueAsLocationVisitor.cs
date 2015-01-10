@@ -24,9 +24,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 {
     /// <summary>
     /// Abstract implementation of IValueLocationVisitor which can be implemented in collecting

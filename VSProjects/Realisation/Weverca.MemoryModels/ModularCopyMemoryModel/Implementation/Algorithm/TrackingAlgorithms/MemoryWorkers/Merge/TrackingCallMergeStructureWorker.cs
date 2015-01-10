@@ -102,7 +102,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     aliasInfo.Aliases.MayAliases.Remove(alias);
                 }
 
-                writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build());
+                writeableTargetStructure.SetAlias(targetIndex, aliasInfo.Aliases.Build(writeableTargetStructure));
             }
         }
 
@@ -234,7 +234,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             MemoryAliasInfo aliasInfo;
             if (!MemoryAliases.TryGetValue(index, out aliasInfo))
             {
-                IMemoryAliasBuilder alias = Structure.CreateMemoryAlias(index).Builder();
+                IMemoryAliasBuilder alias = Structure.CreateMemoryAlias(index).Builder(writeableTargetStructure);
                 aliasInfo = new MemoryAliasInfo(alias, false);
 
                 MemoryAliases[index] = aliasInfo;

@@ -1,66 +1,49 @@
-/*
-Copyright (c) 2012-2014 Pavel Bastecky.
-
-This file is part of WeVerca.
-
-WeVerca is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version.
-
-WeVerca is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
-    class CopyArrayDescriptor : CopyIndexContainer, IArrayDescriptor, IArrayDescriptorBuilder
+    class LazyCopyArrayDescriptor : LazyCopyIndexContainer, IArrayDescriptor, IArrayDescriptorBuilder
     {
         private MemoryIndex parentIndex;
         private AssociativeArray arrayValue;
+        private IWriteableSnapshotStructure associatedStrucutre;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyArrayDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor"/> class.
         /// </summary>
-        public CopyArrayDescriptor()
+        public LazyCopyArrayDescriptor(IWriteableSnapshotStructure associatedStrucutre)
         {
-
+            this.associatedStrucutre = associatedStrucutre;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyArrayDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor"/> class.
         /// </summary>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="arrayValue">The array value.</param>
-        public CopyArrayDescriptor(MemoryIndex parentIndex, AssociativeArray arrayValue)
+        public LazyCopyArrayDescriptor(IWriteableSnapshotStructure associatedStrucutre, MemoryIndex parentIndex, AssociativeArray arrayValue)
         {
+            this.associatedStrucutre = associatedStrucutre;
             this.parentIndex = parentIndex;
             this.arrayValue = arrayValue;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyArrayDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor"/> class.
         /// New instance contains copy of given object.
         /// </summary>
         /// <param name="arrayDescriptor">The array descriptor.</param>
-        public CopyArrayDescriptor(CopyArrayDescriptor arrayDescriptor)
+        public LazyCopyArrayDescriptor(IWriteableSnapshotStructure associatedStrucutre, LazyCopyArrayDescriptor arrayDescriptor)
             : base(arrayDescriptor)
         {
+            this.associatedStrucutre = associatedStrucutre;
             this.parentIndex = arrayDescriptor.parentIndex;
             this.arrayValue = arrayDescriptor.arrayValue;
         }
@@ -80,7 +63,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IArrayDescriptorBuilder Builder(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyArrayDescriptor(this);
+            if (targetStructure == associatedStrucutre)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyArrayDescriptor(targetStructure, this);
+            }
         }
 
         /// <inheritdoc />
@@ -98,7 +88,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public IArrayDescriptor Build(IWriteableSnapshotStructure targetStructure)
         {
-            return new CopyArrayDescriptor(this);
+            if (targetStructure == associatedStrucutre)
+            {
+                return this;
+            }
+            else
+            {
+                return new LazyCopyArrayDescriptor(targetStructure, this);
+            }
         }
+
     }
 }

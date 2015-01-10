@@ -145,6 +145,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </summary>
         /// <returns>New instance of index definition object.</returns>
         IIndexDefinition CreateIndexDefinition();
+
+        /// <summary>
+        /// Creates the writeable stack context.
+        /// </summary>
+        /// <param name="level">The level.</param>
+        /// <returns></returns>
+        IWriteableStackContext CreateWriteableStackContext(int level);
+
+        /// <summary>
+        /// Creates the object value container.
+        /// </summary>
+        /// <returns></returns>
+        IObjectValueContainer CreateObjectValueContainer();
     }
 
     /// <summary>
@@ -687,6 +700,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </value>
         protected Snapshot Snapshot { get; private set; }
 
+        /// <summary>
+        /// Gets the structure proxy.
+        /// </summary>
+        /// <value>
+        /// The structure proxy.
+        /// </value>
+        protected ISnapshotStructureProxy StructureProxy { get; private set; }
+
         /// <inheritdoc />
         public bool DiffersOnCommit
         {
@@ -727,10 +748,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Initializes a new instance of the <see cref="AbstractSnapshotStructure" /> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public AbstractSnapshotStructure(Snapshot snapshot)
+        public AbstractSnapshotStructure(Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
             StructureId = STRUCTURE_ID++;
             Snapshot = snapshot;
+            StructureProxy = proxy;
         }
 
         /// <inheritdoc />

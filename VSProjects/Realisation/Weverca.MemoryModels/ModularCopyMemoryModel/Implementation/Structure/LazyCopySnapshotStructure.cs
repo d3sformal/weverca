@@ -98,7 +98,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static LazyCopySnapshotStructure CreateGlobal(Snapshot snapshot)
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure();
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(snapshot);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(snapshot, proxy);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
             proxy.snapshot = snapshot;
@@ -113,7 +113,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public static LazyCopySnapshotStructure CreateEmpty(Snapshot snapshot)
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure();
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(snapshot);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(snapshot, proxy);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
             proxy.snapshot = snapshot;
@@ -173,7 +173,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
                 {
                     if (isReadonly)
                     {
-                        snapshotStructure = readonlyInstance.Copy(snapshot);
+                        snapshotStructure = readonlyInstance.Copy(snapshot, this);
                         readonlyInstance = snapshotStructure;
                         isReadonly = false;
                     }
@@ -232,6 +232,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public IIndexDefinition CreateIndexDefinition()
         {
             return new CopyIndexDefinition();
+        }
+
+
+        public IWriteableStackContext CreateWriteableStackContext(int level)
+        {
+            return new CopyStackContext(level);
+        }
+
+        public IObjectValueContainer CreateObjectValueContainer()
+        {
+            return new CopyObjectValueContainer();
         }
     }
 }

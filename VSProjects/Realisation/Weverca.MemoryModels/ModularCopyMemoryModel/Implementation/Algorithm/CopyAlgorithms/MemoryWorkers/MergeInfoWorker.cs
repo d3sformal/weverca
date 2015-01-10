@@ -192,7 +192,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             AssociativeArray targetArray = Structure.Readonly.GetArray(operation.TargetIndex);
             IArrayDescriptor targetDescriptor = Structure.Readonly.GetDescriptor(targetArray);
-            ContainerOperations collectIndexes = new ContainerOperations(this, targetDescriptor.Builder(), operation.TargetIndex, targetDescriptor.UnknownIndex);
+            ContainerOperations collectIndexes = new ContainerOperations(this, targetDescriptor, operation.TargetIndex, targetDescriptor.UnknownIndex);
 
             foreach (var operationData in operation.Indexes)
             {
@@ -275,7 +275,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private void mergeObject(ObjectValue objectValue)
         {
             IObjectDescriptor targetDescriptor = Structure.Readonly.GetDescriptor(objectValue);
-            ContainerOperations collectVariables = new ContainerOperations(this, targetDescriptor.Builder(), targetDescriptor.UnknownIndex, targetDescriptor.UnknownIndex);
+            ContainerOperations collectVariables = new ContainerOperations(this, targetDescriptor, targetDescriptor.UnknownIndex, targetDescriptor.UnknownIndex);
 
             foreach (Snapshot snapshot in sourceSnapshots)
             {

@@ -47,7 +47,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         ITERATE_INDEXES,
         RESOLVE_TYPE,
         RESOLVE_METHOD,
-        MERGE_TO_TEMPORARY
+        MERGE_TO_TEMPORARY,
+
+        WRITE_CREATE_TEMPORARY,
+        WRITE_COLLECTING,
+        WRITE_ASSIGN,
+        WRITE_RELEASE_TEMPORARY,
+        NEW_ASSIGN_COLLECTOR,
+        NEW_ASSIGN
 
     }
 

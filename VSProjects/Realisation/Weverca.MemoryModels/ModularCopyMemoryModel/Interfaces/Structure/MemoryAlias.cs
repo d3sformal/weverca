@@ -64,7 +64,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Creates new builder to modify this object 
         /// </summary>
         /// <returns>New builder to modify this object.</returns>
-        IMemoryAliasBuilder Builder();
+        IMemoryAliasBuilder Builder(IWriteableSnapshotStructure targetStructure);
     }
 
     /// <summary>
@@ -106,6 +106,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// Builds new info object from this instance.
         /// </summary>
         /// <returns>New imutable instance with data from this builder.</returns>
-        IMemoryAlias Build();
+        IMemoryAlias Build(IWriteableSnapshotStructure targetStructure);
     }
 }

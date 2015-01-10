@@ -80,24 +80,28 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         /// <inheritdoc />
         public void Add(T value)
         {
+            copy();
             valueSet.Add(value);
         }
 
         /// <inheritdoc />
         public void AddAll(IEnumerable<T> values)
         {
+            copy();
             CollectionTools.AddAll(valueSet, values);
         }
 
         /// <inheritdoc />
         public void Remove(T value)
         {
+            copy();
             valueSet.Remove(value);
         }
 
         /// <inheritdoc />
         public void Clear()
         {
+            copy();
             valueSet.Clear();
         }
 
