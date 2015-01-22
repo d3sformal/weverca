@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             this.aliases = indexDefinition.aliases;
             this.objects = indexDefinition.objects;
             this.arrayValue = indexDefinition.arrayValue;
-            this.associatedStructure = associatedStructure;
+            this.associatedStructure = writeableSnapshotStrucure;
         }
 
         /// <inheritdoc />

@@ -8,66 +8,67 @@
     ViewBag.Title = Resources.ResultTitle;
 }
 
-@Html.TextAreaFor(m => m.PhpCode)
-
-<script type="text/javascript">
-    $(document).ready(function () {
-        CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true, readOnly: true });
-    });
-</script>
-
-<script src="~/jQuery/jquery-ui.js" type="text/javascript"></script>
-
-<script>
-    $(function () {
-        $("#tabs").tabs();
-    });
-</script>
-
 <div id="content">
-<div id="tabs">
-    <ul>
-        <li><a href="#tabs-1">@Resources.Warnings</a></li>
-        <li><a href="#tabs-2">@Resources.MetricsResults</a></li>
-    </ul>
-    <div id="tabs-1">
-        <h3>@Resources.SecurityWarnings</h3>
-        @foreach (var warning in Model.SecurityWarnings)
-        {
-            <p>@warning.ToString()</p>
-        }
 
-        <h3>@Resources.OtherWarnings</h3>
-        @foreach (var warning in Model.Warnings)
-        {
-            <p>@warning.ToString()</p>
-        }
-    </div>
-    <div id="tabs-2">
-        <fieldset>
-            <legend>@Resources.QuantityMetrics</legend>
-            @foreach (var metric in Model.QuantityMetricsResult)
-            {
-                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
-            }
-        </fieldset>
+    @Html.TextAreaFor(m => m.PhpCode)
 
-        <fieldset>
-            <legend>@Resources.RatingMetrics</legend>
-            @foreach (var metric in Model.RatingMetricsResult)
-            {
-                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
-            }
-        </fieldset>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            CodeMirror.fromTextArea(PhpCode, { mode: "php", lineNumbers: true, readOnly: true });
+        });
+    </script>
 
-        <fieldset>
-            <legend>@Resources.IndicatorMetrics</legend>
-            @foreach (var metric in Model.IndicatorMetricsResult)
+    <script src="~/jQuery/jquery-ui.js" type="text/javascript"></script>
+
+    <script>
+        $(function () {
+            $("#tabs").tabs();
+        });
+    </script>
+
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabs-1">@Resources.Warnings</a></li>
+            <li><a href="#tabs-2">@Resources.MetricsResults</a></li>
+        </ul>
+        <div id="tabs-1">
+            <h3>@Resources.SecurityWarnings</h3>
+            @foreach (var warning in Model.SecurityWarnings)
             {
-                <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+                <p>@warning.ToString()</p>
             }
-        </fieldset>
-    </div>
+
+            <h3>@Resources.OtherWarnings</h3>
+            @foreach (var warning in Model.Warnings)
+            {
+                <p>@warning.ToString()</p>
+            }
+        </div>
+        <div id="tabs-2">
+            <fieldset>
+                <legend>@Resources.QuantityMetrics</legend>
+                @foreach (var metric in Model.QuantityMetricsResult)
+                {
+                    <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+                }
+            </fieldset>
+
+            <fieldset>
+                <legend>@Resources.RatingMetrics</legend>
+                @foreach (var metric in Model.RatingMetricsResult)
+                {
+                    <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+                }
+            </fieldset>
+
+            <fieldset>
+                <legend>@Resources.IndicatorMetrics</legend>
+                @foreach (var metric in Model.IndicatorMetricsResult)
+                {
+                    <p>@ValueHelperController.FormatMetricsResult(metric.Key, metric.Value)</p>
+                }
+            </fieldset>
+        </div>
     </div>
     <form action="javascript:history.back()">
         <input type="submit" value="@Resources.NewAnalysis" class="button">
