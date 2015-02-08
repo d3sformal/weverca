@@ -99,5 +99,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
                 return new LazyCopyMemoryAlias(targetStructure, this);
             }
         }
+
+
+        /// <inheritdoc />
+        public bool HasAliases
+        {
+            get { return mustAliases.Count > 0 || mayAliases.Count > 0; }
+        }
+
+        /// <inheritdoc />
+        public bool HasMustAliases
+        {
+            get { return mustAliases.Count > 0; }
+        }
     }
 }

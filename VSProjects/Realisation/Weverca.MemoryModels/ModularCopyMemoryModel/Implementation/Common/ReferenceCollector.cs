@@ -25,7 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 {
     /// <summary>
     /// Collet must or may aliases in order to use it in merge and assign algoritms.
@@ -40,7 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// Copies the collected must references to given set of references.
         /// </summary>
         /// <param name="references">The references.</param>
-        public void CopyMustReferencesTo(HashSet<MemoryIndex> references)
+        public void CopyMustReferencesTo(ICollection<MemoryIndex> references)
         {
             mustSet = true;
             foreach (MemoryIndex index in mustReferences)
@@ -53,7 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// Copies the collected may references to given set of references.
         /// </summary>
         /// <param name="references">The references.</param>
-        public void CopyMayReferencesTo(HashSet<MemoryIndex> references)
+        public void CopyMayReferencesTo(ICollection<MemoryIndex> references)
         {
             foreach (MemoryIndex index in allReferences)
             {
@@ -67,6 +67,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <summary>
         /// Collects must aliases from the specified set of references. When collected reference is already
         /// in may reference container collector removes it from collection of may aliases.
+        /// 
+        /// Only aliases to indexes with call level lower or equal than given call level are collected.
         /// </summary>
         /// <param name="references">The references.</param>
         /// <param name="callLevel">The call level.</param>
@@ -107,6 +109,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <summary>
         /// Collects the may aliases. When the alias is already in collection of myst aliases the index is
         /// not inserted into any container.
+        /// 
+        /// Only aliases to indexes with call level lower or equal than given call level are collected.
         /// </summary>
         /// <param name="references">The references.</param>
         /// <param name="callLevel">The call level.</param>
@@ -118,6 +122,52 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     allReferences.Add(index);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Collects must aliases from the specified set of references. When collected reference is already
+        /// in may reference container collector removes it from collection of may aliases.
+        /// </summary>
+        /// <param name="references">The references.</param>
+        public void CollectMust(IEnumerable<MemoryIndex> references)
+        {
+            if (!mustSet)
+            {
+                foreach (MemoryIndex index in references)
+                {
+                    mustReferences.Add(index);
+                    allReferences.Add(index);
+                }
+                mustSet = true;
+            }
+            else
+            {
+                HashSet<MemoryIndex> newMust = new HashSet<MemoryIndex>();
+                foreach (MemoryIndex index in references)
+                {
+                    if (mustReferences.Contains(index))
+                    {
+                        newMust.Add(index);
+                    }
+
+                    allReferences.Add(index);
+                }
+                mustReferences = newMust;
+            }
+
+        }
+
+        /// <summary>
+        /// Collects the may aliases. When the alias is already in collection of myst aliases the index is
+        /// not inserted into any container.
+        /// </summary>
+        /// <param name="references">The references.</param>
+        public void CollectMay(IEnumerable<MemoryIndex> references)
+        {
+            foreach (MemoryIndex index in references)
+            {
+                allReferences.Add(index);
             }
         }
 
@@ -188,6 +238,37 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             allReferences.Add(memoryIndex);
             mustReferences.Add(memoryIndex);
+        }
+
+        /// <summary>
+        /// Adds the may alias into collection.
+        /// </summary>
+        /// <param name="memoryIndex">Index of the memory.</param>
+        public void AddMayAlias(MemoryIndex memoryIndex)
+        {
+            allReferences.Add(memoryIndex);
+        }
+
+
+        public IEnumerable<MemoryIndex> GetMustReferences()
+        {
+            List<MemoryIndex> references = new List<MemoryIndex>();
+            CopyMustReferencesTo(references);
+
+            return references;
+        }
+
+        public IEnumerable<MemoryIndex> GetMayReferences()
+        {
+            List<MemoryIndex> references = new List<MemoryIndex>();
+            CopyMayReferencesTo(references);
+
+            return references;
+        }
+
+        public IEnumerable<MemoryIndex> GetAllReferences()
+        {
+            return allReferences;
         }
     }
 }

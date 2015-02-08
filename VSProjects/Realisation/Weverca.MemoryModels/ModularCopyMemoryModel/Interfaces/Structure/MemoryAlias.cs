@@ -45,6 +45,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         MemoryIndex SourceIndex { get; }
 
         /// <summary>
+        /// Gets the information whether this object contains some aliases.
+        /// </summary>
+        /// <value>
+        /// The information whether this object contains some aliases.
+        /// </value>
+        bool HasAliases { get; }
+
+        /// <summary>
+        /// Gets the information whether this object contains some must aliases.
+        /// </summary>
+        /// <value>
+        /// The information whether this object contains some must aliases.
+        /// </value>
+        bool HasMustAliases { get; }
+
+        /// <summary>
         /// Gets the collection of may aliases.
         /// </summary>
         /// <value>

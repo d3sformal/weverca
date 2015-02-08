@@ -358,6 +358,14 @@ $ArrayValue=$arr[0];
 ".AssertVariable("ArrayValue").HasValues("NewValue");
 
 
+
+        readonly static TestCase MustImplicitObjectCreation_CASE = @"
+$o->f = 1;
+$result = $o->f;
+".AssertVariable("result").HasValues(1);
+
+
+
         readonly static TestCase ObjectMethodCallMerge_CASE = @"
 class Obj{
     var $a;
@@ -1417,6 +1425,7 @@ $result = $arr[1];
 function f() {
     $a[1] = ""f.index1"";
     $a[2] = ""f.index2"";
+    $a[3] = ""f.index3"";
     return $a;    
 }
 
@@ -1435,8 +1444,10 @@ else {
 
 $arr = $x();
 $result = $arr[1];
-".AssertVariable("result")
- .HasValues("f.index1", "g.index1")
+$result3 = $arr[3];
+"
+            .AssertVariable("result").HasValues("f.index1", "g.index1")
+            .AssertVariable("result3").HasUndefinedAndValues("f.index3")
 #if ENABLE_GRAPH_VISUALISATION
 .PrintProgramPointGraph(@"ppg\ArrayMergeReturnValueTest", typeof(ConstantPoint), typeof(VariablePoint), typeof(ItemUsePoint))
 .PrintSnapshotGraph(@"memory\ArrayMergeReturnValueTest")
@@ -1447,6 +1458,9 @@ $result = $arr[1];
 function f() {
     $a[1] = ""f.index1"";
     $a[2] = ""f.index2"";
+
+$b = $a;
+
     return $a;    
 }
 
@@ -2025,8 +2039,8 @@ $g = 1;
         readonly static TestCase Merge_CASE = @"
 
 $any = $_POST[0];
-$ar['a'] = 'a';
 $ar[$any]['any'] = 'any';
+$ar['a'] = 'a';
 
 if ($_POST[1]) {
     if ($_POST[2]) {
@@ -2056,7 +2070,7 @@ $cany = $ar['c']['any'];
 
 $d = $ar['d'];
 
-".AssertVariable("a").HasValues("a", "a")
+".AssertVariable("a").HasValues("a")
 .AssertVariable("ba").HasUndefinedAndValues("bA")
 .AssertVariable("bb").HasUndefinedAndValues("bB")
 .AssertVariable("bany").HasUndefinedAndValues("any")
@@ -2072,8 +2086,8 @@ $d = $ar['d'];
 
         readonly static TestCase MergeAliases_CASE = @"
 $any = $_POST[0];
-$ar['a'] = 'a';
 $ar[$any]['any'] = 'any';
+$ar['a'] = 'a';
 
 $alias['a'] = & $ar['a'];
 $alias['any'] = & $ar[$any]['any'];
@@ -2136,7 +2150,9 @@ $eany = $ar['e']['any'];
 .AssertVariable("cany").HasUndefinedAndValues("any", "alias_any")
 .AssertVariable("d").HasValues("alias_d")
 .AssertVariable("eany").HasValues("alias_eAny")
-.AssertVariable("mustAlias").HasValues("alias_any");
+.AssertVariable("mustAlias").HasValues("alias_any")
+.SimplifyLimit(10)
+;
 
         readonly static TestCase MergeIndirectAliases_CASE = @"
 $any = $_POST[0];
@@ -3755,6 +3771,12 @@ f();
         public void ArrayFieldUpdateMultipleArrays()
         {
             AnalysisTestUtils.RunTestCase(ArrayFieldUpdateMultipleArrays_CASE);
+        }
+
+        [TestMethod]
+        public void MustImplicitObjectCreation()
+        {
+            AnalysisTestUtils.RunTestCase(MustImplicitObjectCreation_CASE);
         }
 
         [TestMethod]

@@ -50,51 +50,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
             {
-                /*if (!value.ContainsAssociativeArray)
-                {
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.NEW_ASSIGN_COLLECTOR);
-                    TreeIndexCollector treeCollector = new TreeIndexCollector(snapshot);
-                    treeCollector.ProcessPath(path);
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.NEW_ASSIGN_COLLECTOR);
+                MemoryEntryCollector entryCollector = new MemoryEntryCollector(snapshot);
+                entryCollector.ProcessMemoryEntry(value);
 
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.NEW_ASSIGN);
-                    LazyAssignWorker worker = new LazyAssignWorker(snapshot, treeCollector);
-                    worker.Assign(value, forceStrongWrite);
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.NEW_ASSIGN);
-                }*/
+                TreeIndexCollector treeCollector = new TreeIndexCollector(snapshot);
+                treeCollector.ProcessPath(path);
 
-
-
-
-
-
-                //if (value.ContainsAssociativeArray)
-                {
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_CREATE_TEMPORARY);
-                    TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
-                    MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
-                    mergeWorker.MergeMemoryEntry(temporaryIndex, value);
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_CREATE_TEMPORARY);
-
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_COLLECTING);
-                    AssignCollector collector = new AssignCollector(snapshot);
-                    collector.ProcessPath(path);
-
-                    if (forceStrongWrite)
-                    {
-                        collector.SetAllToMust();
-                    }
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_COLLECTING);
-
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_ASSIGN);
-                    AssignWorker worker = new AssignWorker(snapshot);
-                    worker.Assign(collector, temporaryIndex);
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_ASSIGN);
-
-                    Snapshot.Benchmark.StartAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_RELEASE_TEMPORARY);
-                    snapshot.ReleaseTemporary(temporaryIndex);
-                    Snapshot.Benchmark.FinishAlgorithm(snapshot, this, Logging.AlgorithmType.WRITE_RELEASE_TEMPORARY);
-                }
+                LazyAssignWorker worker = new LazyAssignWorker(snapshot, entryCollector, treeCollector);
+                worker.Assign(value, forceStrongWrite);
             }
             else
             {

@@ -1990,7 +1990,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
             addAllAliases(index, mustAliases, builder.MustAliases);
-            addAllAliases(index, mustAliases, builder.MustAliases);
+            addAllAliases(index, mayAliases, builder.MayAliases);
 
             writeableStructure.SetAlias(index, builder.Build(writeableStructure));
 		}
@@ -2001,7 +2001,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="index">The index.</param>
 		/// <param name="mayAliases">The may aliases.</param>
-		public void MaySetAliases(MemoryIndex index, HashSet<MemoryIndex> mayAliases)
+		public void MaySetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mayAliases)
         {
             var writeableStructure = Structure.Writeable;
 			IMemoryAliasBuilder builder;
@@ -2009,7 +2009,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			if (Structure.Readonly.TryGetAliases(index, out oldAlias))
 			{
                 builder = oldAlias.Builder(writeableStructure);
-				convertAliasesToMay(index, builder);
+				ConvertAliasesToMay(index, builder);
 			}
 			else
 			{
@@ -2025,7 +2025,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="index">The index.</param>
 		/// <param name="builder">The builder.</param>
-		private void convertAliasesToMay(MemoryIndex index, IMemoryAliasBuilder builder)
+		public void ConvertAliasesToMay(MemoryIndex index, IMemoryAliasBuilder builder)
         {
             var writeableStructure = Structure.Writeable;
 			foreach (MemoryIndex mustIndex in builder.MustAliases)

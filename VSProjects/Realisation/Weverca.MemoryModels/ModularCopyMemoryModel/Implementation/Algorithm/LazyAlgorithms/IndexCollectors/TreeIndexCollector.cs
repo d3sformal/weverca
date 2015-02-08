@@ -24,8 +24,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public IReadOnlySnapshotData Data { get; private set; }
         public RootCollectorNode RootNode { get; private set; }
 
-        HashSet<CollectorNode> currentNodes = new HashSet<CollectorNode>();
-        HashSet<CollectorNode> nextIterationNodes = new HashSet<CollectorNode>();
+        HashSet<LocationCollectorNode> currentNodes = new HashSet<LocationCollectorNode>();
+        HashSet<LocationCollectorNode> nextIterationNodes = new HashSet<LocationCollectorNode>();
 
         Dictionary<MemoryIndex, CollectorNode> processedIndex = new Dictionary<MemoryIndex, CollectorNode>();
 
@@ -48,18 +48,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             {
                 segment.Accept(this);
 
+                processAliases();
+
                 currentNodes = nextIterationNodes;
-                nextIterationNodes = new HashSet<CollectorNode>();
+                nextIterationNodes = new HashSet<LocationCollectorNode>();
             }
 
             foreach (CollectorNode node in currentNodes)
             {
-                if (!node.HasOperations)
-                {
-                    node.Operations = new CollectorOperations(node);
-                }
+                node.IsCollected = true;
+            }
+        }
 
-                node.Operations.NewCollectedOperation();
+        private void processAliases()
+        {
+            HashSet<CollectorNode> nodes = new HashSet<CollectorNode>(nextIterationNodes);
+
+            foreach (LocationCollectorNode node in nodes)
+            {
+                node.CollectAliases(this);
             }
         }
 
@@ -103,7 +110,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public void VisitField(FieldPathSegment fieldSegment)
         {
-            foreach (CollectorNode node in currentNodes)
+            foreach (LocationCollectorNode node in currentNodes)
             {
                 node.CollectField(this, fieldSegment);
             }
@@ -111,7 +118,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public void VisitIndex(IndexPathSegment indexSegment)
         {
-            foreach (CollectorNode node in currentNodes)
+            foreach (LocationCollectorNode node in currentNodes)
             {
                 node.CollectIndex(this, indexSegment);
             }
@@ -122,62 +129,61 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         #region Segment Processing
 
         public void CollectSegmentFromStructure(PathSegment segment, CollectorNode node, 
-            CollectorOperations operations, IReadonlyIndexContainer indexContainer, bool isMust)
+            IReadonlyIndexContainer indexContainer, bool isMust)
         {
             isMust = isMust && node.IsMust;
 
             if (segment.IsAny)
             {
-                collectMemoryIndexAnyNode(indexContainer.UnknownIndex, operations, node);
+                collectMemoryIndexAnyNode(indexContainer.UnknownIndex, node);
 
                 foreach (var item in indexContainer.Indexes)
                 {
-                    collectMemoryIndexExpandedNode(item.Key, item.Value, operations, node);
+                    collectMemoryIndexExpandedNode(item.Key, item.Value, node);
                 }
             }
             else if (segment.IsUnknown)
             {
-                collectMemoryIndexAnyNode(indexContainer.UnknownIndex, operations, node);
+                collectMemoryIndexAnyNode(indexContainer.UnknownIndex, node);
             }
             else if (segment.Names.Count == 1)
             {
                 string name = segment.Names[0];
-                collectMemoryIndexNode(name, operations, node, indexContainer, isMust);
+                collectMemoryIndexNode(name, node, indexContainer, isMust);
             }
             else
             {
                 foreach (string name in segment.Names)
                 {
-                    collectMemoryIndexNode(name, operations, node, indexContainer, false);
+                    collectMemoryIndexNode(name, node, indexContainer, false);
                 }
             }
         }
 
-        public void CollectSegmentWithoutStructure(PathSegment segment, CollectorNode node, 
-            CollectorOperations operations, bool isMust)
+        public void CollectSegmentWithoutStructure(PathSegment segment, CollectorNode node, bool isMust)
         {
             isMust = isMust && node.IsMust;
 
             if (segment.IsAny || segment.IsUnknown)
             {
-                collectImplicitAnyNode(operations, node);
+                collectImplicitAnyNode(node);
             }
             else if (segment.Names.Count == 1)
             {
                 String name = segment.Names[0];
-                collectImplicitNode(name, operations, node, isMust);
+                collectImplicitNode(name, node, isMust);
             }
             else
             {
                 foreach (string name in segment.Names)
                 {
-                    collectImplicitNode(name, operations, node, false);
+                    collectImplicitNode(name, node, false);
                 }
             }
         }
         
         public void CollectFieldSegmentFromValues(FieldPathSegment fieldSegment, CollectorNode node,
-            CollectorOperations operations, IEnumerable<Value> values, bool isMust)
+            IEnumerable<Value> values, bool isMust)
         {
             isMust = isMust && values.Count() == 1;
             CollectFieldValueVisitor visitor = new CollectFieldValueVisitor(fieldSegment, this, node, isMust);
@@ -185,7 +191,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
 
         public void CollectIndexSegmentFromValues(IndexPathSegment indexSegment, CollectorNode node,
-            CollectorOperations operations, IEnumerable<Value> values, bool isMust)
+            IEnumerable<Value> values, bool isMust)
         {
             isMust = isMust && values.Count() == 1;
 
@@ -195,65 +201,59 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
 
 
-        private void collectMemoryIndexAnyNode(MemoryIndex unknownIndex, CollectorOperations operations, CollectorNode node)
+        private void collectMemoryIndexAnyNode(MemoryIndex unknownIndex, CollectorNode node)
         {
-            CollectorNode nextNode = node.CreateMemoryIndexAnyChild(unknownIndex);
+            LocationCollectorNode nextNode = node.CreateMemoryIndexAnyChild(unknownIndex);
             nextNode.IsMust = false;
             AddNode(nextNode);
-
-            operations.NewAnyNodeAccess();
         }
 
-        private void collectMemoryIndexExpandedNode(string name, MemoryIndex memoryIndex, 
-            CollectorOperations operations, CollectorNode node)
+        private void collectMemoryIndexExpandedNode(string name, MemoryIndex memoryIndex, CollectorNode node)
         {
-            CollectorNode nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
+            LocationCollectorNode nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
             nextNode.IsMust = false;
             AddNode(nextNode);
-
-            operations.NewChildAccess(name);
         }
 
-        private void collectMemoryIndexNode(string name, CollectorOperations operations, CollectorNode node, 
+        private void collectMemoryIndexNode(string name, CollectorNode node, 
             IReadonlyIndexContainer indexContainer, bool isMust)
         {
             MemoryIndex memoryIndex;
-            CollectorNode nextNode;
+            LocationCollectorNode nextNode;
             if (indexContainer.TryGetIndex(name, out memoryIndex))
             {
                 nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
-                operations.NewChildAccess(name);
             }
             else
             {
                 nextNode = node.CreateMemoryIndexChildFromAny(name, indexContainer.UnknownIndex);
-                operations.NewImplicitChildFromAny(name, indexContainer.UnknownIndex);
             }
 
             nextNode.IsMust = isMust;
             AddNode(nextNode);
         }
 
-        private void collectImplicitAnyNode(CollectorOperations operations, CollectorNode node)
+        private void collectImplicitAnyNode(CollectorNode node)
         {
-            CollectorNode nextNode = node.CreateUndefinedAnyChild();
+            LocationCollectorNode nextNode = node.CreateUndefinedAnyChild();
             AddNode(nextNode);
-
-            operations.NewAnyChildAccess();
         }
 
-        private void collectImplicitNode(string name, CollectorOperations operations, CollectorNode node, bool isMust)
+        private void collectImplicitNode(string name, CollectorNode node, bool isMust)
         {
-            CollectorNode nextNode = node.CreateUndefinedChild(name);
+            LocationCollectorNode nextNode = node.CreateUndefinedChild(name);
             nextNode.IsMust = isMust;
             AddNode(nextNode);
-
-            operations.NewChildAccess(name);
         }
 
         #endregion
 
         #region Public Helpers
+
+        public void CollectAlias(LocationCollectorNode node, MemoryIndex alias, bool isMust)
+        {
+            RootNode.CollectAlias(this, alias, isMust);
+        }
 
         public MemoryEntry GetMemoryEntry(MemoryIndex memoryIndex)
         {
@@ -280,7 +280,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
-        public void AddNode(CollectorNode nextNode)
+        public void AddNode(LocationCollectorNode nextNode)
         {
             nextIterationNodes.Add(nextNode);
         }
@@ -361,6 +361,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
         }*/
+
 
     }
 }

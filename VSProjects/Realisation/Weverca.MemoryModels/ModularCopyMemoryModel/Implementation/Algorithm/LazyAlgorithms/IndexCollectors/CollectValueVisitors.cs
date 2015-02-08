@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void AddLocation(ValueLocation location)
         {
-            CollectorNode nextNode = node.CreateValueChild(location);
+            LocationCollectorNode nextNode = node.CreateValueChild(location);
             nextNode.IsMust = isMust;
             treeIndexCollector.AddNode(nextNode);
         }
@@ -44,7 +44,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public override void VisitUndefinedValue(UndefinedValue value)
         {
-            this.AddLocation(new ArrayUndefinedValueLocation(null, index, value));
+            // this.AddLocation(new ArrayUndefinedValueLocation(null, index, value));
         }
 
         public override void VisitAnyArrayValue(AnyArrayValue value)
@@ -101,7 +101,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void AddLocation(ValueLocation location)
         {
-            CollectorNode nextNode = node.CreateValueChild(location);
+            LocationCollectorNode nextNode = node.CreateValueChild(location);
             nextNode.IsMust = isMust;
             treeIndexCollector.AddNode(nextNode);
         }

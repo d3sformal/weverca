@@ -9,18 +9,21 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
-    class CollectorOperations
+/*    class CollectorOperations
     {
         CollectorNode node;
+
+        private List<KeyValuePair<string, CollectorNode>> newChildren = new List<KeyValuePair<string, CollectorNode>>();
 
         public CollectorOperations(CollectorNode node)
         {
             this.node = node;
         }
 
-        internal void NewImplicitChildFromAny(string name, MemoryIndex memoryIndex)
+        internal void NewImplicitChildFromAny(string name, CollectorNode node)
         {
-            //throw new NotImplementedException();
+            HasNewChildren = true;
+            newChildren.Add(new KeyValuePair<string, CollectorNode>(name, node));
         }
 
         internal void NewAnyNodeAccess()
@@ -40,23 +43,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         internal void NewCollectedOperation()
         {
-            //throw new NotImplementedException();
+            IsCollected = true;
         }
 
         public bool HasNewNodes { get; set; }
 
         public bool HasNewChildren { get; set; }
 
-        public IEnumerable<KeyValuePair<string, CollectorNode>> NewChildren { get; set; }
+        public IEnumerable<KeyValuePair<string, CollectorNode>> NewChildren { get { return newChildren; } }
 
         internal void NewCreateNodeOperation(MemoryIndex index)
         {
-            throw new NotImplementedException();
+            MemoryIndexCreated = true;
+            node.MemoryIndex = index;
         }
 
         public bool IsMemoryIndexNotDefined { get; set; }
 
         public MemoryIndex TargetIndex { get; set; }
+
+        public bool IsCollected { get; set; }
+
+        public bool HasNewImplicitArray { get; set; }
+
+        public bool MemoryIndexCreated { get; set; }
     }
 
     class VariableOperations : CollectorOperations
@@ -78,6 +88,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class IndexOperations : CollectorOperations
     {
+        public AssociativeArray ArrayValue;
         public IndexOperations(CollectorNode node)
             : base(node)
         {
@@ -85,7 +96,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         internal void NewImplicitArray()
         {
-            //throw new NotImplementedException();
+            HasNewImplicitArray = true;
         }
     }
 
@@ -100,5 +111,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             //throw new NotImplementedException();
         }
-    }
+    }*/
 }

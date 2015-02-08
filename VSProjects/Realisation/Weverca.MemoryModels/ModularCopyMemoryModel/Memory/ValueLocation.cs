@@ -36,6 +36,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     public abstract class ValueLocation
     {
         /// <summary>
+        /// Gets or sets the memory index which contains this value.
+        /// </summary>
+        /// <value>
+        /// Memory index which contains this value.
+        /// </value>
+        public MemoryIndex ContainingIndex
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Accepts the specified visitor.
         /// </summary>
         /// <param name="visitor">The visitor.</param>
@@ -127,11 +139,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     public class InfoValueLocation : ValueLocation
     {
         /// <summary>
-        /// Memory index which contains this value.
-        /// </summary>
-        public readonly MemoryIndex ContainingIndex;
-
-        /// <summary>
         /// Associated info value.
         /// </summary>
         public readonly InfoValue Value;
@@ -196,17 +203,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ObjectValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private Value value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectValueLocation"/> class.
@@ -216,7 +214,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ObjectValueLocation(MemoryIndex containingIndex, VariableIdentifier index, Value value)
         {
-            this.containingIndex = containingIndex;
+            ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -264,17 +262,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ObjectUndefinedValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private UndefinedValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectUndefinedValueLocation"/> class.
@@ -284,7 +273,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ObjectUndefinedValueLocation(MemoryIndex containingIndex, VariableIdentifier index, UndefinedValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -331,17 +320,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ObjectAnyValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private VariableIdentifier index;
         private AnyValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectAnyValueLocation"/> class.
@@ -351,7 +331,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ObjectAnyValueLocation(MemoryIndex containingIndex, VariableIdentifier index, AnyValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -402,17 +382,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ArrayValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
+        private MemoryIndex ContainingIndex;
         private MemberIdentifier index;
         private Value value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayValueLocation"/> class.
@@ -422,7 +394,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ArrayValueLocation(MemoryIndex containingIndex, MemberIdentifier index, Value value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -469,17 +441,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ArrayAnyValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private AnyValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayAnyValueLocation"/> class.
@@ -489,7 +452,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ArrayAnyValueLocation(MemoryIndex containingIndex, MemberIdentifier index, AnyValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -537,18 +500,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ArrayUndefinedValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private UndefinedValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ArrayUndefinedValueLocation"/> class.
         /// </summary>
@@ -557,7 +511,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ArrayUndefinedValueLocation(MemoryIndex containingIndex, MemberIdentifier index, UndefinedValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -605,17 +559,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ArrayStringValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private StringValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Gets the value associated with this location.
@@ -633,7 +578,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public ArrayStringValueLocation(MemoryIndex containingIndex, MemberIdentifier index, StringValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }
@@ -680,17 +625,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class AnyStringValueLocation : ValueLocation
     {
-        private MemoryIndex containingIndex;
         private MemberIdentifier index;
         private AnyStringValue value;
-
-        /// <summary>
-        /// Gets the memory index which contains this value.
-        /// </summary>
-        /// <value>
-        /// Memory index which contains this value.
-        /// </value>
-        public MemoryIndex ContainingIndex { get { return containingIndex; } }
 
         /// <summary>
         /// Gets the value associated with this location.
@@ -708,7 +644,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// <param name="value">The value.</param>
         public AnyStringValueLocation(MemoryIndex containingIndex, MemberIdentifier index, AnyStringValue value)
         {
-            this.containingIndex = containingIndex;
+            this.ContainingIndex = containingIndex;
             this.index = index;
             this.value = value;
         }

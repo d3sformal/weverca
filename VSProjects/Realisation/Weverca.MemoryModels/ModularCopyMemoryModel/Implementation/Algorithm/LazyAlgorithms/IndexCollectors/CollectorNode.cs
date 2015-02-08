@@ -9,56 +9,54 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
-    enum VisitType
+    interface LocationCollectorNodeVisitor
     {
-        Must, May
+        void VisitValueCollectorNode(ValueCollectorNode valueCollectorNode);
+        
+        void VisitMemoryIndexCollectorNode(MemoryIndexCollectorNode memoryIndexCollectorNode);
+
+        void VisitUnknownIndexCollectorNode(UnknownIndexCollectorNode unknownIndexCollectorNode);
+
+        void VisitUndefinedCollectorNode(UndefinedCollectorNode undefinedCollectorNode);
     }
 
     abstract class CollectorNode
     {
         public CollectorNode Parent { get; private set; }
 
-        public CollectorNode AnyChildNode { get; private set; }
+        public List<LocationCollectorNode> ChildNodes { get; private set; }
 
-        public Dictionary<string, CollectorNode> NamedChildNodes { get; private set; }
+        public MemoryCollectorNode AnyChildNode { get; private set; }
 
-        public List<CollectorNode> ValueNodes { get; private set; }
+        public Dictionary<string, MemoryCollectorNode> NamedChildNodes { get; private set; }
 
-        public List<CollectorNode> ChildNodes { get; private set; }
+        public List<Tuple<string, MemoryCollectorNode>> UndefinedChildren { get; private set; }
+
+        public List<ValueCollectorNode> ValueNodes { get; private set; }
 
         public bool IsMust { get; set; }
 
-        public bool HasOperations { get; protected set; }
+        public bool IsCollected { get; set; }
 
-        CollectorOperations operations;
-        public CollectorOperations Operations
-        {
-            get { return operations; }
-            set
-            {
-                operations = value;
-                HasOperations = true;
-            }
-        }
+        public bool HasUndefinedChildren { get { return UndefinedChildren.Count > 0; } }
 
         public CollectorNode()
         {
-            NamedChildNodes = new Dictionary<string, CollectorNode>();
-            ValueNodes = new List<CollectorNode>();
-            ChildNodes = new List<CollectorNode>();
+            ChildNodes = new List<LocationCollectorNode>();
+            NamedChildNodes = new Dictionary<string, MemoryCollectorNode>();
+            UndefinedChildren = new List<Tuple<string, MemoryCollectorNode>>();
+            ValueNodes = new List<ValueCollectorNode>();
         }
 
-        public abstract void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment);
-
-        public abstract void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment);
-
-
-        private void addChild(CollectorNode node, string name)
+        #region Children operations
+        
+        public void addChild(MemoryCollectorNode node, string name)
         {
             if (!NamedChildNodes.ContainsKey(name))
             {
                 NamedChildNodes.Add(name, node);
                 ChildNodes.Add(node);
+                node.Parent = this;
             }
             else
             {
@@ -66,12 +64,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
-        private void addAnyChild(CollectorNode node)
+        public void addAnyChild(MemoryCollectorNode node)
         {
             if (AnyChildNode == null)
             {
                 AnyChildNode = node;
                 ChildNodes.Add(node);
+                node.Parent = this;
             }
             else
             {
@@ -79,142 +78,58 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
-        private void addValueChild(CollectorNode node)
+        public void addValueChild(ValueCollectorNode node)
         {
             ValueNodes.Add(node);
             ChildNodes.Add(node);
+            node.Parent = this;
         }
 
-        #region Creating Children
-
-        public CollectorNode CreateMemoryIndexChild(string name, MemoryIndex memoryIndex)
+        public virtual LocationCollectorNode CreateMemoryIndexChild(string name, MemoryIndex memoryIndex)
         {
-            CollectorNode node = new MemoryIndexNode(memoryIndex);
+            MemoryIndexCollectorNode node = new MemoryIndexCollectorNode(memoryIndex);
             addChild(node, name);
             return node;
         }
 
-        public CollectorNode CreateMemoryIndexChildFromAny(string name, MemoryIndex memoryIndex)
+        public virtual LocationCollectorNode CreateMemoryIndexChildFromAny(string name, MemoryIndex sourceIndex)
         {
-            CollectorNode node = new MemoryIndexNode(memoryIndex);
+            UnknownIndexCollectorNode node = new UnknownIndexCollectorNode(sourceIndex);
             addChild(node, name);
+            this.UndefinedChildren.Add(new Tuple<string, MemoryCollectorNode>(name, node));
             return node;
         }
 
-        public CollectorNode CreateMemoryIndexAnyChild(MemoryIndex unknownIndex)
+        public virtual LocationCollectorNode CreateMemoryIndexAnyChild(MemoryIndex unknownIndex)
         {
-            CollectorNode node = new MemoryIndexNode(unknownIndex);
+            MemoryIndexCollectorNode node = new MemoryIndexCollectorNode(unknownIndex);
             addAnyChild(node);
             return node;
         }
 
-        public CollectorNode CreateUndefinedChild(string name)
+        public virtual LocationCollectorNode CreateUndefinedChild(string name)
         {
-            CollectorNode node = new UndefinedNode();
+            UndefinedCollectorNode node = new UndefinedCollectorNode();
             addChild(node, name);
+            this.UndefinedChildren.Add(new Tuple<string, MemoryCollectorNode>(name, node));
             return node;
         }
 
-        public CollectorNode CreateUndefinedAnyChild()
+        public virtual LocationCollectorNode CreateUndefinedAnyChild()
         {
-            CollectorNode node = new UndefinedNode();
+            UndefinedCollectorNode node = new UndefinedCollectorNode();
             addAnyChild(node);
             return node;
         }
 
-        public CollectorNode CreateValueChild(ValueLocation location)
+        public virtual LocationCollectorNode CreateValueChild(ValueLocation location)
         {
-            CollectorNode node = new ValueNode(location);
+            ValueCollectorNode node = new ValueCollectorNode(location);
             addValueChild(node);
             return node;
         }
 
         #endregion
-
-        public MemoryIndex MemoryIndex { get; set; }
-
-        public bool CreateNewNode { get; set; }
-    }
-
-    class RootCollectorNode
-    {
-        public readonly Dictionary<int, ContainerCollectorNode> VariableStackNodes = 
-            new Dictionary<int, ContainerCollectorNode>();
-        public readonly Dictionary<int, ContainerCollectorNode> ControlStackNodes = 
-            new Dictionary<int, ContainerCollectorNode>();
-        public readonly Dictionary<MemoryIndex, MemoryIndexNode> TemporaryNodes = 
-            new Dictionary<MemoryIndex, MemoryIndexNode>();
-        public readonly Dictionary<ObjectValue, ContainerCollectorNode> ObjectNodes = 
-            new Dictionary<ObjectValue, ContainerCollectorNode>();
-
-        public bool HasRootNode { get; private set; }
-
-        public void CollectVariable(TreeIndexCollector collector, VariablePathSegment variableSegment)
-        {
-            int currentCallLevel = collector.GetCurrentCallLevel();
-            ContainerCollectorNode variableStackNode;
-            if (!VariableStackNodes.TryGetValue(currentCallLevel, out variableStackNode))
-            {
-                IReadonlyIndexContainer indexContainer = collector.Structure
-                    .GetReadonlyStackContext(currentCallLevel).ReadonlyVariables;
-
-                variableStackNode = new ContainerCollectorNode(indexContainer);
-                variableStackNode.Operations = new VariableOperations(variableStackNode);
-
-                VariableStackNodes.Add(currentCallLevel, variableStackNode);
-            }
-
-            variableStackNode.Collect(collector, variableSegment);
-            HasRootNode = true;
-        }
-
-        public void CollectControl(TreeIndexCollector collector, ControlPathSegment controlPathSegment)
-        {
-            int currentCallLevel = collector.GetCurrentCallLevel();
-            ContainerCollectorNode controlStackNode;
-            if (!ControlStackNodes.TryGetValue(currentCallLevel, out controlStackNode))
-            {
-                IReadonlyIndexContainer indexContainer = collector.Structure
-                    .GetReadonlyStackContext(currentCallLevel).ReadonlyControllVariables;
-
-                controlStackNode = new ContainerCollectorNode(indexContainer);
-                controlStackNode.Operations = new ControlOperations(controlStackNode);
-
-                ControlStackNodes.Add(currentCallLevel, controlStackNode);
-            }
-
-            controlStackNode.Collect(collector, controlPathSegment);
-            HasRootNode = true;
-        }
-
-        public void CollectTemporary(TreeIndexCollector treeIndexCollector, TemporaryPathSegment temporaryPathSegment)
-        {
-            if (TemporaryNodes.ContainsKey(temporaryPathSegment.TemporaryIndex))
-            {
-                throw new NotImplementedException("Temporary memory index is visited more than once");
-            }
-
-            MemoryIndexNode node = new MemoryIndexNode(temporaryPathSegment.TemporaryIndex);
-            node.IsMust = true;
-            TemporaryNodes.Add(temporaryPathSegment.TemporaryIndex, node);
-            treeIndexCollector.AddNode(node);
-            HasRootNode = true;
-        }
-
-        public void CollectObject(TreeIndexCollector collector, ObjectValue objectValue, FieldPathSegment fieldPathSegment)
-        {
-            ContainerCollectorNode objectNode;
-            if (!ObjectNodes.TryGetValue(objectValue, out objectNode))
-            {
-                IObjectDescriptor descriptor = collector.Structure.GetDescriptor(objectValue);
-                objectNode = new ContainerCollectorNode(descriptor);
-                objectNode.Operations = new CollectorOperations(objectNode);
-
-                ObjectNodes.Add(objectValue, objectNode);
-            }
-
-            objectNode.Collect(collector, fieldPathSegment);
-        }
     }
 
     class ContainerCollectorNode : CollectorNode
@@ -224,42 +139,136 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public ContainerCollectorNode(IReadonlyIndexContainer indexContainer)
         {
             this.indexContainer = indexContainer;
+            IsMust = true;
         }
 
         public void Collect(TreeIndexCollector collector, PathSegment pathSegment)
         {
-            collector.CollectSegmentFromStructure(pathSegment, this, Operations, indexContainer, true);
+            collector.CollectSegmentFromStructure(pathSegment, this, indexContainer, true);
+        }
+    }
+
+    class ImplicitObjectCollectorNode : CollectorNode
+    {
+        public ObjectValue ObjectValue { get; set; }
+    }
+
+    abstract class LocationCollectorNode : CollectorNode
+    {
+        public MemoryIndex TargetIndex { get; set; }
+
+        public abstract void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment);
+
+        public abstract void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment);
+
+        public abstract void CollectAliases(TreeIndexCollector collector);
+
+        public abstract void Accept(LocationCollectorNodeVisitor visitor);
+    }
+
+    class ValueCollectorNode : LocationCollectorNode
+    {
+        public ValueLocation ValueLocation { get; private set; }
+
+        public ValueCollectorNode(ValueLocation valueLocation)
+        {
+            this.ValueLocation = valueLocation;
         }
 
         public override void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment)
         {
-            throw new InvalidOperationException();
+            FieldLocationVisitor visitor = new FieldLocationVisitor(collector, fieldSegment, this);
+            ValueLocation.Accept(visitor);
         }
 
         public override void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment)
         {
-            throw new InvalidOperationException();
+            IndexLocationVisitor visitor = new IndexLocationVisitor(collector, indexSegment, this);
+            ValueLocation.Accept(visitor);
+        }
+
+        private class IndexLocationVisitor : ProcessValueAsLocationVisitor
+        {
+            private TreeIndexCollector collector;
+            private IndexPathSegment indexSegment;
+            private ValueCollectorNode node;
+
+            public IndexLocationVisitor(TreeIndexCollector collector, IndexPathSegment indexSegment,
+                ValueCollectorNode node)
+                : base(collector.Snapshot.MemoryAssistant)
+            {
+                this.collector = collector;
+                this.indexSegment = indexSegment;
+                this.node = node;
+            }
+
+            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
+            {
+                collector.CollectIndexSegmentFromValues(indexSegment, node, values, isMust);
+            }
+        }
+
+        private class FieldLocationVisitor : ProcessValueAsLocationVisitor
+        {
+            private TreeIndexCollector collector;
+            private FieldPathSegment fieldSegment;
+            private ValueCollectorNode node;
+
+            public FieldLocationVisitor(TreeIndexCollector collector, FieldPathSegment fieldSegment,
+                ValueCollectorNode node)
+                : base(collector.Snapshot.MemoryAssistant)
+            {
+                this.collector = collector;
+                this.fieldSegment = fieldSegment;
+                this.node = node;
+            }
+
+            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
+            {
+                collector.CollectFieldSegmentFromValues(fieldSegment, node, values, isMust);
+            }
+        }
+
+        public override void Accept(LocationCollectorNodeVisitor visitor)
+        {
+            visitor.VisitValueCollectorNode(this);
+        }
+
+        public override void CollectAliases(TreeIndexCollector collector)
+        {
+            // Do nothing - values can not have any alias
         }
     }
 
-    class MemoryIndexNode : CollectorNode
+    abstract class MemoryCollectorNode : LocationCollectorNode
     {
-        MemoryIndex memoryIndex;
+        public MemoryIndex SourceIndex { get; set; }
 
-        public MemoryIndexNode(MemoryIndex memoryIndex)
+        public bool ContainsUndefinedValue { get; set; }
+
+        public bool HasNewImplicitArray { get; set; }
+
+        public bool HasNewImplicitObject { get; set; }
+
+        public ImplicitObjectCollectorNode ImplicitObjectNode { get; set; }
+
+        public void AddNewImplicitObjectNode(bool isMust)
         {
-            this.memoryIndex = memoryIndex;
+            if (!this.HasNewImplicitObject)
+            {
+                HasNewImplicitObject = true;
+                ImplicitObjectNode = new ImplicitObjectCollectorNode();
+                ImplicitObjectNode.IsMust = this.IsMust && isMust;
+            }
         }
 
-        public override void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment)
+        protected void collectFieldFromMemoryIndex(TreeIndexCollector collector, FieldPathSegment fieldSegment, MemoryIndex index)
         {
-            FieldOperations operations = new FieldOperations(this);
-            Operations = operations;
-
-            MemoryEntry entry = collector.GetMemoryEntry(memoryIndex);
+            MemoryEntry entry = collector.GetMemoryEntry(index);
+            this.ContainsUndefinedValue = entry.ContainsUndefinedValue;
             bool processOtherValues = false;
 
-            IObjectValueContainer objects = collector.Structure.GetObjects(memoryIndex);
+            IObjectValueContainer objects = collector.Structure.GetObjects(index);
             if (objects.Count > 0)
             {
                 processOtherValues = entry.Count > objects.Count
@@ -273,16 +282,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
                 if (entry.ContainsUndefinedValue)
                 {
-                    operations.NewImplicitObject();
-                    collector.CollectSegmentWithoutStructure(fieldSegment, this, operations, false);
+                    AddNewImplicitObjectNode(false);
+                    collector.CollectSegmentWithoutStructure(fieldSegment, ImplicitObjectNode, false);
                 }
             }
             else if (entry.ContainsUndefinedValue)
             {
                 processOtherValues = entry.Count > 1;
 
-                operations.NewImplicitObject();
-                collector.CollectSegmentWithoutStructure(fieldSegment, this, operations, !processOtherValues);
+                AddNewImplicitObjectNode(!processOtherValues);
+                collector.CollectSegmentWithoutStructure(fieldSegment, ImplicitObjectNode, !processOtherValues);
             }
             else
             {
@@ -291,32 +300,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (processOtherValues)
             {
-                collector.CollectFieldSegmentFromValues(fieldSegment, this, operations, entry.PossibleValues, true);
+                collector.CollectFieldSegmentFromValues(fieldSegment, this, entry.PossibleValues, true);
             }
         }
 
-        public override void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment)
+        protected void CollectIndexFromMemoryIndex(TreeIndexCollector collector, IndexPathSegment indexSegment, MemoryIndex index)
         {
-            IndexOperations operations = new IndexOperations(this);
-            Operations = operations;
-
-            MemoryEntry entry = collector.GetMemoryEntry(memoryIndex);
+            MemoryEntry entry = collector.GetMemoryEntry(index);
+            this.ContainsUndefinedValue = entry.ContainsUndefinedValue;
             bool processOtherValues = false;
 
             AssociativeArray arrayValue;
-            if (collector.Structure.TryGetArray(memoryIndex, out arrayValue))
+            if (collector.Structure.TryGetArray(index, out arrayValue))
             {
-                processOtherValues = entry.Count > 2 || entry.ContainsUndefinedValue && entry.Count > 1;
+                processOtherValues = entry.Count > 1 || entry.ContainsUndefinedValue && entry.Count > 2;
 
                 IArrayDescriptor descriptor = collector.Structure.GetDescriptor(arrayValue);
-                collector.CollectSegmentFromStructure(indexSegment, this, operations, descriptor, !processOtherValues);
+                collector.CollectSegmentFromStructure(indexSegment, this, descriptor, !processOtherValues);
             }
             else if (entry.ContainsUndefinedValue)
             {
                 processOtherValues = entry.Count > 1;
 
-                operations.NewImplicitArray();
-                collector.CollectSegmentWithoutStructure(indexSegment, this, operations, !processOtherValues);
+                this.HasNewImplicitArray = true;
+                collector.CollectSegmentWithoutStructure(indexSegment, this, !processOtherValues);
             }
             else
             {
@@ -325,103 +332,133 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (processOtherValues)
             {
-                collector.CollectIndexSegmentFromValues(indexSegment, this, operations, entry.PossibleValues, true);
+                collector.CollectIndexSegmentFromValues(indexSegment, this, entry.PossibleValues, true);
+            }
+        }
+
+        protected void CollectAliasesFromMemoryIndex(TreeIndexCollector collector, MemoryIndex index)
+        {
+            IMemoryAlias aliases;
+            if (collector.Structure.TryGetAliases(index, out aliases))
+            {
+                foreach (MemoryIndex alias in aliases.MustAliases)
+                {
+                    collector.CollectAlias(this, alias, IsMust);
+                }
+                foreach (MemoryIndex alias in aliases.MayAliases)
+                {
+                    collector.CollectAlias(this, alias, false);
+                }
             }
         }
     }
 
-    class UndefinedNode : CollectorNode
+    class MemoryIndexCollectorNode : MemoryCollectorNode
     {
+        MemoryIndex memoryIndex;
+
+        public MemoryIndexCollectorNode(MemoryIndex memoryIndex)
+        {
+            SetMemoryIndex(memoryIndex);
+        }
+
+        internal void SetMemoryIndex(MemoryIndex memoryIndex)
+        {
+            this.memoryIndex = memoryIndex;
+            TargetIndex = memoryIndex;
+            SourceIndex = memoryIndex;
+        }
+
         public override void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment)
         {
-            FieldOperations operations = new FieldOperations(this);
-            Operations = operations;
-
-            operations.NewImplicitObject();
-            collector.CollectSegmentWithoutStructure(fieldSegment, this, operations, true);
+            collectFieldFromMemoryIndex(collector, fieldSegment, memoryIndex);
         }
 
         public override void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment)
         {
-            IndexOperations operations = new IndexOperations(this);
-            Operations = operations;
+            CollectIndexFromMemoryIndex(collector, indexSegment, memoryIndex);
+        }
 
-            operations.NewImplicitArray();
-            collector.CollectSegmentWithoutStructure(indexSegment, this, operations, true);
+        public override void CollectAliases(TreeIndexCollector collector)
+        {
+            CollectAliasesFromMemoryIndex(collector, memoryIndex);
+        }
+
+        public override void Accept(LocationCollectorNodeVisitor visitor)
+        {
+            visitor.VisitMemoryIndexCollectorNode(this);
         }
     }
 
-    class ValueNode : CollectorNode
+    class UnknownIndexCollectorNode : MemoryCollectorNode
     {
-        ValueLocation valueLocation;
+        MemoryIndex sourceMemoryIndex;
 
-        public ValueNode(ValueLocation valueLocation)
+        public UnknownIndexCollectorNode(MemoryIndex sourceMemoryIndex)
         {
-            this.valueLocation = valueLocation;
+            this.sourceMemoryIndex = sourceMemoryIndex;
+            SourceIndex = sourceMemoryIndex;
         }
 
         public override void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment)
         {
-            FieldOperations operations = new FieldOperations(this);
-            Operations = operations;
-
-            FieldLocationVisitor visitor = new FieldLocationVisitor(collector, fieldSegment, this, operations);
-            valueLocation.Accept(visitor);
+            collectFieldFromMemoryIndex(collector, fieldSegment, sourceMemoryIndex);
         }
 
         public override void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment)
         {
-            IndexOperations operations = new IndexOperations(this);
-            Operations = operations;
-
-            IndexLocationVisitor visitor = new IndexLocationVisitor(collector, indexSegment, this, operations);
-            valueLocation.Accept(visitor);
+            CollectIndexFromMemoryIndex(collector, indexSegment, sourceMemoryIndex);
         }
 
-        private class IndexLocationVisitor : ProcessValueAsLocationVisitor
+        public override void CollectAliases(TreeIndexCollector collector)
         {
-            private TreeIndexCollector collector;
-            private IndexPathSegment indexSegment;
-            private CollectorNode node;
-            private IndexOperations operations;
-
-            public IndexLocationVisitor(TreeIndexCollector collector, IndexPathSegment indexSegment,
-                CollectorNode node, IndexOperations operations)
-                : base(collector.Snapshot.MemoryAssistant)
-            {
-                this.collector = collector;
-                this.indexSegment = indexSegment;
-                this.node = node;
-                this.operations = operations;
-            }
-
-            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
-            {
-                collector.CollectIndexSegmentFromValues(indexSegment, node, operations, values, isMust);
-            }
+            CollectAliasesFromMemoryIndex(collector, sourceMemoryIndex);
         }
 
-        private class FieldLocationVisitor : ProcessValueAsLocationVisitor
+        public override LocationCollectorNode CreateMemoryIndexChild(string name, MemoryIndex memoryIndex)
         {
-            private TreeIndexCollector collector;
-            private FieldPathSegment fieldSegment;
-            private CollectorNode node;
-            private FieldOperations operations;
+            UnknownIndexCollectorNode node = new UnknownIndexCollectorNode(memoryIndex);
+            addChild(node, name);
+            this.UndefinedChildren.Add(new Tuple<string, MemoryCollectorNode>(name, node));
+            return node;
+        }
 
-            public FieldLocationVisitor(TreeIndexCollector collector, FieldPathSegment fieldSegment, 
-                CollectorNode node, FieldOperations operations)
-                : base(collector.Snapshot.MemoryAssistant)
-            {
-                this.collector = collector;
-                this.fieldSegment = fieldSegment;
-                this.node = node;
-                this.operations = operations;
-            }
+        public override LocationCollectorNode CreateMemoryIndexAnyChild(MemoryIndex unknownIndex)
+        {
+            UnknownIndexCollectorNode node = new UnknownIndexCollectorNode(unknownIndex);
+            addAnyChild(node);
+            return node;
+        }
 
-            public override void ProcessValues(MemoryIndex parentIndex, IEnumerable<Value> values, bool isMust)
-            {
-                collector.CollectFieldSegmentFromValues(fieldSegment, node, operations, values, isMust);
-            }
+        public override void Accept(LocationCollectorNodeVisitor visitor)
+        {
+            visitor.VisitUnknownIndexCollectorNode(this);
+        }
+    }
+
+    class UndefinedCollectorNode : MemoryCollectorNode
+    {
+
+        public override void CollectField(TreeIndexCollector collector, FieldPathSegment fieldSegment)
+        {
+            AddNewImplicitObjectNode(true);
+            collector.CollectSegmentWithoutStructure(fieldSegment, ImplicitObjectNode, true);
+        }
+
+        public override void CollectIndex(TreeIndexCollector collector, IndexPathSegment indexSegment)
+        {
+            HasNewImplicitArray = true;
+            collector.CollectSegmentWithoutStructure(indexSegment, this, true);
+        }
+
+        public override void CollectAliases(TreeIndexCollector collector)
+        {
+            // Do nothing - undefined index can not have any alias
+        }
+
+        public override void Accept(LocationCollectorNodeVisitor visitor)
+        {
+            visitor.VisitUndefinedCollectorNode(this);
         }
     }
 }

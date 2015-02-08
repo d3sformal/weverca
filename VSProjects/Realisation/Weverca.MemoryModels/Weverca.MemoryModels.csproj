@@ -130,7 +130,10 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\CopyReadAlgorithm.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\AssignCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\IIndexCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\MemoryEntryCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\RootCollectorNode.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AssignOperation.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AssignValueLocationVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\LazyAssignWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyArrayDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyIndexDefinition.cs" />
@@ -155,7 +158,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\MergeWithinSnapshotWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\MergeWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReadWorker.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ReferenceCollector.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Common\ReferenceCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\CollectorNode.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\TreeIndexCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\LazyAssignAlgorithm.cs" />

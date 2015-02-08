@@ -907,6 +907,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         private int rootId;
 
         /// <summary>
+        /// Specifies the memory index of the first index on this temporary path
+        /// </summary>
+        public TemporaryIndex RootIndex { get; private set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TemporaryIndex"/> class.
         /// </summary>
         /// <param name="callLevel">The call level.</param>
@@ -916,6 +921,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             rootId = GLOBAL_ROOT_ID;
             GLOBAL_ROOT_ID++;
             computeAndStoreHashCode();
+
+            RootIndex = this;
         }
 
         /// <summary>
@@ -928,6 +935,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             rootId = parentIndex.rootId;
             computeAndStoreHashCode();
+
+            RootIndex = parentIndex.RootIndex;
         }
 
         /// <summary>
@@ -940,6 +949,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             rootId = parentIndex.rootId;
             computeAndStoreHashCode();
+
+            RootIndex = parentIndex.RootIndex;
         }
 
         /// <summary>
@@ -952,6 +963,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         {
             rootId = parentIndex.rootId;
             computeAndStoreHashCode();
+
+            RootIndex = parentIndex.RootIndex;
         }
 
         /// <summary>

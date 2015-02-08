@@ -40,7 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public readonly HashSet<AssociativeArray> Arrays = new HashSet<AssociativeArray>();
 
         /// <summary>
-        /// List of scalar values which was found in entry.
+        /// List of object values which was found in entry.
         /// </summary>
         public readonly HashSet<ObjectValue> Objects = new HashSet<ObjectValue>();
 

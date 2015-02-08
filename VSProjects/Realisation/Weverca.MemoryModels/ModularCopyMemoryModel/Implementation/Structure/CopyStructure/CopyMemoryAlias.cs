@@ -102,5 +102,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             return new CopyMemoryAlias(this);
         }
+
+
+        /// <inheritdoc />
+        public bool HasAliases
+        {
+            get { return mustAliases.Count > 0 || mayAliases.Count > 0; }
+        }
+
+        /// <inheritdoc />
+        public bool HasMustAliases
+        {
+            get { return mustAliases.Count > 0; }
+        }
     }
 }
