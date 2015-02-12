@@ -34,8 +34,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
     {
         private static readonly AlgorithmFactories copyAlgorithmFactories = new AlgorithmFactoriesBuilder()
         {
-            AssignAlgorithmFactory = new CopyAssignAlgorithm(),
-            //AssignAlgorithmFactory = new LazyAssignAlgorithm(),
+            //AssignAlgorithmFactory = new CopyAssignAlgorithm(),
+            AssignAlgorithmFactory = new LazyAssignAlgorithm(),
             CommitAlgorithmFactory = new TrackingCommitAlgorithm(),
             MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithm(),
             //MergeAlgorithmFactory = new CopyMergeAlgorithm(),

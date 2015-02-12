@@ -160,9 +160,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void enqueueLocationChildNodes(LocationCollectorNode node)
         {
-            foreach (var valueNode in node.ValueNodes)
+            if (node.ValueNodes != null)
             {
-                valueNode.TargetIndex = node.TargetIndex;
+                foreach (var valueNode in node.ValueNodes)
+                {
+                    valueNode.TargetIndex = node.TargetIndex;
+                }
             }
 
             foreach (var childNode in node.ChildNodes)

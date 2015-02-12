@@ -116,6 +116,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             MemoryIndexCollectorNode lastCreatedNode = null;
             CollectorNode currentNode;
+            CollectorNode parentNode;
+            IndexSegment lastSegment;
 
             public CollectAliasMemoryIndexVisitor(TreeIndexCollector collector, RootCollectorNode rootNode, bool isMust)
             {
@@ -162,7 +164,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
                 processIndexPath(index);
 
-                processAlias(index);
+                if (!processAlias(index))
+                {
+                    if (isMust)
+                    {
+                        rootNode.TemporaryNodes.Remove(index.RootIndex);
+
+                        MemoryIndexCollectorNode newNode = new MemoryIndexCollectorNode(index.RootIndex);
+                        newNode.IsMust = isMust;
+                        rootNode.TemporaryNodes.Add(index.RootIndex, newNode);
+                    }
+                    else
+                    {
+                        MemoryIndexCollectorNode childNode = rootNode.TemporaryNodes[index.RootIndex];
+
+                        collector.AddNode(childNode);
+                        childNode.TargetIndex = index;
+                        childNode.SourceIndex = index;
+                        childNode.IsMust = false;
+                    }
+                }
             }
 
             public void VisitControlIndex(ControlIndex index)
@@ -191,10 +212,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             private void processIndexSegment(IndexSegment segment)
             {
+                lastSegment = segment;
                 if (segment.IsAny)
                 {
                     if (currentNode.AnyChildNode != null)
                     {
+                        parentNode = currentNode;
                         currentNode = currentNode.AnyChildNode;
                     }
                     else
@@ -203,14 +226,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                         newNode.IsMust = false;
                         currentNode.addAnyChild(newNode);
 
+                        parentNode = currentNode;
                         currentNode = newNode;
                         lastCreatedNode = newNode;
                     }
                 }
                 else
                 {
-                    if (currentNode.NamedChildNodes.ContainsKey(segment.Name))
+                    if (currentNode.NamedChildNodes != null && currentNode.NamedChildNodes.ContainsKey(segment.Name))
                     {
+                        parentNode = currentNode;
                         currentNode = currentNode.NamedChildNodes[segment.Name];
                     }
                     else
@@ -219,23 +244,98 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                         newNode.IsMust = isMust;
                         currentNode.addChild(newNode, segment.Name);
 
+                        parentNode = currentNode;
                         currentNode = newNode;
                         lastCreatedNode = newNode;
                     }
                 }
             }
 
-            private void processAlias(MemoryIndex index)
+            private bool processAlias(MemoryIndex index)
             {
-                if (lastCreatedNode != null)
-                {
-                    lastCreatedNode.SetMemoryIndex(index);
 
-                    collector.AddNode(lastCreatedNode);
+                if (lastCreatedNode == null)
+                {
+                    if (parentNode != null && lastSegment != null)
+                    {
+                        if (lastSegment.IsAny)
+                        {
+                            if (testAndProcessReturnedAnyNode(parentNode, index))
+                            {
+                                MemoryIndexCollectorNode newNode = new MemoryIndexCollectorNode(index);
+                                newNode.IsMust = false;
+                                currentNode.addAnyChild(newNode);
+
+                                collector.AddNode(newNode);
+                            }
+                        }
+                        else
+                        {
+                            if (testAndProcessReturnedNode(lastSegment.Name, parentNode, isMust, index))
+                            {
+                                MemoryIndexCollectorNode newNode = new MemoryIndexCollectorNode(index);
+                                newNode.IsMust = isMust;
+                                currentNode.addChild(newNode, lastSegment.Name);
+
+                                collector.AddNode(newNode);
+                            }
+                        }
+
+                        return true;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 else
                 {
-                    throw new NotImplementedException("Processing alias at already collected location");
+                    lastCreatedNode.SetMemoryIndex(index);
+                    collector.AddNode(lastCreatedNode);
+
+                    return true;
+                }
+            }
+
+            private bool testAndProcessReturnedNode(string name, CollectorNode node, bool isMust, MemoryIndex index)
+            {
+                MemoryCollectorNode childNode;
+                if (node.NamedChildNodes != null && node.NamedChildNodes.TryGetValue(name, out childNode))
+                {
+                    if (isMust)
+                    {
+                        node.NamedChildNodes.Remove(name);
+
+                        return true;
+                    }
+                    else
+                    {
+                        collector.AddNode(childNode);
+                        childNode.TargetIndex = index;
+                        childNode.SourceIndex = index;
+                        childNode.IsMust = false;
+
+                        return false;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
+            }
+
+            private bool testAndProcessReturnedAnyNode(CollectorNode node, MemoryIndex index)
+            {
+                if (node.AnyChildNode != null)
+                {
+                    collector.AddNode(node.AnyChildNode);
+                    node.AnyChildNode.TargetIndex = index;
+                    node.AnyChildNode.SourceIndex = index;
+                    return false;
+                }
+                else
+                {
+                    return true;
                 }
             }
         }

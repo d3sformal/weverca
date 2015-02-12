@@ -22,8 +22,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     abstract class CollectorNode
     {
-        public CollectorNode Parent { get; private set; }
-
         public List<LocationCollectorNode> ChildNodes { get; private set; }
 
         public MemoryCollectorNode AnyChildNode { get; private set; }
@@ -38,25 +36,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public bool IsCollected { get; set; }
 
-        public bool HasUndefinedChildren { get { return UndefinedChildren.Count > 0; } }
+        public bool HasUndefinedChildren { get { return UndefinedChildren != null && UndefinedChildren.Count > 0; } }
 
         public CollectorNode()
         {
+            
             ChildNodes = new List<LocationCollectorNode>();
-            NamedChildNodes = new Dictionary<string, MemoryCollectorNode>();
+            /*NamedChildNodes = new Dictionary<string, MemoryCollectorNode>();
             UndefinedChildren = new List<Tuple<string, MemoryCollectorNode>>();
             ValueNodes = new List<ValueCollectorNode>();
+             * */
         }
 
         #region Children operations
         
         public void addChild(MemoryCollectorNode node, string name)
         {
+            if (NamedChildNodes == null)
+            {
+                NamedChildNodes = new Dictionary<string, MemoryCollectorNode>();
+                UndefinedChildren = new List<Tuple<string, MemoryCollectorNode>>();
+            }
+
             if (!NamedChildNodes.ContainsKey(name))
             {
                 NamedChildNodes.Add(name, node);
                 ChildNodes.Add(node);
-                node.Parent = this;
             }
             else
             {
@@ -70,7 +75,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             {
                 AnyChildNode = node;
                 ChildNodes.Add(node);
-                node.Parent = this;
             }
             else
             {
@@ -80,9 +84,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public void addValueChild(ValueCollectorNode node)
         {
+            if (ValueNodes == null)
+            {
+                ValueNodes = new List<ValueCollectorNode>();
+            }
+
             ValueNodes.Add(node);
             ChildNodes.Add(node);
-            node.Parent = this;
         }
 
         public virtual LocationCollectorNode CreateMemoryIndexChild(string name, MemoryIndex memoryIndex)
@@ -92,7 +100,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return node;
         }
 
-        public virtual LocationCollectorNode CreateMemoryIndexChildFromAny(string name, MemoryIndex sourceIndex)
+        public virtual MemoryCollectorNode CreateMemoryIndexChildFromAny(string name, MemoryIndex sourceIndex)
         {
             UnknownIndexCollectorNode node = new UnknownIndexCollectorNode(sourceIndex);
             addChild(node, name);

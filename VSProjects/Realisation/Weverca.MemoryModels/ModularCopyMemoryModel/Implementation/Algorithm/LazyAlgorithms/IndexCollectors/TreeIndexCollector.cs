@@ -203,47 +203,100 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void collectMemoryIndexAnyNode(MemoryIndex unknownIndex, CollectorNode node)
         {
-            LocationCollectorNode nextNode = node.CreateMemoryIndexAnyChild(unknownIndex);
-            nextNode.IsMust = false;
-            AddNode(nextNode);
+            if (testAndProcessReturnedAnyNode(node))
+            {
+                LocationCollectorNode nextNode = node.CreateMemoryIndexAnyChild(unknownIndex);
+                nextNode.IsMust = false;
+                AddNode(nextNode);
+            }
         }
 
         private void collectMemoryIndexExpandedNode(string name, MemoryIndex memoryIndex, CollectorNode node)
         {
-            LocationCollectorNode nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
-            nextNode.IsMust = false;
-            AddNode(nextNode);
+            if (testAndProcessReturnedNode(name, node, false))
+            {
+                LocationCollectorNode nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
+                nextNode.IsMust = false;
+                AddNode(nextNode);
+            }
         }
 
         private void collectMemoryIndexNode(string name, CollectorNode node, 
             IReadonlyIndexContainer indexContainer, bool isMust)
         {
-            MemoryIndex memoryIndex;
-            LocationCollectorNode nextNode;
-            if (indexContainer.TryGetIndex(name, out memoryIndex))
+            if (testAndProcessReturnedNode(name, node, isMust))
             {
-                nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
-            }
-            else
-            {
-                nextNode = node.CreateMemoryIndexChildFromAny(name, indexContainer.UnknownIndex);
-            }
+                LocationCollectorNode nextNode ;
+                MemoryIndex memoryIndex;
+                if (indexContainer.TryGetIndex(name, out memoryIndex))
+                {
+                    nextNode = node.CreateMemoryIndexChild(name, memoryIndex);
+                }
+                else
+                {
+                    nextNode = node.CreateMemoryIndexChildFromAny(name, indexContainer.UnknownIndex);
+                }
 
-            nextNode.IsMust = isMust;
-            AddNode(nextNode);
+                nextNode.IsMust = isMust;
+                AddNode(nextNode);
+            }
         }
-
+        
         private void collectImplicitAnyNode(CollectorNode node)
         {
-            LocationCollectorNode nextNode = node.CreateUndefinedAnyChild();
-            AddNode(nextNode);
+            if (testAndProcessReturnedAnyNode(node))
+            {
+                LocationCollectorNode nextNode = node.CreateUndefinedAnyChild();
+                AddNode(nextNode);
+            }
         }
 
         private void collectImplicitNode(string name, CollectorNode node, bool isMust)
         {
-            LocationCollectorNode nextNode = node.CreateUndefinedChild(name);
-            nextNode.IsMust = isMust;
-            AddNode(nextNode);
+            if (testAndProcessReturnedNode(name, node, isMust))
+            {
+                LocationCollectorNode nextNode = node.CreateUndefinedChild(name);
+                nextNode.IsMust = isMust;
+                AddNode(nextNode);
+            }
+        }
+
+        private bool testAndProcessReturnedNode(string name, CollectorNode node, bool isMust)
+        {
+            MemoryCollectorNode childNode;
+            if (node.NamedChildNodes != null && node.NamedChildNodes.TryGetValue(name, out childNode))
+            {
+                if (isMust)
+                {
+                    node.NamedChildNodes.Remove(name);
+
+                    return true;
+                }
+                else
+                {
+                    AddNode(childNode);
+                    childNode.IsMust = false;
+
+                    return false;
+                }
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private bool testAndProcessReturnedAnyNode(CollectorNode node)
+        {
+            if (node.AnyChildNode != null)
+            {
+                AddNode(node.AnyChildNode);
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         #endregion
