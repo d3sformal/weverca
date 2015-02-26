@@ -61,6 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class MemoryPath
     {
+        private int hashCode;
         /// <summary>
         /// Gets the collection of path segments.
         /// </summary>
@@ -227,6 +228,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             CallLevel = callLevel;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
+
+            this.hashCode = computeHashCode();
         }
 
         /// <summary>
@@ -247,6 +250,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             CallLevel = parentPath.CallLevel;
 
             PathSegments = new ReadOnlyCollection<PathSegment>(path);
+
+            this.hashCode = computeSegmentHashCode(parentPath.hashCode, pathSegment);
         }
 
         /// <summary>
@@ -270,6 +275,65 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             }
 
             return builder.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (base.Equals(obj))
+            {
+                return true;
+            }
+
+            MemoryPath other = obj as MemoryPath;
+            if (other != null)
+            {
+                if (this.hashCode == other.hashCode &&
+                    this.CallLevel == other.CallLevel &&
+                    this.Global == other.Global &&
+                    this.Length == other.Length)
+                {
+                    for (int x = 0; x < Length; x++)
+                    {
+                        PathSegment thisSegment = this.PathSegments[x];
+                        PathSegment otherSegment = other.PathSegments[x];
+
+                        if (!thisSegment.Equals(otherSegment))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return this.hashCode;
+        }
+
+        private int computeHashCode()
+        {
+            int hashcode = Global.GetHashCode() & CallLevel.GetHashCode();
+
+            foreach (PathSegment segment in PathSegments)
+            {
+                hashcode = computeSegmentHashCode(hashcode, segment);
+            }
+
+            return hashcode;
+        }
+
+        private int computeSegmentHashCode(int hashcode, PathSegment segment)
+        {
+            uint val = (uint)(hashcode ^ segment.GetHashCode());
+
+            //Left bit rotation - there is no built implementation in C#
+            hashcode = (int)((val << 1) | (val >> (32 - 1)));
+            return hashcode;
         }
     }
 
@@ -422,6 +486,56 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
                 return builder.ToString();
             }
         }
+
+
+
+        public override bool Equals(object obj)
+        {
+            if (base.Equals(obj))
+            {
+                return true;
+            }
+
+            if (this.GetType().Equals(obj.GetType()))
+            {
+                PathSegment other = (PathSegment)obj;
+
+                if (this.IsAny == other.IsAny
+                    && this.IsDirect == other.IsDirect
+                    && this.Names.Count == other.Names.Count)
+                {
+                    foreach (string name in this.Names)
+                    {
+                        if (!other.Names.Contains(name))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            int namesHash = 0;
+            foreach (string name in this.Names)
+            {
+                namesHash = namesHash ^ name.GetHashCode();
+            }
+
+            int segmentHash = this.GetType().GetHashCode() | this.IsAny.GetHashCode();
+            return segmentHash & namesHash;
+        }
     }
 
     /// <summary>
@@ -435,7 +549,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public VariablePathSegment(bool isAny)
             : base(isAny)
         {
-
+            
         }
 
         /// <summary>
@@ -555,6 +669,31 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         public override string ToString()
         {
             return TemporaryIndex.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            TemporaryPathSegment other = obj as TemporaryPathSegment;
+            if (other != null)
+            {
+                if (this.TemporaryIndex.Equals(other.TemporaryIndex))
+                {
+                    return base.Equals(obj);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode() & TemporaryIndex.GetHashCode();
         }
     }
 

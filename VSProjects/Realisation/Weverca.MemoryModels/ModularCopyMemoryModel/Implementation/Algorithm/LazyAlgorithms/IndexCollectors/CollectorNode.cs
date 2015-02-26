@@ -321,7 +321,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             AssociativeArray arrayValue;
             if (collector.Structure.TryGetArray(index, out arrayValue))
             {
-                processOtherValues = entry.Count > 1 || entry.ContainsUndefinedValue && entry.Count > 2;
+                if (entry.ContainsUndefinedValue)
+                {
+                    processOtherValues = entry.Count > 2;
+                }
+                else
+                {
+                    processOtherValues = entry.Count > 1;
+                }
 
                 IArrayDescriptor descriptor = collector.Structure.GetDescriptor(arrayValue);
                 collector.CollectSegmentFromStructure(indexSegment, this, descriptor, !processOtherValues);

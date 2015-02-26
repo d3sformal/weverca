@@ -69,6 +69,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             else
             {
                 emptyNode = new MemoryEntryCollectorNode();
+                emptyNode.ScalarValues = new HashSet<Value>();
                 emptyNode.ScalarValues.Add(snapshot.UndefinedValue);
 
                 return emptyNode;
@@ -92,17 +93,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public MemoryEntryCollectorNode()
         {
+            /*
             ScalarValues = new HashSet<Value>();
             Arrays = new HashSet<AssociativeArray>();
             Objects = new HashSet<ObjectValue>();
+             */
 
             SourceIndexes = new List<SourceIndex>();
             NamedChildren = new Dictionary<string, MemoryEntryCollectorNode>();
+
         }
 
         public void CollectChildren(MemoryEntryCollector collector)
         {
-            if (Arrays.Count > 0)
+            if (Arrays != null && Arrays.Count > 0)
             {
                 AnyChild = new MemoryEntryCollectorNode();
                 collector.AddNode(AnyChild);
@@ -129,8 +133,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
 
                 bool mustHaveChildren = this.IsMust && mustHaveArray;
-                mustHaveChildren &= ScalarValues.Count == 0;
-                mustHaveChildren &= Objects.Count == 0;
+                mustHaveChildren &= (ScalarValues == null || ScalarValues.Count == 0);
+                mustHaveChildren &= (Objects == null || Objects.Count == 0);
 
                 foreach (string name in names)
                 {
@@ -180,6 +184,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (!IsMust)
             {
+                if (ScalarValues == null)
+                {
+                    ScalarValues = new HashSet<Value>();
+                }
+
                 this.ScalarValues.Add(collector.Snapshot.UndefinedValue);
             }
         }
@@ -225,17 +234,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public override void VisitValue(Value value)
         {
+            if (ScalarValues == null)
+            {
+                ScalarValues = new HashSet<Value>();
+            }
+
             ScalarValues.Add(value);
         }
 
         public override void VisitAssociativeArray(AssociativeArray value)
         {
+            if (Arrays == null)
+            {
+                Arrays = new HashSet<AssociativeArray>();
+            }
+
             Arrays.Add(value);
             hasArray = true;
         }
 
         public override void VisitObjectValue(ObjectValue value)
         {
+            if (Objects == null)
+            {
+                Objects = new HashSet<ObjectValue>();
+            }
+
             Objects.Add(value);
         }
 

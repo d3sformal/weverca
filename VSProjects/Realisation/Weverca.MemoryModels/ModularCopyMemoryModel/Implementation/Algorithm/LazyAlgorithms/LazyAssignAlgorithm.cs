@@ -34,6 +34,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms
 {
@@ -48,20 +49,67 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         /// <inheritdoc />
         public void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite)
         {
+            if (snapshot.AssignInfo == null)
+            {
+                snapshot.AssignInfo = new AssignInfo();
+            }
+            MemoryIndexModificationList pathModifications = snapshot.AssignInfo.GetOrCreatePathModification(path);
+
             if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
             {
+                if (path.ToString() == "$arr[1]")
+                {
+
+                }
+
                 MemoryEntryCollector entryCollector = new MemoryEntryCollector(snapshot);
                 entryCollector.ProcessMemoryEntry(value);
 
                 TreeIndexCollector treeCollector = new TreeIndexCollector(snapshot);
                 treeCollector.ProcessPath(path);
 
-                LazyAssignWorker worker = new LazyAssignWorker(snapshot, entryCollector, treeCollector);
+                LazyAssignWorker worker = new LazyAssignWorker(snapshot, entryCollector, treeCollector, pathModifications);
                 worker.Assign(value, forceStrongWrite);
             }
             else
             {
-                AssignCollector collector = new AssignCollector(snapshot);
+                List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
+
+                foreach (var item in pathModifications.Modifications)
+                {
+                    MemoryIndex index = item.Key;
+                    MemoryIndexModification indexModification = item.Value;
+
+                    HashSet<Value> values = new HashSet<Value>();
+                    valuesToAssign.Add(new Tuple<MemoryIndex, HashSet<Value>>(index, values));
+
+                    if (indexModification.IsCollectedIndex)
+                    {
+                        CollectionTools.AddAll(values, value.PossibleValues);
+                    }
+
+                    foreach (var datasource in indexModification.Datasources)
+                    {
+                        MemoryEntry entry;
+                        if (datasource.SourceSnapshot.Infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
+                        {
+                            CollectionTools.AddAll(values, entry.PossibleValues);
+                        }
+                    }
+                }
+
+                foreach (var item in valuesToAssign)
+                {
+                    MemoryIndex index = item.Item1;
+                    HashSet<Value> values = item.Item2;
+
+                    MemoryEntry entry = new MemoryEntry(values);
+                    snapshot.Infos.Writeable.SetMemoryEntry(index, entry);
+                }
+
+
+
+                /*AssignCollector collector = new AssignCollector(snapshot);
                 collector.ProcessPath(path);
 
                 if (forceStrongWrite)
@@ -70,7 +118,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
 
                 AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
-                worker.Assign(collector, value);
+                worker.Assign(collector, value);*/
             }
         }
 

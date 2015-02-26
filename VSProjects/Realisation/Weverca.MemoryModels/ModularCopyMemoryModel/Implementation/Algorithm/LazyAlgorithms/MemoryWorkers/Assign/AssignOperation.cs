@@ -65,7 +65,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected void processObjects()
         {
-            if (Node.Objects.Count > 0)
+            if (Node.Objects != null && Node.Objects.Count > 0)
             {
                 IObjectValueContainer objects = Worker.Snapshot.Structure.CreateObjectValueContainer(Node.Objects);
                 Worker.Structure.SetObjects(TargetIndex, objects);
@@ -79,17 +79,41 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             if (objects != null && objects.Count > 0)
             {
                 IObjectValueContainerBuilder builder = Worker.Snapshot.Structure.CreateObjectValueContainer(objects).Builder(Worker.Structure);
-                builder.AddAll(Node.Objects);
+
+                if (Node.Objects != null)
+                {
+                    builder.AddAll(Node.Objects);
+                    CollectionTools.AddAll(Values, Node.Objects);
+                }
 
                 Worker.Structure.SetObjects(TargetIndex, builder.Build(Worker.Structure));
 
-                CollectionTools.AddAll(Values, Node.Objects);
                 CollectionTools.AddAll(Values, objects.Values);
             }
             else
             {
                 processObjects();
             }
+        }
+
+        protected void processIndexModifications()
+        {
+            var indexModification = Worker.PathModifications[TargetIndex];
+            foreach (var sourceIndex in Node.SourceIndexes)
+            {
+                indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
+            }
+        }
+
+        protected void processIndexModifications(MemoryIndex index)
+        {
+            var indexModification = Worker.PathModifications[TargetIndex];
+            foreach (var sourceIndex in Node.SourceIndexes)
+            {
+                indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
+            }
+
+            indexModification.AddDatasource(index, Worker.Snapshot);
         }
     }
 
@@ -105,11 +129,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public override void ProcessOperation()
         {
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(TargetIndex);
-            CollectionTools.AddAll(Values, Node.ScalarValues);
+            if (Node.ScalarValues != null)
+            {
+                CollectionTools.AddAll(Values, Node.ScalarValues);
+            }
 
             processArrays(definition.Array);
             processAliases(definition.Aliases);
             processObjects();
+            processIndexModifications();
 
             setValues();
         }
@@ -120,7 +148,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (arrayValue != null)
             {
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     mergeWithAssignedArray(arrayValue);
                     Values.Add(arrayValue);
@@ -132,7 +160,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
             else
             {
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     AssociativeArray array = createAssignedArray();
                     Values.Add(array);
@@ -261,7 +289,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public override void ProcessOperation()
         {
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(TargetIndex);
-            CollectionTools.AddAll(Values, Node.ScalarValues);
+            if (Node.ScalarValues != null)
+            {
+                CollectionTools.AddAll(Values, Node.ScalarValues);
+            }
 
             MemoryEntry oldEntry = Worker.Data.GetMemoryEntry(TargetIndex);
             CollectionTools.AddAll(Values, oldEntry.PossibleValues);
@@ -269,6 +300,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             processArrays(definition.Array);
             processAliases(definition.Aliases);
             processObjects(definition.Objects);
+            processIndexModifications(TargetIndex);
 
             setValues();
         }
@@ -281,7 +313,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             {
                 Values.Add(arrayValue);
 
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     mergeWithAssignedArray(arrayValue);
                 }
@@ -292,7 +324,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
             else
             {
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     AssociativeArray array = createAssignedArray();
                     Values.Add(array);
@@ -460,8 +492,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
-
-
     class UnknownIndexMayAssign : AssignOperation
     {
 
@@ -484,13 +514,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
 
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(SourceIndex);
-            CollectionTools.AddAll(Values, Node.ScalarValues);
+            if (Node.ScalarValues != null)
+            {
+                CollectionTools.AddAll(Values, Node.ScalarValues);
+            }
 
             processSourceValues();
 
             processArrays(definition.Array);
             processAliases(definition.Aliases);
             processObjects(definition.Objects);
+            processIndexModifications(SourceIndex);
 
             setValues();
         }
@@ -524,7 +558,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 AssociativeArray createdArray = Worker.Snapshot.CreateArray(TargetIndex);
                 Values.Add(createdArray);
 
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     mergeWithAssignedArray(sourceArray, createdArray);
                 }
@@ -535,7 +569,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
             else
             {
-                if (Node.Arrays.Count > 0)
+                if (Node.Arrays != null && Node.Arrays.Count > 0)
                 {
                     AssociativeArray array = createAssignedArray();
                     Values.Add(array);
@@ -678,11 +712,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             Worker.Structure.NewIndex(TargetIndex);
 
-            CollectionTools.AddAll(Values, Node.ScalarValues);
+            if (Node.ScalarValues != null)
+            {
+                CollectionTools.AddAll(Values, Node.ScalarValues);
+            }
 
             processArrays();
             processAliases();
             processObjects();
+            processIndexModifications();
 
             setValues();
         }
@@ -691,7 +729,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void processArrays()
         {
-            if (Node.Arrays.Count > 0)
+            if (Node.Arrays != null && Node.Arrays.Count > 0)
             {
                 AssociativeArray array = createAssignedArray();
                 Values.Add(array);
@@ -745,12 +783,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             Worker.Structure.NewIndex(TargetIndex);
 
-            CollectionTools.AddAll(Values, Node.ScalarValues);
+            if (Node.ScalarValues != null)
+            {
+                CollectionTools.AddAll(Values, Node.ScalarValues);
+            }
             Values.Add(Worker.Snapshot.UndefinedValue);
 
             processArrays();
             processAliases();
             processObjects();
+            processIndexModifications();
 
             setValues();
         }
@@ -759,7 +801,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void processArrays()
         {
-            if (Node.Arrays.Count > 0)
+            if (Node.Arrays != null && Node.Arrays.Count > 0)
             {
                 AssociativeArray array = createAssignedArray();
                 Values.Add(array);

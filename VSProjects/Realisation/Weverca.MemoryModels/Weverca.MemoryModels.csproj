@@ -140,6 +140,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyMemoryAlias.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectValueContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Memory\AssignInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\ProcessValueAsLocationVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ReadCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\CollectorOperations.cs" />

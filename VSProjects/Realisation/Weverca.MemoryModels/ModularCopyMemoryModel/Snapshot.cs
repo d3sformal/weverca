@@ -286,6 +286,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		}
 		private List<IMemoryAlias> createdAliases;
 
+        public AssignInfo AssignInfo { get; set; }
+
 		/// <summary>
 		/// Gets the number of transactions.
 		/// </summary>
