@@ -74,10 +74,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <param name="targetCollector">The target collector.</param>
         private void makeAliases(IIndexCollector sourceCollector, IIndexCollector targetCollector)
         {
+            if (snapshot.AssignInfo == null)
+            {
+                snapshot.AssignInfo = new AssignInfo();
+            }
+
             //Must target
             foreach (MemoryIndex index in targetCollector.MustIndexes)
             {
                 snapshot.MustSetAliases(index, sourceCollector.MustIndexes, sourceCollector.MayIndexes);
+
+                //Must source
+                foreach (MemoryIndex alias in sourceCollector.MustIndexes)
+                {
+                    if (!alias.Equals(index))
+                    {
+                        snapshot.AssignInfo.AliasAssignModifications[index].AddDatasource(alias, snapshot);
+                    }
+                }
+
+                //May source
+                foreach (MemoryIndex alias in sourceCollector.MayIndexes)
+                {
+                    if (!alias.Equals(index))
+                    {
+                        snapshot.AssignInfo.AliasAssignModifications[index].AddDatasource(alias, snapshot);
+                    }
+                }
             }
 
             //Must source

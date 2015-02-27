@@ -59,7 +59,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 case SnapshotMode.InfoLevel:
                     data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
-                    assignCreatedAliases(extendedSnapshot);
+                    extendedSnapshot.AssignCreatedAliases(extendedSnapshot, data);
                     break;
 
                 default:
@@ -180,7 +180,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return data;
         }
 
-        private void assignCreatedAliases(Snapshot snapshot)
+        /*private void assignCreatedAliases(Snapshot snapshot)
         {
             foreach (IMemoryAlias aliasData in snapshot.CreatedAliases)
             {
@@ -204,6 +204,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                     }
                 }
             }
-        }
+        }*/
     }
 }

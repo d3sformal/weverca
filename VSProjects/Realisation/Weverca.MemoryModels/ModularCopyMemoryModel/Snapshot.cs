@@ -274,18 +274,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		ISnapshotDataProxy oldInfos = null;
 		int oldCallLevel;
 
-		/// <summary>
-		/// Gets the collection of created aliases in this snapshot.
-		/// </summary>
-		/// <value>
-		/// The created aliases.
-		/// </value>
-		public IEnumerable<IMemoryAlias> CreatedAliases
-		{
-			get { return createdAliases; }
-		}
-		private List<IMemoryAlias> createdAliases;
-
         public AssignInfo AssignInfo { get; set; }
 
 		/// <summary>
@@ -324,7 +312,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			Infos = SnapshotDataFactory.CopyInstance(this, Snapshot.initialSnapshotDataInstance);
 			CurrentData = Data;
 			Structure = SnapshotStructureFactory.CopyInstance(this, Snapshot.initialSnapshotStructureInstance);
-			createdAliases = new List<IMemoryAlias>();
 			NumberOfTransactions = 0;
 
 			Benchmark.InitializeSnapshot(this);
@@ -392,7 +379,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		{
 			oldStructure = Structure;
 			oldMemory = Data;
-			createdAliases.Clear();
 
 			Data = SnapshotDataFactory.CopyInstance(this, oldMemory);
 			Structure = SnapshotStructureFactory.CopyInstance(this, oldStructure);
@@ -1885,14 +1871,51 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 		#region Aliases
 
-		/// <summary>
-		/// Adds the created alias.
-		/// </summary>
-		/// <param name="aliasData">The alias data.</param>
-		public void AddCreatedAlias(IMemoryAlias aliasData)
-		{
-			createdAliases.Add(aliasData);
-		}
+        public void AssignCreatedAliases(Snapshot snapshot, ISnapshotDataProxy data)
+        {
+            if (snapshot.AssignInfo != null)
+            {
+                List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
+
+                foreach (var item in snapshot.AssignInfo.AliasAssignModifications.Modifications)
+                {
+                    MemoryIndex index = item.Key;
+                    MemoryIndexModification indexModification = item.Value;
+
+                    HashSet<Value> values = new HashSet<Value>();
+                    valuesToAssign.Add(new Tuple<MemoryIndex, HashSet<Value>>(index, values));
+
+                    foreach (var datasource in indexModification.Datasources)
+                    {
+                        MemoryEntry entry;
+                        
+                        ISnapshotDataProxy infos;
+                        if (snapshot == datasource.SourceSnapshot)
+                        {
+                            infos = data;
+                        }
+                        else
+                        {
+                            infos = datasource.SourceSnapshot.Infos;
+                        }
+
+                        if (infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
+                        {
+                            CollectionTools.AddAll(values, entry.PossibleValues);
+                        }
+                    }
+                }
+
+                foreach (var item in valuesToAssign)
+                {
+                    MemoryIndex index = item.Item1;
+                    HashSet<Value> values = item.Item2;
+
+                    MemoryEntry entry = new MemoryEntry(values);
+                    data.Writeable.SetMemoryEntry(index, entry);
+                }
+            }
+        }
 
 		/// <summary>
 		/// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
@@ -1934,7 +1957,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMemoryAlias memoryAlias = alias.Build(writeableStructure);
             writeableStructure.SetAlias(index, memoryAlias);
-			AddCreatedAlias(memoryAlias);
 		}
 
 		/// <summary>
@@ -1975,7 +1997,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMemoryAlias memoryAlias = alias.Build(writeableStructure);
             writeableStructure.SetAlias(index, memoryAlias);
-			AddCreatedAlias(memoryAlias);
 		}
 
         /// <summary>

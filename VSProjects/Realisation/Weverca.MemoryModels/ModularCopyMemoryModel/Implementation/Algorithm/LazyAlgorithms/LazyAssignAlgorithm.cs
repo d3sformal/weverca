@@ -118,11 +118,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 snapshot.AssignInfo = new AssignInfo();
             }
 
-            if (snapshot.getSnapshotIdentification() == "2.39::s9::d7")
-            {
-
-            }
-
             // Collects memory location of alias sources
             TreeIndexCollector aliasSourcesCollector = new TreeIndexCollector(snapshot);
             aliasSourcesCollector.ProcessPath(sourcePath);
@@ -139,42 +134,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             AssignWorker assignWorker = new AssignWorker(snapshot, aliasWorker.EntryCollector, aliasTargetCollector, snapshot.AssignInfo.AliasAssignModifications);
             assignWorker.AssignAliasesIntoCollectedIndexes = true;
             assignWorker.Assign();
-
-
-
-
-            /*
-            
-            //Collect alias indexes
-            AssignCollector sourceCollector = new AssignCollector(snapshot);
-            sourceCollector.ProcessPath(sourcePath);
-
-            //Memory locations where to get data from
-            ReadCollector valueCollector = new ReadCollector(snapshot);
-            valueCollector.ProcessPath(sourcePath);
-
-            //Get data from locations
-            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.ReadWorker worker 
-                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.ReadWorker(snapshot);
-            MemoryEntry value = worker.ReadValue(valueCollector);
-
-            //Makes deep copy of data to prevent changes after assign alias
-            TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
-            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.MergeWithinSnapshotWorker mergeWorker 
-                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.MergeWithinSnapshotWorker(snapshot);
-            mergeWorker.MergeMemoryEntry(temporaryIndex, value);
-            
-            //Memory locations to store data into
-            AssignCollector targetCollector = new AssignCollector(snapshot);
-            targetCollector.AliasesProcessing = AliasesProcessing.BeforeCollecting;
-            targetCollector.ProcessPath(targetPath);
-
-            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignAliasWorker assignWorker 
-                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignAliasWorker(snapshot);
-            assignWorker.AssignAlias(sourceCollector, targetCollector, temporaryIndex);
-
-            snapshot.ReleaseTemporary(temporaryIndex);
-             */
         }
 
         /// <inheritdoc />
