@@ -12,31 +12,22 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
-    class LazyAssignWorker : LocationCollectorNodeVisitor
+    abstract class AbstractAssignWorker : LocationCollectorNodeVisitor
     {
         internal readonly Snapshot Snapshot;
-        private MemoryEntryCollector memoryEntryCollector;
-        private TreeIndexCollector treeCollector;
+        protected TreeIndexCollector treeCollector;
 
         internal readonly IWriteableSnapshotStructure Structure;
         internal readonly IWriteableSnapshotData Data;
         internal readonly MemoryIndexModificationList PathModifications;
 
-        private LinkedList<LocationCollectorNode> collectorNodesQueue = new LinkedList<LocationCollectorNode>();
-        private LinkedList<AssignOperation> operationQueue = new LinkedList<AssignOperation>();
+        protected LinkedList<LocationCollectorNode> collectorNodesQueue = new LinkedList<LocationCollectorNode>();
+        private CopyValuesVisitor copyValuesVisitor = new CopyValuesVisitor();
 
-        private AssignOperation currentOperation;
-        private MemoryEntry assignedEntry;
-        private bool forceStrongWrite;
-
-        AssignValueLocationVisitor valueLocationVisitor;
-        CopyValuesVisitor copyValuesVisitor = new CopyValuesVisitor();
-
-        public LazyAssignWorker(Snapshot snapshot, MemoryEntryCollector memoryEntryCollector,
+        public AbstractAssignWorker(Snapshot snapshot,
             TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
         {
             this.Snapshot = snapshot;
-            this.memoryEntryCollector = memoryEntryCollector;
             this.treeCollector = treeCollector;
             this.PathModifications = pathModifications;
 
@@ -44,13 +35,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.Data = snapshot.CurrentData.Writeable;
         }
 
-        public void Assign(MemoryEntry assignedEntry, bool forceStrongWrite)
+        public void ProcessCollector()
         {
-            valueLocationVisitor = new AssignValueLocationVisitor(Snapshot, assignedEntry, true);
-
-            this.assignedEntry = assignedEntry;
-            this.forceStrongWrite = forceStrongWrite;
-
             foreach (var item in treeCollector.RootNode.VariableStackNodes)
             {
                 processVariables(item.Key, item.Value);
@@ -76,14 +62,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 LocationCollectorNode node = collectorNodesQueue.First.Value;
                 collectorNodesQueue.RemoveFirst();
                 node.Accept(this);
-            }
-
-            while (operationQueue.Count > 0)
-            {
-                AssignOperation operation = operationQueue.First.Value;
-                operationQueue.RemoveFirst();
-
-                operation.ProcessOperation();
             }
         }
 
@@ -177,36 +155,85 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        protected abstract void collectValueNode(ValueCollectorNode node);
+        protected abstract void collectMemoryIndexCollectorNode(MemoryIndexCollectorNode node);
+        protected abstract void collectUnknownIndexCollectorNode(UnknownIndexCollectorNode node);
+        protected abstract void collectUndefinedCollectorNode(UndefinedCollectorNode node);
+
+
+        protected void continueValueNode(ValueCollectorNode node)
+        {
+            enqueueLocationChildNodes(node);
+        }
+        protected void continueMemoryIndexCollectorNode(MemoryIndexCollectorNode node)
+        {
+            HashSet<Value> values = new HashSet<Value>();
+
+            testAndCreateImplicitArray(node, values);
+            testAndCreateImplicitObject(node, values);
+            testAndCreateUndefinedChildren(node);
+
+            bool removeUndefined = node.IsMust && node.ContainsUndefinedValue;
+            if (removeUndefined || values.Count > 0)
+            {
+                MemoryEntry entry = Data.GetMemoryEntry(node.TargetIndex);
+                copyEntryValues(entry, values, removeUndefined, false);
+                Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
+            }
+
+            enqueueLocationChildNodes(node);
+        }
+        protected void continueUnknownIndexCollectorNode(UnknownIndexCollectorNode node)
+        {
+            Structure.NewIndex(node.TargetIndex);
+            PathModifications[node.TargetIndex].AddDatasource(node.SourceIndex, Snapshot);
+
+            IIndexDefinition definition = Structure.GetIndexDefinition(node.SourceIndex);
+            HashSet<Value> values = new HashSet<Value>();
+
+            processSourceAliases(node, definition.Aliases);
+            processSourceArray(node, definition.Array, values);
+            processSourceObjects(node, definition.Objects);
+            testAndCreateImplicitObject(node, values);
+            testAndCreateUndefinedChildren(node);
+
+            MemoryEntry entry = Data.GetMemoryEntry(node.SourceIndex);
+            copyEntryValues(entry, values, node.IsMust, true);
+            Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
+
+            enqueueLocationChildNodes(node);
+        }
+        protected void continueUndefinedCollectorNode(UndefinedCollectorNode node)
+        {
+            Structure.NewIndex(node.TargetIndex);
+
+            HashSet<Value> values = new HashSet<Value>();
+
+            testAndCreateImplicitArray(node, values);
+            testAndCreateImplicitObject(node, values);
+            testAndCreateUndefinedChildren(node);
+
+            if (!node.IsMust)
+            {
+                values.Add(Snapshot.UndefinedValue);
+            }
+
+            Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
+
+            enqueueLocationChildNodes(node);
+        }
+
         #region CollectorNode visitor
 
         public void VisitValueCollectorNode(ValueCollectorNode node)
         {
             if (node.IsCollected)
             {
-                MemoryIndexModification modification = PathModifications[node.TargetIndex];
-
-                if (node.IsMust || forceStrongWrite)
-                {
-                    modification.SetCollectedIndex();
-
-                    valueLocationVisitor.IsMust = true;
-                    node.ValueLocation.ContainingIndex = node.TargetIndex;
-
-                    node.ValueLocation.Accept(valueLocationVisitor);
-                }
-                else
-                {
-                    modification.SetCollectedIndex();
-
-                    valueLocationVisitor.IsMust = false;
-                    node.ValueLocation.ContainingIndex = node.TargetIndex;
-
-                    node.ValueLocation.Accept(valueLocationVisitor);
-                }
+                collectValueNode(node);
             }
             else
             {
-                enqueueLocationChildNodes(node);
+                continueValueNode(node);
             }
         }
 
@@ -214,34 +241,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (node.IsCollected)
             {
-                PathModifications[node.TargetIndex].SetCollectedIndex();
-
-                if (node.IsMust || forceStrongWrite)
-                {
-                    AddOperation(new MemoryIndexMustAssignOperation(this, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
-                else
-                {
-                    AddOperation(new MemoryIndexMayAssignOperation(this, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
+                collectMemoryIndexCollectorNode(node);
             }
             else
             {
-                HashSet<Value> values = new HashSet<Value>();
-
-                testAndCreateImplicitArray(node, values);
-                testAndCreateImplicitObject(node, values);
-                testAndCreateUndefinedChildren(node);
-
-                bool removeUndefined = node.IsMust && node.ContainsUndefinedValue;
-                if (removeUndefined || values.Count > 0)
-                {
-                    MemoryEntry entry = Data.GetMemoryEntry(node.TargetIndex);
-                    copyEntryValues(entry, values, removeUndefined, false);
-                    Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
-                }
-
-                enqueueLocationChildNodes(node);
+                continueMemoryIndexCollectorNode(node);
             }
         }
 
@@ -249,36 +253,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (node.IsCollected)
             {
-                PathModifications[node.TargetIndex].SetCollectedIndex();
-
-                if (node.IsMust || forceStrongWrite)
-                {
-                    AddOperation(new UndefinedMustAssignOperation(this, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
-                else
-                {
-                    AddOperation(new UnknownIndexMayAssign(this, node.SourceIndex, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
+                collectUnknownIndexCollectorNode(node);
             }
             else
             {
-                Structure.NewIndex(node.TargetIndex);
-                PathModifications[node.TargetIndex].AddDatasource(node.SourceIndex, Snapshot);
-
-                IIndexDefinition definition = Structure.GetIndexDefinition(node.SourceIndex);
-                HashSet<Value> values = new HashSet<Value>();
-
-                processSourceAliases(node, definition.Aliases);
-                processSourceArray(node, definition.Array, values);
-                processSourceObjects(node, definition.Objects);
-                testAndCreateImplicitObject(node, values);
-                testAndCreateUndefinedChildren(node);
-
-                MemoryEntry entry = Data.GetMemoryEntry(node.SourceIndex);
-                copyEntryValues(entry, values, node.IsMust, true);
-                Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
-
-                enqueueLocationChildNodes(node);
+                continueUnknownIndexCollectorNode(node);
             }
         }
 
@@ -286,35 +265,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (node.IsCollected)
             {
-                PathModifications[node.TargetIndex].SetCollectedIndex();
-
-                if (node.IsMust || forceStrongWrite)
-                {
-                    AddOperation(new UndefinedMustAssignOperation(this, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
-                else
-                {
-                    AddOperation(new UndefinedMayAssignOperation(this, node.TargetIndex, memoryEntryCollector.RootNode, false));
-                }
+                collectUndefinedCollectorNode(node);
             }
             else
             {
-                Structure.NewIndex(node.TargetIndex);
-
-                HashSet<Value> values = new HashSet<Value>();
-
-                testAndCreateImplicitArray(node, values);
-                testAndCreateImplicitObject(node, values);
-                testAndCreateUndefinedChildren(node);
-
-                if (!node.IsMust)
-                {
-                    values.Add(Snapshot.UndefinedValue);
-                }
-
-                Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
-
-                enqueueLocationChildNodes(node);
+                continueUndefinedCollectorNode(node);
             }
         }
 
@@ -476,11 +431,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
 
         #endregion
-
-        internal void AddOperation(AssignOperation operation)
-        {
-            operationQueue.AddLast(operation);
-        }
 
         public void copyEntryValues(MemoryEntry entry, ICollection<Value> values, bool removeUndefined, bool removeArray)
         {

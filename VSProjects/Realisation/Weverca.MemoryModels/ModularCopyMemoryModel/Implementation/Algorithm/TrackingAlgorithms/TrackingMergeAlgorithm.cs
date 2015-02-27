@@ -253,6 +253,50 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void assignCreatedAliases(Snapshot snapshot)
         {
+            /*
+            if (snapshot.AssignInfo != null)
+            {
+                List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
+
+                foreach (var item in snapshot.AssignInfo.AliasAssignModifications.Modifications)
+                {
+                    MemoryIndex index = item.Key;
+                    MemoryIndexModification indexModification = item.Value;
+
+                    HashSet<Value> values = new HashSet<Value>();
+                    valuesToAssign.Add(new Tuple<MemoryIndex, HashSet<Value>>(index, values));
+
+                    foreach (var datasource in indexModification.Datasources)
+                    {
+                        MemoryEntry entry;
+                        
+                        ISnapshotDataProxy infos;
+                        if (snapshot == datasource.SourceSnapshot)
+                        {
+                            infos = data;
+                        }
+                        else
+                        {
+                            infos = datasource.SourceSnapshot.Infos;
+                        }
+
+                        if (infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
+                        {
+                            CollectionTools.AddAll(values, entry.PossibleValues);
+                        }
+                    }
+                }
+
+                foreach (var item in valuesToAssign)
+                {
+                    MemoryIndex index = item.Item1;
+                    HashSet<Value> values = item.Item2;
+
+                    MemoryEntry entry = new MemoryEntry(values);
+                    data.Writeable.SetMemoryEntry(index, entry);
+                }
+            }*/
+
             foreach (IMemoryAlias aliasData in snapshot.CreatedAliases)
             {
                 MemoryEntry entry = data.Readonly.GetMemoryEntry(aliasData.SourceIndex);

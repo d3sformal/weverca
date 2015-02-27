@@ -1978,24 +1978,42 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			AddCreatedAlias(memoryAlias);
 		}
 
-		/// <summary>
-		/// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
-		/// Alias entry of the given alias indexes are not changed.
-		/// </summary>
-		/// <param name="index">The index.</param>
-		/// <param name="mustAliases">The must aliases.</param>
-		/// <param name="mayAliases">The may aliases.</param>
-		public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        /// <summary>
+        /// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
+        /// Alias entry of the given alias indexes are not changed.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAliases">The must aliases.</param>
+        /// <param name="mayAliases">The may aliases.</param>
+        public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
             var writeableStructure = Structure.Writeable;
-			DestroyAliases(index);
+            DestroyAliases(index);
 
             IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
             addAllAliases(index, mustAliases, builder.MustAliases);
             addAllAliases(index, mayAliases, builder.MayAliases);
 
             writeableStructure.SetAlias(index, builder.Build(writeableStructure));
-		}
+        }
+
+        /// <summary>
+        /// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
+        /// Alias entry of the given alias indexes are not changed.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAliases">The must aliases.</param>
+        /// <param name="mayAliases">The may aliases.</param>
+        public void MustSetAliasesWithoutDelete(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+        {
+            var writeableStructure = Structure.Writeable;
+
+            IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+            addAllAliases(index, mustAliases, builder.MustAliases);
+            addAllAliases(index, mayAliases, builder.MayAliases);
+
+            writeableStructure.SetAlias(index, builder.Build(writeableStructure));
+        }
 
 		/// <summary>
 		/// May the set aliases of the given index operation. All must aliases of given index are converted into may.

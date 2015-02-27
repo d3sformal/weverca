@@ -30,11 +30,10 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms
 {
@@ -57,19 +56,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
             {
-                if (path.ToString() == "$arr[1]")
-                {
-
-                }
-
                 MemoryEntryCollector entryCollector = new MemoryEntryCollector(snapshot);
-                entryCollector.ProcessMemoryEntry(value);
+                entryCollector.ProcessRootMemoryEntry(value);
 
                 TreeIndexCollector treeCollector = new TreeIndexCollector(snapshot);
+                treeCollector.PostProcessAliases = true;
                 treeCollector.ProcessPath(path);
 
-                LazyAssignWorker worker = new LazyAssignWorker(snapshot, entryCollector, treeCollector, pathModifications);
-                worker.Assign(value, forceStrongWrite);
+                AssignWorker worker = new AssignWorker(snapshot, entryCollector, treeCollector, pathModifications);
+                worker.ForceStrongWrite = forceStrongWrite;
+                worker.Assign();
             }
             else
             {
@@ -106,19 +102,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                     MemoryEntry entry = new MemoryEntry(values);
                     snapshot.Infos.Writeable.SetMemoryEntry(index, entry);
                 }
-
-
-
-                /*AssignCollector collector = new AssignCollector(snapshot);
-                collector.ProcessPath(path);
-
-                if (forceStrongWrite)
-                {
-                    collector.SetAllToMust();
-                }
-
-                AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
-                worker.Assign(collector, value);*/
             }
         }
 
@@ -130,6 +113,38 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 return;
             }
 
+            if (snapshot.AssignInfo == null)
+            {
+                snapshot.AssignInfo = new AssignInfo();
+            }
+
+            if (snapshot.getSnapshotIdentification() == "2.39::s9::d7")
+            {
+
+            }
+
+            // Collects memory location of alias sources
+            TreeIndexCollector aliasSourcesCollector = new TreeIndexCollector(snapshot);
+            aliasSourcesCollector.ProcessPath(sourcePath);
+
+            // Creates missing source locations and collect source data
+            AliasWorker aliasWorker = new AliasWorker(snapshot, aliasSourcesCollector, snapshot.AssignInfo.AliasAssignModifications);
+            aliasWorker.CollectAliases();
+
+            // Collects target locations
+            TreeIndexCollector aliasTargetCollector = new TreeIndexCollector(snapshot);
+            aliasTargetCollector.ProcessPath(targetPath);
+
+            // Creates missing target locations, create aliases and assign source data
+            AssignWorker assignWorker = new AssignWorker(snapshot, aliasWorker.EntryCollector, aliasTargetCollector, snapshot.AssignInfo.AliasAssignModifications);
+            assignWorker.AssignAliasesIntoCollectedIndexes = true;
+            assignWorker.Assign();
+
+
+
+
+            /*
+            
             //Collect alias indexes
             AssignCollector sourceCollector = new AssignCollector(snapshot);
             sourceCollector.ProcessPath(sourcePath);
@@ -139,12 +154,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             valueCollector.ProcessPath(sourcePath);
 
             //Get data from locations
-            ReadWorker worker = new ReadWorker(snapshot);
+            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.ReadWorker worker 
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.ReadWorker(snapshot);
             MemoryEntry value = worker.ReadValue(valueCollector);
 
             //Makes deep copy of data to prevent changes after assign alias
             TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
-            MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);
+            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.MergeWithinSnapshotWorker mergeWorker 
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.MergeWithinSnapshotWorker(snapshot);
             mergeWorker.MergeMemoryEntry(temporaryIndex, value);
             
             //Memory locations to store data into
@@ -152,10 +169,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             targetCollector.AliasesProcessing = AliasesProcessing.BeforeCollecting;
             targetCollector.ProcessPath(targetPath);
 
-            AssignAliasWorker assignWorker = new AssignAliasWorker(snapshot);
+            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignAliasWorker assignWorker 
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignAliasWorker(snapshot);
             assignWorker.AssignAlias(sourceCollector, targetCollector, temporaryIndex);
 
             snapshot.ReleaseTemporary(temporaryIndex);
+             */
         }
 
         /// <inheritdoc />
@@ -164,7 +183,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             AssignCollector collector = new AssignCollector(snapshot);
             collector.ProcessPath(path);
 
-            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
+            Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker worker 
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker(snapshot);
             worker.Assign(collector, value);
         }
     }

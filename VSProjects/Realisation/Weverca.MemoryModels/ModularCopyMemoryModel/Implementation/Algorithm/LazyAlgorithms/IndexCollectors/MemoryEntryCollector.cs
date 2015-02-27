@@ -18,6 +18,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public IReadOnlySnapshotStructure Structure { get; private set; }
         public IReadOnlySnapshotData Data { get; private set; }
 
+        public MemoryEntry RootMemoryEntry { get; private set; }
+
         public MemoryEntryCollectorNode RootNode { get; set; }
 
         public LinkedList<MemoryEntryCollectorNode> collectingQueue = new LinkedList<MemoryEntryCollectorNode>();
@@ -29,8 +31,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.Data = snapshot.Data.Readonly;
         }
 
-        public void ProcessMemoryEntry(MemoryEntry entry)
+        public void ProcessRootMemoryEntry(MemoryEntry entry)
         {
+            RootMemoryEntry = entry;
+
             MemoryEntryCollectorNode rootNode = new MemoryEntryCollectorNode();
             rootNode.IsMust = true;
             rootNode.CollectValuesFromMemoryEntry(entry);
@@ -53,13 +57,46 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             collectingQueue.AddLast(node);
         }
+
+        internal void ProcessRootIndexes(HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes, IEnumerable<Value> values)
+        {
+            MemoryEntryCollectorNode rootNode = new MemoryEntryCollectorNode();
+            rootNode.IsMust = true;
+            RootNode = rootNode;
+
+            foreach (MemoryIndex index in mustIndexes)
+            {
+                rootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
+                rootNode.CollectAliases(index, Snapshot, true);
+            }
+            foreach (MemoryIndex index in mayIndexes)
+            {
+                rootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
+                rootNode.CollectAliases(index, Snapshot, false);
+            }
+
+            rootNode.CollectValuesFromSources(this);
+            rootNode.VisitValues(values);
+            rootNode.CollectChildren(this);
+
+            RootMemoryEntry = rootNode.GenerateMemeoryEntry(values);
+
+            while (collectingQueue.Count > 0)
+            {
+                MemoryEntryCollectorNode node = collectingQueue.First.Value;
+                collectingQueue.RemoveFirst();
+
+                node.CollectAliasesFromSources(this);
+                node.CollectValuesFromSources(this);
+                node.CollectChildren(this);
+            }
+        }
     }
 
 
     class MemoryEntryCollectorNode : AbstractValueVisitor
     {
         private static MemoryEntryCollectorNode emptyNode = null;
-
         public static MemoryEntryCollectorNode GetEmptyNode(Snapshot snapshot)
         {
             if (emptyNode != null)
@@ -76,6 +113,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+
+
         public bool hasArray;
         public HashSet<Value> ScalarValues { get; private set; }
         public HashSet<AssociativeArray> Arrays { get; private set; }
@@ -91,6 +130,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public List<SourceIndex> SourceIndexes { get; private set; }
         public bool IsMust { get; set; }
 
+        private bool mustHaveArray;
+
+
+
+
         public MemoryEntryCollectorNode()
         {
             /*
@@ -102,6 +146,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             SourceIndexes = new List<SourceIndex>();
             NamedChildren = new Dictionary<string, MemoryEntryCollectorNode>();
 
+        }
+
+        public MemoryEntry GenerateMemeoryEntry(IEnumerable<Value> values)
+        {
+            List<Value> entryValues = new List<Value>(values);
+            
+            if (ScalarValues != null)
+            {
+                CollectionTools.AddAll(entryValues, ScalarValues);
+            }
+            if (Arrays != null)
+            {
+                CollectionTools.AddAll(entryValues, Arrays);
+            }
+            if (Objects != null)
+            {
+                CollectionTools.AddAll(entryValues, Objects);
+            }
+
+            return new MemoryEntry(entryValues);
         }
 
         public void CollectChildren(MemoryEntryCollector collector)
@@ -230,6 +294,38 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        public void CollectAliases(MemoryIndex index, Snapshot snapshot, bool isMust)
+        {
+            if (References == null)
+            {
+                References = new ReferenceCollector();
+            }
+
+            IMemoryAlias aliases;
+            if (snapshot.Structure.Readonly.TryGetAliases(index, out aliases))
+            {
+                References.CollectMay(aliases.MayAliases);
+
+                if (isMust)
+                {
+                    References.CollectMust(aliases.MustAliases);
+                }
+                else
+                {
+                    References.CollectMay(aliases.MustAliases);
+                }
+            }
+
+            if (isMust)
+            {
+                References.AddMustAlias(index);
+            }
+            else
+            {
+                References.AddMayAlias(index);
+            }
+        }
+
         #region Value Visitors
 
         public override void VisitValue(Value value)
@@ -292,7 +388,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return results;
         }
 
-        public bool mustHaveArray { get; set; }
     }
 
     class SourceIndex

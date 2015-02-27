@@ -9,6 +9,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     public class AssignInfo
     {
         private Dictionary<MemoryPath, MemoryIndexModificationList> assignedPaths = new Dictionary<MemoryPath,MemoryIndexModificationList>();
+        public readonly MemoryIndexModificationList AliasAssignModifications = new MemoryIndexModificationList();
 
         public MemoryIndexModificationList GetOrCreatePathModification(MemoryPath modifiedPath)
         {

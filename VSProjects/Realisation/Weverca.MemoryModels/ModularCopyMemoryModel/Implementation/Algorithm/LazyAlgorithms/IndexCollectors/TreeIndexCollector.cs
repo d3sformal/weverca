@@ -30,6 +30,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         Dictionary<MemoryIndex, CollectorNode> processedIndex = new Dictionary<MemoryIndex, CollectorNode>();
 
         private MemoryPath currentPath;
+        public bool PostProcessAliases { get; set; }
 
         public TreeIndexCollector(Snapshot snapshot)
         {
@@ -38,6 +39,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.Data = snapshot.Data.Readonly;
 
             RootNode = new RootCollectorNode();
+
+            PostProcessAliases = false;
         }
 
         public void ProcessPath(MemoryPath path)
@@ -46,13 +49,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             foreach (var segment in path.PathSegments)
             {
-                segment.Accept(this);
-
                 processAliases();
 
                 currentNodes = nextIterationNodes;
                 nextIterationNodes = new HashSet<LocationCollectorNode>();
+
+                segment.Accept(this);
             }
+
+            if (PostProcessAliases)
+            {
+                processAliases();
+            }
+            currentNodes = nextIterationNodes;
 
             foreach (CollectorNode node in currentNodes)
             {
@@ -60,7 +69,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
-        private void processAliases()
+        public void processAliases()
         {
             HashSet<CollectorNode> nodes = new HashSet<CollectorNode>(nextIterationNodes);
 

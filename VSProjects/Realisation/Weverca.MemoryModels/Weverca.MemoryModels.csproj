@@ -132,9 +132,11 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\IIndexCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\MemoryEntryCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\RootCollectorNode.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AbstractAssignWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AssignOperation.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AssignValueLocationVisitor.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\LazyAssignWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AssignWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\MemoryWorkers\Assign\AliasWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyArrayDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyIndexDefinition.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyMemoryAlias.cs" />

@@ -18,9 +18,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public HashSet<Value> Values { get; private set; }
         public bool ProcessAliases { get; private set; }
 
-        public LazyAssignWorker Worker { get; private set; }
+        public AssignWorker Worker { get; private set; }
 
-        public AssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases)
+        public AssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases)
         {
             TargetIndex = targetIndex;
             Node = memoryEntryNode;
@@ -121,7 +121,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class MemoryIndexMustAssignOperation : AssignOperation
     {
-        public MemoryIndexMustAssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
+        public MemoryIndexMustAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
             : base(worker, targetIndex, memoryEntryNode, processAliases)
         {
         }
@@ -256,19 +256,31 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 // Assign new aliases if any
                 if (Node.HasAliases)
                 {
+                    Worker.Snapshot.DestroyAliases(TargetIndex);
+
                     IEnumerable<MemoryIndex> mustAliases = Node.References.GetMustReferences();
+                    List<MemoryIndex> filteredMustAliases = new List<MemoryIndex>();
                     foreach (MemoryIndex alias in mustAliases)
                     {
-                        Worker.Snapshot.AddAlias(alias, TargetIndex, null);
+                        if (!alias.Equals(TargetIndex))
+                        {
+                            Worker.Snapshot.AddAlias(alias, TargetIndex, null);
+                            filteredMustAliases.Add(alias);
+                        }
                     }
 
                     IEnumerable<MemoryIndex> mayAliases = Node.References.GetMayReferences();
+                    List<MemoryIndex> filteredMayAliases = new List<MemoryIndex>();
                     foreach (MemoryIndex alias in mayAliases)
                     {
-                        Worker.Snapshot.AddAlias(alias, null, TargetIndex);
+                        if (!alias.Equals(TargetIndex))
+                        {
+                            Worker.Snapshot.AddAlias(alias, null, TargetIndex);
+                            filteredMayAliases.Add(alias);
+                        }
                     }
 
-                    Worker.Snapshot.MustSetAliases(TargetIndex, mustAliases, mayAliases);
+                    Worker.Snapshot.MustSetAliasesWithoutDelete(TargetIndex, filteredMustAliases, filteredMayAliases);
                 }
                 // Destroys old aliases if any
                 else if (memoryAlias != null && memoryAlias.HasAliases)
@@ -281,7 +293,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class MemoryIndexMayAssignOperation : AssignOperation
     {
-        public MemoryIndexMayAssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
+        public MemoryIndexMayAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
             : base(worker, targetIndex, memoryEntryNode, processAliases)
         {
         }
@@ -431,7 +443,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class MemoryIndexDeleteAssignOperation : AssignOperation
     {
-        public MemoryIndexDeleteAssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex)
+        public MemoryIndexDeleteAssignOperation(AssignWorker worker, MemoryIndex targetIndex)
             : base(worker, targetIndex, null, true)
         {
         }
@@ -498,7 +510,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public MemoryIndex SourceIndex { get; private set; }
         public bool CreateNewIndex { get; set; }
 
-        public UnknownIndexMayAssign(LazyAssignWorker worker, MemoryIndex sourceIndex, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
+        public UnknownIndexMayAssign(AssignWorker worker, MemoryIndex sourceIndex, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
             : base(worker, targetIndex, memoryEntryNode, processAliases)
         {
             SourceIndex = sourceIndex;
@@ -703,7 +715,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class UndefinedMustAssignOperation : AssignOperation
     {
-        public UndefinedMustAssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
+        public UndefinedMustAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
             : base(worker, targetIndex, memoryEntryNode, processAliases)
         {
         }
@@ -766,7 +778,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                         Worker.Snapshot.AddAlias(alias, null, TargetIndex);
                     }
 
-                    Worker.Snapshot.MustSetAliases(TargetIndex, mustAliases, mayAliases);
+                    Worker.Snapshot.MustSetAliasesWithoutDelete(TargetIndex, mustAliases, mayAliases);
                 }
             }
         }
@@ -774,7 +786,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     class UndefinedMayAssignOperation : AssignOperation
     {
-        public UndefinedMayAssignOperation(LazyAssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
+        public UndefinedMayAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
             : base(worker, targetIndex, memoryEntryNode, processAliases)
         {
         }
