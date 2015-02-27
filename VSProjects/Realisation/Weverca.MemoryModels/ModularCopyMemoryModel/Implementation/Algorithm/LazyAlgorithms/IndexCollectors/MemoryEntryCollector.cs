@@ -18,9 +18,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public IReadOnlySnapshotStructure Structure { get; private set; }
         public IReadOnlySnapshotData Data { get; private set; }
 
-        public MemoryEntry RootMemoryEntry { get; private set; }
-
         public MemoryEntryCollectorNode RootNode { get; set; }
+        public MemoryEntry RootMemoryEntry { get; private set; }
 
         public LinkedList<MemoryEntryCollectorNode> collectingQueue = new LinkedList<MemoryEntryCollectorNode>();
 
@@ -33,24 +32,40 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public void ProcessRootMemoryEntry(MemoryEntry entry)
         {
+            RootNode = new MemoryEntryCollectorNode();
+            RootNode.IsMust = true;
+            RootNode.CollectValuesFromMemoryEntry(entry);
+            RootNode.CollectChildren(this);
+
+            processQueue();
             RootMemoryEntry = entry;
 
-            MemoryEntryCollectorNode rootNode = new MemoryEntryCollectorNode();
-            rootNode.IsMust = true;
-            rootNode.CollectValuesFromMemoryEntry(entry);
-            rootNode.CollectChildren(this);
-            RootNode = rootNode;
+        }
 
+        public void ProcessRootIndexes(HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes, IEnumerable<Value> values)
+        {
+            RootNode = new MemoryEntryCollectorNode();
+            RootNode.SourceIndexes = new List<SourceIndex>();
+            RootNode.IsMust = true;
 
-            while (collectingQueue.Count > 0)
+            foreach (MemoryIndex index in mustIndexes)
             {
-                MemoryEntryCollectorNode node = collectingQueue.First.Value;
-                collectingQueue.RemoveFirst();
-
-                node.CollectAliasesFromSources(this);
-                node.CollectValuesFromSources(this);
-                node.CollectChildren(this);
+                RootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
+                RootNode.CollectAliases(index, Snapshot, true);
             }
+            foreach (MemoryIndex index in mayIndexes)
+            {
+                RootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
+                RootNode.CollectAliases(index, Snapshot, false);
+            }
+
+            RootNode.CollectValuesFromSources(this);
+            RootNode.VisitValues(values);
+            RootNode.CollectChildren(this);
+
+
+            processQueue();
+            RootMemoryEntry = RootNode.GenerateMemeoryEntry(values);
         }
 
         public void AddNode(MemoryEntryCollectorNode node)
@@ -58,29 +73,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             collectingQueue.AddLast(node);
         }
 
-        internal void ProcessRootIndexes(HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes, IEnumerable<Value> values)
+        private void processQueue()
         {
-            MemoryEntryCollectorNode rootNode = new MemoryEntryCollectorNode();
-            rootNode.IsMust = true;
-            RootNode = rootNode;
-
-            foreach (MemoryIndex index in mustIndexes)
-            {
-                rootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
-                rootNode.CollectAliases(index, Snapshot, true);
-            }
-            foreach (MemoryIndex index in mayIndexes)
-            {
-                rootNode.SourceIndexes.Add(new SourceIndex(index, Snapshot));
-                rootNode.CollectAliases(index, Snapshot, false);
-            }
-
-            rootNode.CollectValuesFromSources(this);
-            rootNode.VisitValues(values);
-            rootNode.CollectChildren(this);
-
-            RootMemoryEntry = rootNode.GenerateMemeoryEntry(values);
-
             while (collectingQueue.Count > 0)
             {
                 MemoryEntryCollectorNode node = collectingQueue.First.Value;
@@ -115,38 +109,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
 
 
-        public bool hasArray;
+        public bool IsMust { get; set; }
+        public List<SourceIndex> SourceIndexes { get; set; }
+
         public HashSet<Value> ScalarValues { get; private set; }
         public HashSet<AssociativeArray> Arrays { get; private set; }
         public HashSet<ObjectValue> Objects { get; private set; }
 
-        public MemoryEntryCollectorNode AnyChild { get; set; }
         public Dictionary<string, MemoryEntryCollectorNode> NamedChildren { get; set; }
+        public MemoryEntryCollectorNode AnyChild { get; set; }
+
 
         public ReferenceCollector References { get; set; }
-
         public bool HasAliases { get { return References != null && References.HasAliases; } }
 
-        public List<SourceIndex> SourceIndexes { get; private set; }
-        public bool IsMust { get; set; }
-
+        private bool hasArray;
         private bool mustHaveArray;
-
-
-
-
-        public MemoryEntryCollectorNode()
-        {
-            /*
-            ScalarValues = new HashSet<Value>();
-            Arrays = new HashSet<AssociativeArray>();
-            Objects = new HashSet<ObjectValue>();
-             */
-
-            SourceIndexes = new List<SourceIndex>();
-            NamedChildren = new Dictionary<string, MemoryEntryCollectorNode>();
-
-        }
 
         public MemoryEntry GenerateMemeoryEntry(IEnumerable<Value> values)
         {
@@ -172,10 +150,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (Arrays != null && Arrays.Count > 0)
             {
-                AnyChild = new MemoryEntryCollectorNode();
-                collector.AddNode(AnyChild);
-                AnyChild.IsMust = false;
+                // Create new collection for named children
+                NamedChildren = new Dictionary<string, MemoryEntryCollectorNode>();
 
+                // Any child node
+                AnyChild = new MemoryEntryCollectorNode();
+                AnyChild.SourceIndexes = new List<SourceIndex>();
+                AnyChild.IsMust = false;
+                collector.AddNode(AnyChild);
+
+                // Collect child names and adds any child sources
                 HashSet<string> names = new HashSet<string>();
                 List<Tuple<Snapshot, IArrayDescriptor>> sourceDescriptors = new List<Tuple<Snapshot, IArrayDescriptor>>();
                 foreach (AssociativeArray arrayValue in Arrays)
@@ -196,17 +180,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                     }
                 }
 
+                // Test whether new array as MAY or MUST
                 bool mustHaveChildren = this.IsMust && mustHaveArray;
                 mustHaveChildren &= (ScalarValues == null || ScalarValues.Count == 0);
                 mustHaveChildren &= (Objects == null || Objects.Count == 0);
 
+                // Iterates collected names and stors them into the structure
                 foreach (string name in names)
                 {
                     MemoryEntryCollectorNode childNode = new MemoryEntryCollectorNode();
-                    NamedChildren.Add(name, childNode);
-                    collector.AddNode(childNode);
+                    childNode.SourceIndexes = new List<SourceIndex>();
                     childNode.IsMust = mustHaveChildren;
+                    collector.AddNode(childNode);
+                    NamedChildren.Add(name, childNode);
 
+                    // Collect sources for named child
                     foreach (var tuple in sourceDescriptors)
                     {
                         Snapshot sourceSnapshot = tuple.Item1;

@@ -98,26 +98,30 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected void processIndexModifications()
         {
-            var indexModification = Worker.PathModifications[TargetIndex];
-            foreach (var sourceIndex in Node.SourceIndexes)
+            if (Node.SourceIndexes != null)
             {
-                indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
+                var indexModification = Worker.PathModifications[TargetIndex];
+                foreach (var sourceIndex in Node.SourceIndexes)
+                {
+                    indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
+                }
             }
         }
 
         protected void processIndexModifications(MemoryIndex index)
         {
             var indexModification = Worker.PathModifications[TargetIndex];
-            foreach (var sourceIndex in Node.SourceIndexes)
-            {
-                indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
-            }
-
             indexModification.AddDatasource(index, Worker.Snapshot);
+
+            if (Node.SourceIndexes != null)
+            {
+                foreach (var sourceIndex in Node.SourceIndexes)
+                {
+                    indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
+                }
+            }
         }
     }
-
-
 
     class MemoryIndexMustAssignOperation : AssignOperation
     {
@@ -710,8 +714,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
     }
-
-
 
     class UndefinedMustAssignOperation : AssignOperation
     {

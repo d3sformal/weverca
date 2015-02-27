@@ -40,12 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public CollectorNode()
         {
-            
             ChildNodes = new List<LocationCollectorNode>();
-            /*NamedChildNodes = new Dictionary<string, MemoryCollectorNode>();
-            UndefinedChildren = new List<Tuple<string, MemoryCollectorNode>>();
-            ValueNodes = new List<ValueCollectorNode>();
-             * */
         }
 
         #region Children operations

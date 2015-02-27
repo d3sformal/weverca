@@ -145,7 +145,6 @@
     <Compile Include="ModularCopyMemoryModel\Memory\AssignInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\ProcessValueAsLocationVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\IndexCollectors\ReadCollector.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\CollectorOperations.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\LazyAlgorithms\IndexCollectors\CollectValueVisitors.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\ValueLocation.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\LazyCommitAlgorithm.cs" />

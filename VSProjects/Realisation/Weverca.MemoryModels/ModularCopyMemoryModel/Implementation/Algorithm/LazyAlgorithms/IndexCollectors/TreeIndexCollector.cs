@@ -13,12 +13,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 {
     class TreeIndexCollector : IPathSegmentVisitor
     {
-
-        /*Dictionary<int, VariableStackNode> variableStackNodes = new Dictionary<int, VariableStackNode>();
-        Dictionary<int, ControlStackNode> controlStackNodes = new Dictionary<int, ControlStackNode>();
-        Dictionary<MemoryIndex, TemporaryNode> temporaryNodes = new Dictionary<MemoryIndex, TemporaryNode>();
-        Dictionary<ObjectValue, CollectorNode> objectNodes = new Dictionary<ObjectValue, CollectorNode>();*/
-
         public Snapshot Snapshot { get; private set; }
         public IReadOnlySnapshotStructure Structure { get; private set; }
         public IReadOnlySnapshotData Data { get; private set; }
@@ -51,8 +45,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             {
                 processAliases();
 
+                var swap = currentNodes;
                 currentNodes = nextIterationNodes;
-                nextIterationNodes = new HashSet<LocationCollectorNode>();
+                nextIterationNodes = swap;
+                nextIterationNodes.Clear();
 
                 segment.Accept(this);
             }
