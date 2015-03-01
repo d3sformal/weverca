@@ -166,40 +166,48 @@ namespace Weverca.Analysis.ExpressionEvaluator
             var isNotTrue = true;
             var isNotFalse = true;
 
-            foreach (var value in entry.PossibleValues)
+            if (entry.Count > 0)
             {
-                // Gets type of value and convert to boolean
-                value.Accept(this);
 
-                if (result != null)
+                foreach (var value in entry.PossibleValues)
                 {
-                    if (result.Value)
+                    // Gets type of value and convert to boolean
+                    value.Accept(this);
+
+                    if (result != null)
+                    {
+                        if (result.Value)
+                        {
+                            if (isNotTrue)
+                            {
+                                isNotTrue = false;
+                            }
+                        }
+                        else
+                        {
+                            if (isNotFalse)
+                            {
+                                isNotFalse = false;
+                            }
+                        }
+                    }
+                    else
                     {
                         if (isNotTrue)
                         {
                             isNotTrue = false;
                         }
-                    }
-                    else
-                    {
+
                         if (isNotFalse)
                         {
                             isNotFalse = false;
                         }
                     }
                 }
-                else
-                {
-                    if (isNotTrue)
-                    {
-                        isNotTrue = false;
-                    }
-
-                    if (isNotFalse)
-                    {
-                        isNotFalse = false;
-                    }
-                }
+            }
+            else
+            {
+                isNotFalse = false;
             }
 
             // Returns result of boolean conversion. Null value indicates both true and false

@@ -1164,11 +1164,11 @@ $a = $result[1];
 $b = $result[2];
 $c=  $result[3];
 "
-.AssertVariable("a").HasValues("fromCallSite1", "fromCallSite2")
+.AssertVariable("a").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("b").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .AssertVariable("c").HasUndefinedAndValues("fromCallSite1", "fromCallSite2")
 .ShareFunctionGraph("sharedFn")
-.MemoryModel(MemoryModels.MemoryModels.VirtualReferenceMM)
+.MemoryModel(MemoryModels.MemoryModels.ModularCopyMM)
  ;
 
         #endregion
@@ -3391,6 +3391,7 @@ $name();
         #endregion
 
         #region Exit statements and exceptions
+
         readonly static TestCase ExitWorklist_CASE = @"
 function f() {
 if ($unknown) {
@@ -3414,6 +3415,42 @@ f();
         {
             AnalysisTestUtils.RunTestCase(ExitWorklist_CASE);
         }
+
+        readonly static TestCase ExitWorklist2_CASE = @"
+function f() {
+    if ($unknown) exit();
+}
+function g() {
+    if ($unknown) exit();
+}
+
+f();
+g();
+".AssertIterationCount();
+
+        [TestMethod]
+        public void ExitWorklist2()
+        {
+            AnalysisTestUtils.RunTestCase(ExitWorklist2_CASE);
+        }
+
+        readonly static TestCase Die_CASE = @"
+function f() {
+    if ($unknown) die();
+}
+function g() {
+    if ($unknown) die();
+}
+
+f();
+g();
+".AssertIterationCount();
+        [TestMethod]
+        public void Die()
+        {
+            AnalysisTestUtils.RunTestCase(Die_CASE);
+        }
+
         #endregion
 
         #endregion

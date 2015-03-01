@@ -164,7 +164,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     }
                     else
                     {
-                        throw new Exception("Can not merge structures with different local velel.");
+                        localLevel = Snapshot.GLOBAL_CALL_LEVEL;
                     }
                 }
             }
