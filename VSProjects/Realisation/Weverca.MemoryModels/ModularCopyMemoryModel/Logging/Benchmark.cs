@@ -54,7 +54,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         WRITE_ASSIGN,
         WRITE_RELEASE_TEMPORARY,
         NEW_ASSIGN_COLLECTOR,
-        NEW_ASSIGN
+        NEW_ASSIGN,
+        MERGE_GENERAL
 
     }
 

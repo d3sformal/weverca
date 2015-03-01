@@ -385,6 +385,23 @@ if($unknown){
 $FieldValue=$obj->a;
 ".AssertVariable("FieldValue").HasValues("ValueA", "ValueB");
 
+        readonly static TestCase ObjectMerge_CASE = @"
+class Obj{
+    var $a;
+}
+
+$obj;
+if($unknown){
+    $obj = new Obj();
+    $obj->a = 'ValueA';
+}else{
+    $obj = new Obj();
+    $obj->a = 'ValueB';
+}
+
+$FieldValue=$obj->a;
+".AssertVariable("FieldValue").HasUndefinedAndValues("ValueA", "ValueB");
+
         readonly static TestCase ObjectMultipleObjectsInVariableRead_CASE = @"
 class Cl {
     var $field;
@@ -3783,6 +3800,12 @@ f();
         public void ObjectMethodCallMerge()
         {
             AnalysisTestUtils.RunTestCase(ObjectMethodCallMerge_CASE);
+        }
+
+        [TestMethod]
+        public void ObjectMerge()
+        {
+            AnalysisTestUtils.RunTestCase(ObjectMerge_CASE);
         }
 
         [TestMethod]

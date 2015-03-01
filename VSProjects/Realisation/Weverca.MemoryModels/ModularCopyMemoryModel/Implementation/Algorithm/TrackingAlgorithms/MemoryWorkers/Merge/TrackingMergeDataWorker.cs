@@ -8,63 +8,105 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
-    class TrackingMergeDataWorker : AbstractTrackingMergeWorker
+    class TrackingMergeDataWorker : AbstractValueVisitor
     {
         public ISnapshotDataProxy Data { get; set; }
+
+        private Snapshot targetSnapshot;
+        private IReadOnlySnapshotStructure targetStructure;
+
+        private List<Snapshot> sourceSnapshots;
         private IWriteableSnapshotData writeableTargetData;
-        private IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor;
 
-        public TrackingMergeDataWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
-            : base(targetSnapshot, sourceSnapshots, isCallMerge)
+        private HashSet<MemoryIndex> indexChanges = new HashSet<MemoryIndex>();
+        private HashSet<Value> values = new HashSet<Value>();
+
+        public TrackingMergeDataWorker(Snapshot targetSnapshot, IReadOnlySnapshotStructure targetStructure, List<Snapshot> sourceSnapshots)
         {
+            this.targetSnapshot = targetSnapshot;
+            this.sourceSnapshots = sourceSnapshots;
+            this.targetStructure = targetStructure;
 
-        }
-
-        public void MergeData(ISnapshotStructureProxy targetStructure)
-        {
-            Structure = targetStructure;
-            this.targetStructure = targetStructure.Readonly;
-
-            isStructureWriteable = false;
-
-            createSnapshotContexts();
-            collectDataChangesAndFindAncestor();
-            createNewData();
-
-            mergeObjectDefinitions();
-            mergeMemoryStacksRoots();
-
-            processMergeOperations();
-        }
-
-        private void collectDataChangesAndFindAncestor()
-        {
-            SnapshotContext ancestorContext = snapshotContexts[0];
-            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = ancestorContext.SourceData.ReadonlyChangeTracker;
-
-            List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
-            changes.Add(snapshotContexts[0].ChangedIndexesTree);
-            for (int x = 0; x < snapshotContexts.Count; x++)
+            if (targetSnapshot.MergeInfo == null)
             {
-                SnapshotContext context = snapshotContexts[x];
-
-                if (context == ancestorContext)
-                {
-                    continue;
-                }
-
-                MemoryIndexTree currentChanges = context.ChangedIndexesTree;
-                changes.Add(currentChanges);
-
-                ancestor = getFirstCommonAncestor(context.SourceData.ReadonlyChangeTracker, ancestor, currentChanges, changes);
+                targetSnapshot.MergeInfo = new MergeInfo();
             }
-            commonAncestor = ancestor;
         }
 
-        private void createNewData()
+        public void MergeData()
+        {
+            IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectDataChangesAndFindAncestor();
+            createNewDataFromCommonAncestor(commonAncestor);
+
+            foreach (MemoryIndex memoryIndex in indexChanges)
+            {
+                mergeMemoryIndexData(memoryIndex);
+            }
+        }
+
+        public void MergeCallData(Snapshot callSnapshot)
+        {
+            collectDataChangesFromCallSnapshot(callSnapshot);
+            createNewDataFromCallSnapshot(callSnapshot);
+
+            foreach (MemoryIndex memoryIndex in indexChanges)
+            {
+                mergeMemoryIndexData(memoryIndex);
+            }
+        }
+
+        public void MergeInfo()
+        {
+            IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectDataChangesAndFindAncestor();
+            createNewDataFromCommonAncestor(commonAncestor);
+
+            foreach (MemoryIndex memoryIndex in indexChanges)
+            {
+                mergeMemoryIndexInfo(memoryIndex);
+            }
+        }
+
+        public void MergeCallInfo(Snapshot callSnapshot)
+        {
+            collectDataChangesFromCallSnapshot(callSnapshot);
+            createNewDataFromCallSnapshot(callSnapshot);
+
+            foreach (MemoryIndex memoryIndex in indexChanges)
+            {
+                mergeMemoryIndexInfo(memoryIndex);
+            }
+        }
+
+
+        private IReadonlyChangeTracker<IReadOnlySnapshotData> collectDataChangesAndFindAncestor()
+        {
+            CollectionTools.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
+
+            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = sourceSnapshots[0].CurrentData.Readonly.ReadonlyChangeTracker;
+            for (int x = 1; x < sourceSnapshots.Count; x++)
+            {
+                Snapshot sourceSnapshot = sourceSnapshots[x];
+                ancestor = getFirstCommonAncestor(sourceSnapshot.CurrentData.Readonly.ReadonlyChangeTracker, ancestor);
+            }
+            return ancestor;
+        }
+
+        private void collectDataChangesFromCallSnapshot(Snapshot callSnapshot)
+        {
+            CollectionTools.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
+
+            for (int x = 0; x < sourceSnapshots.Count; x++)
+            {
+                Snapshot sourceSnapshot = sourceSnapshots[x];
+                collectSingleFunctionChanges(callSnapshot, sourceSnapshot.CurrentData.Readonly.ReadonlyChangeTracker);
+            }
+        }
+
+        private void createNewDataFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor)
         {
             Data = Snapshot.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
@@ -72,85 +114,178 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
         }
 
-        protected override TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation)
+        private void createNewDataFromCallSnapshot(Snapshot callSnapshot)
         {
-            return new OperationAccessor(operation, targetSnapshot, writeableTargetData, targetStructure);
+            Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.CurrentData);
+            writeableTargetData = Data.Writeable;
+
+            writeableTargetData.ReinitializeTracker(callSnapshot.CurrentData.Readonly);
         }
 
-        class OperationAccessor : TrackingMergeWorkerOperationAccessor
+
+
+
+
+
+
+
+        private void mergeMemoryIndexData(MemoryIndex targetIndex)
         {
-            private MergeOperation operation;
-
-            private HashSet<Value> values = new HashSet<Value>();
-            private Snapshot targetSnapshot;
-            private IWriteableSnapshotData writeableTargetData;
-            private IReadOnlySnapshotStructure targetStructure;
-
-            public OperationAccessor(MergeOperation operation, Snapshot targetSnapshot, IWriteableSnapshotData writeableTargetData, IReadOnlySnapshotStructure targetStructure)
+            IIndexDefinition definition;
+            if (targetStructure.TryGetIndexDefinition(targetIndex, out definition))
             {
-                this.operation = operation;
-                this.targetSnapshot = targetSnapshot;
-                this.writeableTargetData = writeableTargetData;
-                this.targetStructure = targetStructure;
-            }
+                bool valuesAlwaysDefined = collectValues(targetIndex);
 
-            public override void addSource(MergeOperationContext operationContext, IIndexDefinition sourceDefinition)
-            {
-                MemoryEntry entry;
-                if (operationContext.SnapshotContext.SourceData.TryGetMemoryEntry(operationContext.Index, out entry))
+                if (definition.Array != null)
                 {
-                    foreach (Value value in entry.PossibleValues)
+                    values.Add(definition.Array);
+                }
+                if (!valuesAlwaysDefined)
+                {
+                    values.Add(targetSnapshot.UndefinedValue);
+                }
+
+                MemoryEntry entry = targetSnapshot.CreateMemoryEntry(values);
+                writeableTargetData.SetMemoryEntry(targetIndex, entry);
+
+                values.Clear();
+            }
+            else
+            {
+                // Target index is not part of the structure - remove it
+                writeableTargetData.RemoveMemoryEntry(targetIndex);
+            }
+        }
+
+        private void mergeMemoryIndexInfo(MemoryIndex targetIndex)
+        {
+            IIndexDefinition definition;
+            if (targetStructure.TryGetIndexDefinition(targetIndex, out definition))
+            {
+                bool valuesAlwaysDefined = collectValues(targetIndex);
+
+                MemoryEntry entry = targetSnapshot.CreateMemoryEntry(values);
+                writeableTargetData.SetMemoryEntry(targetIndex, entry);
+
+                values.Clear();
+            }
+            else
+            {
+                // Target index is not part of the structure - remove it
+                writeableTargetData.RemoveMemoryEntry(targetIndex);
+            }
+        }
+
+        private bool collectValues(MemoryIndex targetIndex)
+        {
+            bool valuesAlwaysDefined = true;
+            foreach (Snapshot sourceSnapshot in sourceSnapshots)
+            {
+                MemoryEntry sourceEntry = getSourceEntry(targetIndex, sourceSnapshot);
+                if (sourceEntry != null)
+                {
+                    if (sourceEntry.ContainsAssociativeArray)
                     {
-                        if (! (value is AssociativeArray))
-                        {
-                            values.Add(value);
-                        }
+                        VisitMemoryEntry(sourceEntry);
+                    }
+                    else
+                    {
+                        CollectionTools.AddAll(values, sourceEntry.PossibleValues);
                     }
                 }
                 else
                 {
-                    values.Add(targetSnapshot.UndefinedValue);
+                    valuesAlwaysDefined = false;
                 }
             }
 
-            public override void provideCustomOperation(MemoryIndex targetIndex)
+            return valuesAlwaysDefined;
+        }
+
+        private MemoryEntry getSourceEntry(MemoryIndex targetIndex, Snapshot sourceSnapshot)
+        {
+            IReadOnlySnapshotData data = sourceSnapshot.CurrentData.Readonly;
+            MemoryEntry sourceEntry = null;
+
+            if (!data.TryGetMemoryEntry(targetIndex, out sourceEntry))
             {
-                if (operation.IsUndefined)
+                MemoryIndex sourceIndex;
+                if (targetSnapshot.MergeInfo[targetIndex].TryGetDatasource(sourceSnapshot, out sourceIndex))
                 {
-                    values.Add(targetSnapshot.UndefinedValue);
+                    data.TryGetMemoryEntry(sourceIndex, out sourceEntry);
+                }
+            }
+
+            return sourceEntry;
+        }
+
+        #region Collecting changes
+
+        protected IReadonlyChangeTracker<IReadOnlySnapshotData> getFirstCommonAncestor(
+            IReadonlyChangeTracker<IReadOnlySnapshotData> trackerA,
+            IReadonlyChangeTracker<IReadOnlySnapshotData> trackerB
+            )
+        {
+            while (trackerA != trackerB)
+            {
+                if (trackerA == null || trackerB != null && trackerA.TrackerId < trackerB.TrackerId)
+                {
+                    var swap = trackerA;
+                    trackerA = trackerB;
+                    trackerB = swap;
                 }
 
-                IIndexDefinition definition;
-                if (targetStructure.TryGetIndexDefinition(operation.TargetIndex, out definition))
+                CollectionTools.AddAll(indexChanges, trackerA.IndexChanges);
+                trackerA = trackerA.PreviousTracker;
+            }
+
+            return trackerA;
+        }
+
+        protected void collectSingleFunctionChanges(
+            Snapshot callSnapshot, IReadonlyChangeTracker<IReadOnlySnapshotData> tracker)
+        {
+            int functionCallLevel = tracker.CallLevel;
+
+            bool done = false;
+            while (!done && tracker != null && tracker.CallLevel == functionCallLevel)
+            {
+                if (tracker.ConnectionType != TrackerConnectionType.SUBPROGRAM_MERGE)
                 {
-                    if (definition.Array != null)
+                    done = tracker.ConnectionType == TrackerConnectionType.CALL_EXTEND;
+
+                    CollectionTools.AddAll(indexChanges, tracker.IndexChanges);
+                    tracker = tracker.PreviousTracker;
+                }
+                else
+                {
+                    IReadonlyChangeTracker<IReadOnlySnapshotData> callTracker;
+                    if (tracker.TryGetCallTracker(callSnapshot, out callTracker))
                     {
-                        values.Add(definition.Array);
+                        tracker = callTracker;
+                    }
+                    else
+                    {
+                        tracker = tracker.PreviousTracker;
                     }
                 }
-
-                writeableTargetData.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
-            }
-
-            public override void provideCustomDeleteOperation(MemoryIndex targetIndex, IIndexDefinition targetDefinition)
-            {
-                throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + targetIndex);
             }
         }
 
-        protected override MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName)
+        #endregion
+
+        #region Value Visitor
+
+        public override void VisitValue(Value value)
         {
-            throw new Exception("Error merging structure in readonly mode - adding new index into collection: " + childName);
+            values.Add(value);
         }
 
-        protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)
+        public override void VisitAssociativeArray(AssociativeArray value)
         {
-            throw new Exception("Error merging structure in readonly mode - deleting index: " + childName);
+            // filter out associative array
         }
 
-        protected override bool MissingStacklevel(int stackLevel)
-        {
-            return false;
-        }
+        #endregion
     }
 }

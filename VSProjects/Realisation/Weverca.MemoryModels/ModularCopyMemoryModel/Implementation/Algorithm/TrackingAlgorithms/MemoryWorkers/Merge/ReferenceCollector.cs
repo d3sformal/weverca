@@ -13,10 +13,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     /// </summary>
     public class ReferenceCollector
     {
-        HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
-        HashSet<MemoryIndex> allReferences = new HashSet<MemoryIndex>();
-        bool mustSet = false;
         private IReadOnlySnapshotStructure structure;
+
+        private HashSet<MemoryIndex> mustReferences = new HashSet<MemoryIndex>();
+        private HashSet<MemoryIndex> allReferences = new HashSet<MemoryIndex>();
+        private bool mustSet = false;
 
         public ReferenceCollector(IReadOnlySnapshotStructure structure)
         {
@@ -173,6 +174,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             allReferences.Add(memoryIndex);
             mustReferences.Add(memoryIndex);
+        }
+
+        public void Clear()
+        {
+            mustReferences.Clear();
+            allReferences.Clear();
+            mustSet = false;
         }
     }
 }

@@ -75,6 +75,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                 case SnapshotMode.InfoLevel:
                     data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
+                    data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
                     break;
 
                 default:
@@ -93,8 +95,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         structureWorker.MergeStructure();
                         structure = structureWorker.Structure;
 
-                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
-                        dataWorker.MergeData(structure);
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, structure.Readonly, snapshots);
+                        dataWorker.MergeData();
                         data = dataWorker.Data;
 
                         localLevel = structure.Readonly.CallLevel;
@@ -108,10 +110,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                 case SnapshotMode.InfoLevel:
                     {
-                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
-                        dataWorker.MergeData(snapshot.Structure);
-
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+                        dataWorker.MergeInfo();
                         data = dataWorker.Data;
+
+                        localLevel = snapshot.Structure.Readonly.CallLevel;
+                        data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
+                        data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.MERGE);
                     }
                     break;
 
@@ -131,8 +136,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         structureWorker.MergeStructure();
                         structure = structureWorker.Structure;
 
-                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
-                        dataWorker.MergeData(structure);
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, structure.Readonly, snapshots);
+                        dataWorker.MergeData();
                         data = dataWorker.Data;
 
                         localLevel = structure.Readonly.CallLevel;
@@ -157,10 +162,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                 case SnapshotMode.InfoLevel:
                     {
-                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
-                        dataWorker.MergeData(snapshot.Structure);
-
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+                        dataWorker.MergeInfo();
                         data = dataWorker.Data;
+
+                        localLevel = snapshot.Structure.Readonly.CallLevel;
+                        var dataTracker = data.Writeable.WriteableChangeTracker;
+                        dataTracker.SetCallLevel(localLevel);
+                        dataTracker.SetConnectionType(TrackerConnectionType.SUBPROGRAM_MERGE);
+                        
+                        for (int x = 0; x < snapshots.Count; x++)
+                        {
+                            Snapshot callSnapshot = (Snapshot)extendedPoints[x].OutSet.Snapshot;
+                            Snapshot mergeAncestor = snapshots[x];
+
+                            dataTracker.AddCallTracker(callSnapshot, mergeAncestor.Data.Readonly.ReadonlyChangeTracker);
+                        }
                     }
                     break;
 
@@ -176,12 +193,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 case SnapshotMode.MemoryLevel:
                     {
-                        TrackingCallMergeStructureWorker structureWorker = new TrackingCallMergeStructureWorker(snapshot, callSnapshot, snapshots);
-                        structureWorker.MergeStructure();
+                        TrackingMergeStructureWorker structureWorker = new TrackingMergeStructureWorker(snapshot, snapshots);
+                        structureWorker.CallMergeStructure(callSnapshot);
                         structure = structureWorker.Structure;
 
-                        TrackingCallMergeDataWorker dataWorker = new TrackingCallMergeDataWorker(snapshot, callSnapshot, snapshots);
-                        dataWorker.MergeData(structure);
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, structure.Readonly, snapshots);
+                        dataWorker.MergeCallData(callSnapshot);
                         data = dataWorker.Data;
 
                         localLevel = structure.Readonly.CallLevel;
@@ -190,34 +207,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                         data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
                         data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_MERGE);
-
-                        /*TrackingMergeStructureWorker structureWorker = new TrackingMergeStructureWorker(snapshot, snapshots);
-                        structureWorker.SetParentSnapshot(callSnapshot);
-                        structureWorker.SetOnlyparentStackContexts();
-                        structureWorker.MergeStructure();
-                        structureWorker.StoreLocalArays();
-                        structure = structureWorker.Structure;
-
-                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshots);
-                        dataWorker.SetParentSnapshot(callSnapshot);
-                        dataWorker.MergeData(structure);
-                        data = dataWorker.Data;*/
-
-                        /*MergeWorker worker = new MergeWorker(snapshot, snapshots, true);
-                        worker.Merge();
-
-                        structure = worker.Structure;
-                        data = worker.Data;*/
                     }
                     break;
 
                 case SnapshotMode.InfoLevel:
                     {
-                        MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, true);
-                        worker.Merge();
+                        TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+                        dataWorker.MergeCallData(callSnapshot);
+                        data = dataWorker.Data;
 
-                        structure = worker.Structure;
-                        data = worker.Infos;
+                        localLevel = snapshot.Structure.Readonly.CallLevel;
+                        data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
+                        data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_MERGE);
                     }
                     break;
 
