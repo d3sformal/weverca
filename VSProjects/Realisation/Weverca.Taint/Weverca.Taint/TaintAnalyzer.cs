@@ -320,13 +320,12 @@ namespace Weverca.Taint
                 
                 var pEx = p as ConditionalExPoint;
                 var possibleValues = pEx.Condition.Value.ReadMemory(Output).PossibleValues;
-
-                var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
-                var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
-                
                     
                 if (pEx.TrueAssume.Assumed && pEx.FalseAssume.Assumed)
                 {
+					var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
+					var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
+
 					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(pEx.TrueOperand.OutSnapshot).PossibleValues);
                     List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(pEx.FalseOperand.OutSnapshot).PossibleValues);
 
@@ -341,6 +340,8 @@ namespace Weverca.Taint
                 }
                 else if (pEx.TrueAssume.Assumed)
                 {
+					var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
+
 					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
 
                     //only true value is used
@@ -353,6 +354,8 @@ namespace Weverca.Taint
                 }
                 else
                 {
+					var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
+
 					List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
 
                     //only false value is used
