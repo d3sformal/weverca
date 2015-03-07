@@ -682,7 +682,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			Structure.Writeable.SetArray(arrayIndex, createdArray);
 			Structure.Writeable.SetDescriptor(createdArray, descriptor);
 
-			Data.Writeable.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
+            Data.Writeable.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
+            Data.Writeable.SetMemoryEntry(descriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
 		}
 
 		/// <summary>
@@ -1557,7 +1558,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 			structure.NewIndex(newDescriptor.UnknownIndex);
 			structure.SetArray(parentIndex, value);
-			structure.SetDescriptor(value, newDescriptor);
+            structure.SetDescriptor(value, newDescriptor);
+
+            Data.Writeable.SetMemoryEntry(newDescriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
 			return value;
 		}
 

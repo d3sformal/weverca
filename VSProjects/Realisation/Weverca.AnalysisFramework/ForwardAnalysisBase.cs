@@ -206,13 +206,6 @@ namespace Weverca.AnalysisFramework
 
                 //during flow through are enqueued all needed flow children
                 point.FlowThrough();
-
-                bool test = false;
-
-                if (test)
-                {
-                    break;
-                }
             }
 
             //because of avoid incorrect use

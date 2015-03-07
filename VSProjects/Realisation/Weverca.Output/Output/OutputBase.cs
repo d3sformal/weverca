@@ -55,6 +55,12 @@ namespace Weverca.Output.Output
         protected abstract void head(string text);
 
         /// <summary>
+        /// Seconfd level headline
+        /// </summary>
+        /// <param name="text">Text of headline</param>
+        protected abstract void head2(string text);
+
+        /// <summary>
         /// Info used in section
         /// </summary>
         /// <param name="text">Info text</param>
@@ -135,19 +141,19 @@ namespace Weverca.Output.Output
         /// <param name="point">Program point which info is printed</param>
         public void ProgramPointInfo(string pointCaption, ProgramPointBase point)
         {
-            headline("PROGRAM POINT: " + pointCaption);
+            Headline("PROGRAM POINT: " + pointCaption);
 
             comment("Call context:");
             line();
             comment(point.OwningPPGraph.Context.ToString());
 
+            Indent();
             line();
 
-            Indent();
             if (point.OutSet == null)
             {
                 line();
-                headline("Point not reached");
+                Headline("Point not reached");
                 line();
                 line();
             }
@@ -181,6 +187,14 @@ namespace Weverca.Output.Output
         }
 
         /// <summary>
+        /// Print empty line
+        /// </summary>
+        public void EmptyLine()
+        {
+            line();
+        }
+
+        /// <summary>
         /// Print given text as error line
         /// </summary>
         /// <param name="text">Error text</param>
@@ -192,29 +206,61 @@ namespace Weverca.Output.Output
         }
 
         /// <summary>
+        /// Print given text as header line
+        /// </summary>
+        /// <param name="text">Text</param>
+        public void VariableLine(string variableName, string textDelimiter, string text)
+        {
+            variable(variableName);
+            delimiter(textDelimiter);
+            info(text);
+            line();
+        }
+
+        /// <summary>
+        /// Prints head and line with given text
+        /// </summary>
+        /// <param name="text">Text of headline</param>
+        public void Headline(string text)
+        {
+            head(text);
+            line();
+        }
+
+        /// <summary>
+        /// Prints head and line with given text
+        /// </summary>
+        /// <param name="text">Text of headline</param>
+        public void Headline2(string text)
+        {
+            head2(text);
+            line();
+        }
+
+        /// <summary>
         /// Prints warning to output
         /// </summary>
         /// <param name="analysisWarnigs">list of analysis warning</param>
         /// <param name="securityWarnings">list of security warning</param>
-        public void Warnings(List<AnalysisWarning> analysisWarnigs, List<AnalysisSecurityWarning> securityWarnings)
+        public void Warnings(IReadOnlyCollection<AnalysisWarning> analysisWarnigs, IReadOnlyCollection<AnalysisSecurityWarning> securityWarnings)
         {
-            headline("Warnings");
+            Headline("Warnings");
             CommentLine("Total number of warnings: " + (analysisWarnigs.Count + securityWarnings.Count));
             CommentLine("Number of analysis warnings: " + analysisWarnigs.Count);
             CommentLine("Number of security warnings: " + securityWarnings.Count);
-            warnings(analysisWarnigs, "Analysis warnings:");
-            warnings(securityWarnings, "Security warnings:");
+            Warnings(analysisWarnigs, "Analysis warnings:");
+            Warnings(securityWarnings, "Security warnings:");
         }
 
 		/// <summary>
 		/// Prints taint warnings to output..
 		/// </summary>
 		/// <param name="taintWarnings">Taint warnings.</param>
-		public void WarningsTaint(List<AnalysisTaintWarning> taintWarnings) 
+        public void WarningsTaint(IReadOnlyCollection<AnalysisTaintWarning> taintWarnings) 
 		{
-			headline("Taint analysis warnings");
+			Headline("Taint analysis warnings");
 			CommentLine("Number: " + taintWarnings.Count);
-			warnings(taintWarnings, "Taint analysis warnings:");
+			Warnings(taintWarnings, "Taint analysis warnings:");
 		}
 
         /// <summary>
@@ -227,26 +273,26 @@ namespace Weverca.Output.Output
             line();
         }
 
-        private void warnings<T>(List<T> warnings, string headLine) where T : AnalysisWarning
+        public void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine) where T : AnalysisWarning
         {
             line();
-            headline(headLine);
-            line();
+            Headline(headLine);
             if (warnings.Count == 0)
             {
+                line();
                 comment("No warnings");
             }
-            string file = "/";
+            string fileName = "/";
             foreach (var s in warnings)
             {
-                if (file != s.FullFileName)
+                if (fileName != s.FullFileName)
                 {
                     line();
-                    file = s.FullFileName;
-                    comment("File: "+file);
-                    line();
+                    fileName = s.FullFileName;
+                    head2("File: " + fileName);
                     line();
                 }
+                line();
                 variableInfoLine(s.ToString());
                 line();
                 comment("Called from: ");
@@ -280,16 +326,6 @@ namespace Weverca.Output.Output
             {
                 yield return line.Trim();
             }
-        }
-
-        /// <summary>
-        /// Prints head and line with given text
-        /// </summary>
-        /// <param name="text">Text of headline</param>
-        private void headline(string text)
-        {
-            head(text);
-            line();
         }
 
         /// <summary>

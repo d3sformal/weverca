@@ -40,7 +40,7 @@ namespace Weverca.Taint
     /// <summary>
     /// Class for analyzing a created program point graph for taint flows
     /// </summary>
-    class TaintAnalyzer : NextPhaseAnalyzer
+    public class TaintAnalyzer : NextPhaseAnalyzer
     {
         private ProgramPointBase _currentPoint;
         private NativeFunctionAnalyzer functAnalyzer;

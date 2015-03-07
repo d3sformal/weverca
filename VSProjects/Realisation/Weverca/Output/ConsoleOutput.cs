@@ -59,6 +59,11 @@ namespace Weverca.Output
             print(Head, text);
         }
 
+        protected override void head2(string text)
+        {
+            print(Head, text);
+        }
+
         protected override void info(string text)
         {
             print(Info, text);
@@ -112,8 +117,5 @@ namespace Weverca.Output
         }
 
         #endregion
-
-
-       
     }
 }

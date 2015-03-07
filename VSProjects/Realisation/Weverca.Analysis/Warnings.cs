@@ -69,6 +69,14 @@ namespace Weverca.Analysis
             = new HashSet<AnalysisTaintWarning>();
 
         /// <summary>
+        /// Gets the number ofanalysis and security warnings.
+        /// </summary>
+        public static int NumberOfWarnings
+        {
+            get { return Warnings.Count + SecurityWarnings.Count; }
+        }
+
+        /// <summary>
         /// Returns name of variable for specified kind of warning
         /// </summary>
         /// <typeparam name="T">Type of warning</typeparam>

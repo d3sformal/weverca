@@ -1,0 +1,95 @@
+﻿<Window x:Class="Weverca.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Weverca PHP analyser" Height="600" Width="1200" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Menu Grid.ColumnSpan="2">
+            <MenuItem Header="Analysys">
+                <MenuItem Header="Start new analysis" Name="startMenu" Click="startMenu_Click" />
+                <MenuItem Header="Repeat analysis" Name="repeateMenu" Click="repeateMenu_Click" />
+                <MenuItem Header="Abort analysis" Name="abortMenu" Click="abortMenu_Click" />
+                <MenuItem Header="Exit program" Name="exitMenu" Click="exitMenu_Click" />
+            </MenuItem>
+
+            <MenuItem Header="Export">
+                <MenuItem Header="Export program point graph image" Name="exportPPGMenu" Click="exportPPGMenu_Click" />
+                <MenuItem Header="Export analysis dump" Name="exportResultsMenu" Click="exportResultsMenu_Click" />
+            </MenuItem>
+
+            <MenuItem Header="About" Name="aboutMenu" Click="aboutMenu_Click" />
+        </Menu>
+        
+        <StackPanel Grid.Row="1">
+            <Grid Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                </Grid.ColumnDefinitions>
+                <Label Name="analysisStateText" FontWeight="Bold">Waiting for analysis</Label>
+                <Button Grid.Column="1" Margin="5,0,0,0" Name="abortButton" Click="abortButton_Click" IsEnabled="False">Abort</Button>
+            </Grid>
+
+            <Grid Margin="5,0,5,5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="auto" />
+                </Grid.RowDefinitions>
+
+                <Label Grid.Row="0">Phase:</Label>
+                <Label Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" Name="phaseText">N/A</Label>
+
+                <Label Grid.Row="1">Time:</Label>
+                <Label Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Name="timeText">N/A</Label>
+
+                <Label Grid.Row="2">Used memory:</Label>
+                <Label Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Name="memoryText">N/A</Label>
+
+                <Label Grid.Row="3">Number of warings:</Label>
+                <Label Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Name="numOfWarningsText">N/A</Label>
+            </Grid>
+        </StackPanel>
+
+        <TabControl Grid.Row="1" Grid.Column="1" Margin="5,2,2,2">
+            <TabItem Header="Output" IsSelected="True" Name="outputTab">
+                <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument Name="outputFlowDocument" />
+                </RichTextBox>
+            </TabItem>
+
+            <TabItem Header="Warnings" Name="warningsTab">
+                <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument Name="warningsFlowDocument" />
+                </RichTextBox>
+            </TabItem>
+
+            <TabItem Header="Final snapshot" Name="finalSnapshotTab">
+                <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument Name="finalSnapshotFlowDocument" />
+                </RichTextBox>
+            </TabItem>
+
+            <TabItem Header="Statistics" Name="statsTab">
+                <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                    <FlowDocument Name="statsFlowDocument" />
+                </RichTextBox>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
