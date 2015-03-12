@@ -105,7 +105,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             HashSet<MemberIdentifier> indexes = new HashSet<MemberIdentifier>();
             foreach (AssociativeArray arrayValue in Arrays)
             {
-                IArrayDescriptor descriptor = snapshot.Structure.Readonly.GetDescriptor(arrayValue);
+                IArrayDescriptor descriptor;
+                try {
+                    descriptor = snapshot.Structure.Readonly.GetDescriptor(arrayValue);
+                } catch (Exception e) {
+                    continue;
+                }
                 foreach (var index in descriptor.Indexes)
                 {
                     indexes.Add(new MemberIdentifier(index.Key));

@@ -39,6 +39,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Tools
         /// <param name="values">The values.</param>
         public static void AddAll<T>(ICollection<T> targetSet, IEnumerable<T> values)
         {
+            if (values == null) return;
             foreach (T value in values)
             {
                 targetSet.Add(value);

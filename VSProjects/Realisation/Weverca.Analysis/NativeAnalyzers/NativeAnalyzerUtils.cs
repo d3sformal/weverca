@@ -384,7 +384,7 @@ namespace Weverca.Analysis.NativeAnalyzers
             }
             if (argumentMatches == false)
             {
-                warnings.Add(new AnalysisWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), "Wrong type in argument No. " + argumentNumber + " in function " + functionName + ", expecting " + argument.Type, flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
+                warnings.Add(new AnalysisWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), "Wrong type of argument number " + argumentNumber + " in function " + functionName + ", expecting " + argument.Type, flow.CurrentPartial, flow.CurrentProgramPoint, AnalysisWarningCause.WRONG_ARGUMENTS_TYPE));
             }
         }
 
@@ -509,7 +509,9 @@ namespace Weverca.Analysis.NativeAnalyzers
                         if (field.IsStatic == false)
                         {
                             var newField=newObject.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
-                            newField.WriteMemory(flow.OutSet.Snapshot, NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow));
+                            try {
+                                newField.WriteMemory(flow.OutSet.Snapshot, NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow));
+                            } catch (Exception e) {}
                         }
                     }
                 }

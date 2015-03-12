@@ -236,7 +236,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     }
                 }
 
-                if (accEntryValue != newEntry)
+                if (accEntryValue != newEntry && newEntry != null)
                 {
                     setNewMemoryEntry(index, newEntry, accEntryValue);
                 }
