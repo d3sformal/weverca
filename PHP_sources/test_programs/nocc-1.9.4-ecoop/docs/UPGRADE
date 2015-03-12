@@ -1,0 +1,35 @@
+==================
+NOCC Upgrade guide
+==================
+
+Copyright 2007 Arnaud Boudou <skuld @ goddess-gate.com>
+
+Before upgrade
+==============
+
+  Before upgrading your NOCC installation, you should backup the following files
+    </path/to/nocc/>config/conf.php
+    </path/to/nocc/>config/login_alias (if used)
+    </path/to/nocc/>config/login_allowed (if used)
+    </path/to/nocc/prefs/>*.* (if used, "$conf->prefs_dir" config setting)
+
+Upgrade steps
+=============
+
+  1) Remove your nocc installation (you may leave your nocc prefs folder
+     untouched).
+
+  2) Untar/unzip NOCC into the directory you want.
+
+  3) Restore the files you have previously backuped. Then compare your conf.php
+     file and conf.php.dist file to check for new configuration settings.
+
+  4) (Optional step)
+     if you run with suEXEC, you'll need to run './addcgipath path' to add
+     the parser line at the beginning of PHP files.
+
+  5) Remove ./addcgipath.sh. For security reasons, it might be run by
+     external users although "sh" files are never interpreted by Web
+     servers with default configuration.
+
+  6) Use and enjoy your new NOCC installation.
