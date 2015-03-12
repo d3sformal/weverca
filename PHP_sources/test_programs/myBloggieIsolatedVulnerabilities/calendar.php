@@ -23,10 +23,11 @@ if ($month < 1 || $month > 12) die();
 
 $monthIndx = date('F', mktime(0, 0, 0, $month, 1, $year));
 
-// Pixy reports false positive here
-// Pixy is not able to detect that it is accessed only defined element of the
+// False positive: 
+// Weverca (as well as all other tested tools) report false positive here.
+// They are not able to detect that it is accessed only defined element of the
 // $lang array.
-echo $lang[$monthIndx];
-// Error: access to the uninitialized element of the array
-echo $lang[$monthIndx."a"];
+$monthName = $lang[$monthIndx]; echo $monthName;
+// Problem 1: access to the uninitialized element of the array
+echo $lang[$monthIndxx];
 ?>

@@ -15,10 +15,6 @@ include 'calendar.php';
  * Mimic errors in mybloggie due to the configuration and custom sanitization.
  */
 
-
-/// Dont change anything below here !!
-
-
 $smt = $_GET['smt'];
 if ($htmlsafe == "yes") {
     $smt = htmlspecialchars($smt);

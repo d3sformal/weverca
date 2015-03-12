@@ -43,7 +43,7 @@ if ($mode == "viewid") {
 
 
 if ($mode == "editcom") {
-    if (!isset($_SESSION['username']) && !isset($_SESSION['passwd'])) {
+    if ( !isset($_SESSION['passwd']) && !isset($_SESSION['username'])) {
         echo "<meta http-equiv=\"Refresh\" content=\"2;url=" . self_url() . "/login.php\" />";
     }
     $username = $_SESSION['username'];

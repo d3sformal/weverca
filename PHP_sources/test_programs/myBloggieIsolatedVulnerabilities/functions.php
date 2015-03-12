@@ -73,7 +73,8 @@ function message( $alert, $message )
     function metaredirect($url, $sec)
 {
     global $db, $template;
-
+    
+    $url = htmlspecialchars($url);
     echo "<meta http-equiv=\"refresh\" content=\"".$sec.";url=".$url."\" />" ;
 }
 ?>
