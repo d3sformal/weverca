@@ -219,7 +219,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 case Operations.BinaryCast:
                     throw new NotSupportedException("Binary strings are not supported");
                 case Operations.AtSign:
-                    SetWarning("Try to suppress a warning of the expression");
+                    //SetWarning("Try to suppress a warning of the expression");
                     result = value;
                     break;
                 default:

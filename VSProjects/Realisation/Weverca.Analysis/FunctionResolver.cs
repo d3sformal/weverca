@@ -459,12 +459,14 @@ namespace Weverca.Analysis
             if (calledObject == null)
                 return calledObject;
                 
-            var calledObjectWithoutUndefined = calledObject.PossibleValues.Where (item => !(item is UndefinedValue));
+            // Filter out UndefinedValue and AnyValue and all its descendats instead of AnyObjectValue
+            var calledObjectWithoutUndefined = calledObject.PossibleValues.Where (item => (!(item is UndefinedValue)) && (!(item is AnyValue) || item is AnyObjectValue));
+            //var calledObjectWithoutUndefined = calledObject.PossibleValues.Where (item => (!(item is UndefinedValue)));
             if (calledObject.PossibleValues.Count () != calledObjectWithoutUndefined.Count ()) 
             {
                 // Warning
-                // Why this does not work??
-                //setWarning ("Call of a method on undefined object.", caller.Partial, AnalysisWarningCause.CALL_METHOD_ON_UNDEFINED_OBJECT);
+                // TODO: setting this waring causes an exception is some cases
+                //setWarning ("Call of a method on undefined and/or unknown object.", caller.Partial, AnalysisWarningCause.CALL_METHOD_ON_UNDEFINED_OBJECT);
                 return new MemoryEntry (calledObjectWithoutUndefined);
             }
 
@@ -540,7 +542,7 @@ namespace Weverca.Analysis
                 OutSet.FetchFromGlobal(new VariableName("_REQUEST"));
                 OutSet.FetchFromGlobal(new VariableName("_ENV"));
 
-                OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningPPGraph.OwningScript.FullName)));
+                OutSet.GetLocalControlVariable(currentScript).WriteMemory(OutSet.Snapshot, new MemoryEntry(OutSet.CreateString(caller.OwningScriptFullName)));
 
                 var functionDeclaration = declaration as FunctionDecl;
                 if (functionDeclaration != null)
@@ -696,7 +698,7 @@ namespace Weverca.Analysis
                 applyHints(outSet);
                 if (calls[0].Caller is IncludingExPoint)
                 {
-                    decrease(OutSet, calls[0].OwningPPGraph.OwningScript.FullName);
+                    decrease(OutSet, calls[0].OwningScriptFullName);
                 }
                 if (calls[0].Caller is EvalExPoint)
                 {
@@ -721,7 +723,7 @@ namespace Weverca.Analysis
                     applyHints(outSet);
                     if (call.Caller is IncludingExPoint)
                     {
-                        fileNames.Add(call.OwningPPGraph.OwningScript.FullName);
+                        fileNames.Add(call.OwningScriptFullName);
                     }
                     if (calls[0].Caller is EvalExPoint)
                     {

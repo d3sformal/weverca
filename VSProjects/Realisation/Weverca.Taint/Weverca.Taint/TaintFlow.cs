@@ -197,7 +197,7 @@ namespace Weverca.Taint
             {
                 if (point.OwningScript != null)
                 {
-                    String newScript = point.OwningScript.FullName;
+                    String newScript = point.OwningScriptFullName;
                     if (newScript != script)
                     {
                         thisPP.AppendLine();
@@ -304,7 +304,7 @@ namespace Weverca.Taint
 
              script = "";
              if (flow.point != null && flow.point.OwningScript != null) 
-                 script = flow.point.OwningScript.FullName;
+                script = flow.point.OwningScriptFullName;
              return result;
          }
 
@@ -341,7 +341,7 @@ namespace Weverca.Taint
 
              script = "";
              if (flow.point != null && flow.point.OwningScript != null) 
-                 script = flow.point.OwningScript.FullName;
+                script = flow.point.OwningScriptFullName;
              return result;
          }
 

@@ -126,7 +126,7 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         /// <param name="message">Text of warning</param>
         public void SetWarning(string message)
         {
-            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, Point));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningScriptFullName, message, Point.Partial, Point));
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Weverca.MemoryModels.UnitTest.SnapshotTestFramework
         /// <param name="cause">More specific warning type</param>
         public void SetWarning(string message, AnalysisWarningCause cause)
         {
-            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningPPGraph.OwningScript.FullName, message, Point.Partial, Point, cause));
+            AnalysisWarningHandler.SetWarning(Context, new AnalysisWarning(Point.OwningScriptFullName, message, Point.Partial, Point, cause));
         }
 
 

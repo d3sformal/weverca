@@ -165,7 +165,7 @@ namespace Weverca.Analysis.FlowResolver
 						var includeType = (includeExpression.InclusionType == InclusionTypes.IncludeOnce) ? "include_once" : "require_once";
 						if (includedInfo.PossibleValues.Count () > 1) {
 							//TODO: report or not?
-							AnalysisWarningHandler.SetWarning (flow.OutSet, new AnalysisWarning (flow.CurrentScript.FullName, includeType + " is called more times in some program paths with the file " + fileName, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
+							//AnalysisWarningHandler.SetWarning (flow.OutSet, new AnalysisWarning (flow.CurrentScript.FullName, includeType + " is called more times in some program paths with the file " + fileName, flow.CurrentProgramPoint.Partial, flow.CurrentProgramPoint, AnalysisWarningCause.INCLUDE_REQUIRE_ONCE_CALLED_MORE_TIMES_WITH_SAME_FILE));
 							// TODO: include the file or not??
 							continue;
 						} else 

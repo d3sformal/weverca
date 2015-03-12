@@ -242,14 +242,15 @@ namespace Weverca.Output.Output
         /// </summary>
         /// <param name="analysisWarnigs">list of analysis warning</param>
         /// <param name="securityWarnings">list of security warning</param>
-        public void Warnings(IReadOnlyCollection<AnalysisWarning> analysisWarnigs, IReadOnlyCollection<AnalysisSecurityWarning> securityWarnings)
+        public void Warnings<T>(IReadOnlyCollection<AnalysisWarning> analysisWarnigs, IReadOnlyCollection<T> securityWarnings, bool displayTaintFlows) where T : AnalysisWarning
+
         {
             Headline("Warnings");
             CommentLine("Total number of warnings: " + (analysisWarnigs.Count + securityWarnings.Count));
-            CommentLine("Number of analysis warnings: " + analysisWarnigs.Count);
-            CommentLine("Number of security warnings: " + securityWarnings.Count);
-            Warnings(analysisWarnigs, "Analysis warnings:");
-            Warnings(securityWarnings, "Security warnings:");
+            CommentLine("Number of first-phase analysis warnings: " + analysisWarnigs.Count);
+            CommentLine("Number of taint analysis warnings: " + securityWarnings.Count);
+            Warnings(analysisWarnigs, "Analysis warnings:", displayTaintFlows);
+            Warnings(securityWarnings, "Security warnings:", displayTaintFlows);
         }
 
 		/// <summary>
@@ -260,7 +261,7 @@ namespace Weverca.Output.Output
 		{
 			Headline("Taint analysis warnings");
 			CommentLine("Number: " + taintWarnings.Count);
-			Warnings(taintWarnings, "Taint analysis warnings:");
+            Warnings(taintWarnings, "Taint analysis warnings:", true);
 		}
 
         /// <summary>
@@ -273,7 +274,7 @@ namespace Weverca.Output.Output
             line();
         }
 
-        public void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine) where T : AnalysisWarning
+        private void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows) where T : AnalysisWarning
         {
             line();
             Headline(headLine);
@@ -287,23 +288,28 @@ namespace Weverca.Output.Output
             {
                 if (fileName != s.FullFileName)
                 {
+                    comment("------------------------------------------------------------------------");
                     line();
+
                     fileName = s.FullFileName;
                     head2("File: " + fileName);
                     line();
+                    comment("------------------------------------------------------------------------");
+                    line();
                 }
-                line();
                 variableInfoLine(s.ToString());
                 line();
                 comment("Called from: ");
                 comment(s.ProgramPoint.OwningPPGraph.Context.ToString());
-				if (s is AnalysisTaintWarning) 
+                if (s is AnalysisTaintWarning && displayTaintFlows) 
 				{
 					line();
 					comment("Taint propagation: ");
+                    line();
 					comment(((AnalysisTaintWarning)(object)s).TaintFlow);
 				}
 
+                line();
                 line();
             }
 

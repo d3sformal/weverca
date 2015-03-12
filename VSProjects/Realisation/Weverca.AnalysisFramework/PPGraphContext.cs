@@ -66,7 +66,7 @@ namespace Weverca.AnalysisFramework
                 result.Append("(");
 
 				//result.Append(caller.OwningPPGraph.OwningScript.FullName + " at position " + caller.Partial.Position);
-                result.Append(caller.OwningPPGraph.OwningScript.FullName + " at position " + caller.Partial.Position);
+                result.Append(caller.OwningScriptFullName + " at position " + caller.Partial.Position);
                 result.Append(caller.OwningPPGraph.Context);
 
                 result.Append(")");
