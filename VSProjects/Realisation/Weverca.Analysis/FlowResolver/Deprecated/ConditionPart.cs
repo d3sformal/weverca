@@ -166,7 +166,7 @@ namespace Weverca.Analysis.FlowResolver.Deprecated
         /// <returns></returns>
         IEnumerable<VariableUse> GetVariables()
         {
-            VariableVisitor visitor = new VariableVisitor();
+            var visitor = new VariableCollector();
             conditionPart.VisitMe(visitor);
 
             return visitor.Variables;

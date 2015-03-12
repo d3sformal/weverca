@@ -1,4 +1,4 @@
-/*
+﻿/*
 Copyright (c) 2012-2014 Matyas Brenner and David Hauzar
 
 This file is part of WeVerca.
@@ -23,37 +23,34 @@ using System.Collections.Generic;
 
 using PHP.Core.AST;
 
-namespace Weverca.Analysis.FlowResolver
+namespace Weverca.Analysis.FlowResolver.Deprecated
 {
     /// <summary>
     /// This visitor will find all variable uses in an AST.
     /// </summary>
-    public class VariableVisitor : TreeVisitor
+    public class VariableCollector : TreeVisitor
     {
         /// <summary>
         /// Gets the variable uses.
         /// </summary>
-        public IEnumerable<VariableUse> Variables
-        {
-            get
-            {
-                return directlyUsed.Cast<VariableUse>().Concat(indirectlyUsed).Cast<VariableUse>();
+        public IEnumerable<VariableUse> Variables {
+            get {
+                return directlyUsed.Cast<VariableUse> ().Concat (indirectlyUsed).Cast<VariableUse> ();
             }
         }
 
-        List<DirectVarUse> directlyUsed = new List<DirectVarUse>();
-        List<IndirectVarUse> indirectlyUsed = new List<IndirectVarUse>();
+        List<DirectVarUse> directlyUsed = new List<DirectVarUse> ();
+        List<IndirectVarUse> indirectlyUsed = new List<IndirectVarUse> ();
 
         /// <summary>
         /// Visits the direct variable use.
         /// </summary>
         /// <param name="x">The executable.</param>
-        public override void VisitDirectVarUse(DirectVarUse x)
+        public override void VisitDirectVarUse (DirectVarUse x)
         {
-            base.VisitDirectVarUse(x);
-            if (directlyUsed.FirstOrDefault(a => a.VarName != x.VarName) == null)
-            {
-                directlyUsed.Add(x);
+            base.VisitDirectVarUse (x);
+            if (directlyUsed.FirstOrDefault (a => a.VarName != x.VarName) == null) {
+                directlyUsed.Add (x);
             }
         }
 
@@ -61,14 +58,13 @@ namespace Weverca.Analysis.FlowResolver
         /// Visits the indirect variable use.
         /// </summary>
         /// <param name="x">The executable.</param>
-        public override void VisitIndirectVarUse(IndirectVarUse x)
+        public override void VisitIndirectVarUse (IndirectVarUse x)
         {
-            base.VisitIndirectVarUse(x);
-            
+            base.VisitIndirectVarUse (x);
+
             //TODO: find a way to get only distinct uses.
-            if (indirectlyUsed.FirstOrDefault(a => a.VarNameEx.Value != x.VarNameEx.Value) == null)
-            {
-                indirectlyUsed.Add(x);
+            if (indirectlyUsed.FirstOrDefault (a => a.VarNameEx.Value != x.VarNameEx.Value) == null) {
+                indirectlyUsed.Add (x);
             }
         }
     }
