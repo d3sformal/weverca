@@ -1,4 +1,4 @@
-/*
+    /*
 Copyright (c) 2012-2014 Natalia Tyrpakova and David Hauzar
 
 This file is part of WeVerca.
@@ -43,7 +43,7 @@ namespace Weverca
     internal class MetricsForIDEIntegration
     {
         // Indicates whether second phase is enabled
-        public static readonly bool SECOND_PHASE = false;
+        public static readonly bool SECOND_PHASE = true;
         public static readonly string PHP_FILE_EXTENSION = ".php";
 
         private static StreamWriter fileOutput;
@@ -385,7 +385,7 @@ namespace Weverca
                         fileOutput.WriteLine("Overview:");
 
                         fileOutput.WriteLine("Total number of warnings: " + (firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count + nextPhase.analysisTaintWarnings.Count));
-                        fileOutput.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count + firstPhaseSecurityWarnings.Count);
+                        fileOutput.WriteLine("Number of warnings in the first phase: " + firstPhaseWarnings.Count);
                         fileOutput.WriteLine("Number of warnings in the second phase: " + nextPhase.analysisTaintWarnings.Count);
                         fileOutput.WriteLine("Weverca analyzer time consumption: " + bigWatch.ElapsedMilliseconds);
                         fileOutput.WriteLine("First phase time consumption: " + watch.ElapsedMilliseconds);
@@ -537,7 +537,7 @@ namespace Weverca
                                 " Last line: " + p.Partial.Position.LastLine +
                                 " First offset: " + p.Partial.Position.FirstOffset +
                                 " Last offset: " + p.Partial.Position.LastOffset);
-            if (p.OwningPPGraph.OwningScript != null) fileOutput.WriteLine("OwningScript: " + p.OwningPPGraph.OwningScript.FullName);
+            if (p.OwningPPGraph.OwningScript != null) fileOutput.WriteLine("OwningScript: " + p.OwningScriptFullName);
             String callStack = p.OwningPPGraph.Context.ToString();
             if (callStack != "")
             {

@@ -64,7 +64,7 @@ namespace Weverca
 			{
 				Console.WriteLine("Missing argument");
 				Console.WriteLine(@"Example of usage: weverca.exe -options ..\..\..\..\..\PHP_sources\test_programs\testfile.php");
-                Console.WriteLine(@"-sa [-mm CopyMM|VrMM|ModularMM] FILENAME [FILENAME] ...");
+                Console.WriteLine(@"-sa|-satf [-mm CopyMM|VrMM|ModularMM] FILENAME [FILENAME] ...");
 				Console.WriteLine(@"-metrics FILENAME [FILENAME] ...");
 				
 				/*Console.WriteLine(@"  Static analysis");
@@ -80,16 +80,18 @@ namespace Weverca
 
 			switch (args[0])
 			{
+                case "-satf":
 				case "-sa":
 					var filesIndex = 1;
-					var memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
+                    var memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
 				   
 					if (args.Length > filesIndex+1 && args[filesIndex] == "-mm")
 					{
 						if (args[filesIndex + 1].ToLower() == "copymm") memoryModel = MemoryModels.MemoryModels.CopyMM;
 						else if (args[filesIndex + 1].ToLower() == "modularcopymm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
-						if (args[filesIndex+1].ToLower() == "modularmm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
-						filesIndex += 2;
+						else if (args[filesIndex+1].ToLower() == "modularmm") memoryModel = MemoryModels.MemoryModels.ModularCopyMM;
+                        else if (args[filesIndex+1].ToLower() == "VrMM") memoryModel = MemoryModels.MemoryModels.VirtualReferenceMM;
+                        filesIndex += 2;
 					}
 
 					bool benchmark = false;
@@ -108,7 +110,7 @@ namespace Weverca
 					}
 					var analysisFiles = new string[args.Length - filesIndex];
 					Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
-					RunStaticAnalysis(analysisFiles, memoryModel);
+                    RunStaticAnalysis(analysisFiles, memoryModel, args[0].Equals("-satf"));
 
 					if (benchmark)
 					{
@@ -145,7 +147,7 @@ namespace Weverca
 		/// </summary>
 		/// <param name="filenames">List of file name patterns from command line</param>
 		/// <param name="memoryModel">The memory model used for analysis</param>
-		private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel, bool displayTaintFlows)
 		{
 			var console = new ConsoleOutput();
 			console.CommentLine("Using " + memoryModel.ToString());
@@ -231,15 +233,19 @@ namespace Weverca
 
 					if (ppGraph.End.OutSet != null)
 					{
-						console.ProgramPointInfo("End point", ppGraph.End);
+						//console.ProgramPointInfo("End point", ppGraph.End);
 					}
 					else
 					{
-						console.Error("End point was not reached");
+						//console.Error("End point was not reached");
 					}
-					console.CommentLine(string.Format("Analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+					console.CommentLine(string.Format("First phase of the analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
 
-					console.Warnings(AnalysisWarningHandler.GetWarnings(), AnalysisWarningHandler.GetSecurityWarnings());
+                    var nextPhase = new TaintForwardAnalysis(ppGraph);
+                    nextPhase.Analyse();
+
+
+                    console.Warnings(AnalysisWarningHandler.GetWarnings(), nextPhase.analysisTaintWarnings, displayTaintFlows);
 				
 
 #endif
