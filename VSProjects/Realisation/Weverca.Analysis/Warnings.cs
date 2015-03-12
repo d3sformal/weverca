@@ -293,9 +293,9 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-			return Message.GetHashCode () + LangElement.Position.FirstOffset.GetHashCode () + FullFileName.GetHashCode ()
-			+ Cause.GetHashCode ()
-			+ ProgramPoint.OwningPPGraph.GetHashCode();
+            return Message.GetHashCode () + LangElement.Position.FirstOffset.GetHashCode () + FullFileName.GetHashCode ()
+            + Cause.GetHashCode ();
+            //+ ProgramPoint.OwningPPGraph.GetHashCode();
         }
 
         /// <summary>
@@ -393,13 +393,13 @@ namespace Weverca.Analysis
             switch (cause)
             {
                 case FlagType.HTMLDirty:
-                    Message = "Unchecked value goes into browser";
+                    Message = "Unsanitized value goes into browser";
                     break;
                 case FlagType.FilePathDirty:
-                    Message = "File name has to be checked before open";
+                    Message = "Unsanitized value used as a file name when opening a file";
                     break;
                 case FlagType.SQLDirty:
-                    Message = "Unchecked value goes into database";
+                    Message = "Unsanitized value goes into database";
                     break;
             }
 
@@ -466,15 +466,15 @@ namespace Weverca.Analysis
             {
                 case FlagType.HTMLDirty:
                     if (nullFlow) Message = "Null value goes into browser";
-                    else Message = "Unchecked value goes into browser";
+                    else Message = "Usanitized value goes into browser";
                     break;
                 case FlagType.FilePathDirty:
-                    if (nullFlow) Message = "File name cannot contain null value";
-                    else Message = "File name has to be checked before open";
+                    if (nullFlow) Message = "Null value used when opening a file";
+                else Message = "Unsanitized value used as a file name when opening a file";
                     break;
                 case FlagType.SQLDirty:
                     if (nullFlow) Message = "Null value goes into database";
-                    else Message = "Unchecked value goes into database";
+                    else Message = "Unsanitized value goes into database";
                     break;
             }
 
