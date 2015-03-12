@@ -1,0 +1,193 @@
+=-------------------=
+NOCC Development Team
+=-------------------=
+
+If you feel someone is missing, mail nocc-discuss at lists.sourceforge.net
+
+Project Managers
+================
+
+ * Nicolas Chalanset <nicocha at free.fr>
+
+    SMTP and MIME functions
+    INBOX functions
+    Display messages functions
+
+ * Olivier Cahagne <wolruf at free.fr>
+
+    Rewrote Epimail/Perl in PHP
+    A lot of debugging
+    
+Developers
+==========
+
+ * Arnaud Boudou <goddess_skuld at users.sourceforge.net>
+
+    IMAP, graphical smileys support, PHP 5.0 and more
+
+ * Olivier Jourdat <jourds at users.sourceforge.net>
+
+    IMAP, contact list patches and more
+
+ * Alexander Sabournekov
+
+    RFC2045-encoded words support
+
+ * Ulf Harnhammar 
+
+    XSS security patches
+
+ * Paulo Matos
+
+    MIME, attachments patches
+
+ * Leif Gustafson <leifgust at yahoo.com>
+
+    Typed domain name patch
+
+ * Ross Golder <rossigee at users.sourceforge.net>
+
+    Added preferences code, hardened SMTP code
+    Bug report triaging
+
+ * Mike Rylander <mrylander at users.sourceforge.net>
+
+    Folder patch
+    Various patches
+
+ * Colin Stephenson <colin at atlanticisle.com>
+
+    Various patches
+
+ * Arno Bean <bean_ae at users.sourceforge.net>
+
+    Various patches
+
+ * Tim Gerundt <tim at gerundt.de>
+
+    Various patches
+
+Translations
+============
+
+ * David Ferch <dferch at tk-online.net>
+
+    German translation
+
+ * sena <sena at smux.net>
+
+    Portuguese translation
+
+ * Sander Schroevers and Pieterjan Goppel <lp_leeki at mail.euronet.nl>
+
+    Dutch translation
+
+ * Gustavo Muslera <gmuslera at internet.com.uy>
+
+    Spanish translation
+
+ * Guido Venturini <guido at technojuice.com>
+
+    Italian translation
+
+ * Mohamed Hadrouj <mohamed.hadrouj at wanadoo.co.ma>
+
+    Arabic translation
+
+ * Sergey Frolovithev <serg at spylog.ru>
+
+    Russian translation (Windows encoding)
+
+ * Anton Jakimov <t0xa at ls2.lv>
+
+    Russian translation (Unix and ISO encodings)
+
+ * Borut Mrak <borut.mrak at ijs.si>
+
+    Slovenian translation
+
+ * Robert Niska <r.niska at redbox.d2g.nu>
+    
+    Swedish translation
+
+ * Christian Knudsen <chr at epun.dk>
+
+    Danish translation
+
+ * Rafal <arat at alpha.net.pl>
+
+    Polish translation
+
+ * Cary Leung <cary at cary.net>
+
+    Taiwan (Chinese) Big5 translation
+
+ * Peter Sochna <sochna at telecom.sk>
+
+    Slovakian translation
+
+ * Hadju Zoltan <wirhock at wirhock.com>
+
+    Hungarian translation
+
+ * Tzafrir Cohen <tzafrir at technion.ac.il>
+
+    Hebrew translation
+
+ * Vaclav Habr <habr at fonet.cz>
+
+    Czech translation
+
+ * Liu Hong <loyaliu at 21cn.com>
+
+    Chinese Simplified translation
+
+ * Spyros Ioakim <sioakim at ace-hellas.gr>
+
+    Greek translation
+
+ * Giovani Zamboni <zambaxtz at terra.com.br>
+
+    Portuguese Brazilian translation
+
+ * Evgeni Gechev <etg at setcom.bg>
+
+    Bulgarian translation
+
+ * Roh,Kyoung-Min <rohbin at dreamwiz.com>
+
+    Korean translation
+
+ * Mathijs Kolenberg <mack at solcon.nl>
+
+    Additional Netherlander translation
+
+ * Ove Ruben R Olsen <ruben at noia.no>
+
+    Norwegian translation
+
+ * Rune Dalm <runed at balder.narviknett.no>
+
+    Norwegian translation
+
+ * Ryszard Janiszweski <dex7 at akacje.net>
+
+    Polish translation
+
+ * Jorge Silva <jorge.silva at ciberlink.pt>
+
+    Portuguese translation
+
+ * Peter Sochna <sochna at telecom.sk>
+
+    Slovak translation
+
+ * Igor Smitran http://www.poen.net/
+
+    Srpski translation
+
+Thanks to
+=========
+
+ * Mark James for the cool "Silk" web icon set:
+    http://www.famfamfam.com/lab/icons/silk/
