@@ -30,6 +30,7 @@ using PHP.Core;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.AnalysisFramework.Expressions;
 using Weverca.AnalysisFramework.ProgramPoints;
+using Weverca.Common;
 
 namespace Weverca.AnalysisFramework
 {
@@ -44,16 +45,16 @@ namespace Weverca.AnalysisFramework
 
         #region Internal methods for analysis handling
 
-        internal void Initialize(NextPhaseAnalysis analysis)
+        internal void Initialize (NextPhaseAnalysis analysis)
         {
             _analysis = analysis;
         }
 
-        internal void FlowThrough(ProgramPointBase point)
+        internal void FlowThrough (ProgramPointBase point)
         {
             _currentPoint = point;
 
-            point.Accept(this);
+            point.Accept (this);
         }
 
         #endregion
@@ -63,154 +64,166 @@ namespace Weverca.AnalysisFramework
         /// <summary>
         /// Input set of current program point
         /// </summary>
-        protected FlowInputSet InputSet
-        {
-            get
-            {
-                return _analysis.GetInSet(_currentPoint);
+        protected FlowInputSet InputSet {
+            get {
+                return _analysis.GetInSet (_currentPoint);
             }
         }
 
         /// <summary>
         /// Output set of current program point
         /// </summary>
-        protected FlowOutputSet OutputSet
-        {
-            get
-            {
-                return _analysis.GetOutSet(_currentPoint);
+        protected FlowOutputSet OutputSet {
+            get {
+                return _analysis.GetOutSet (_currentPoint);
             }
         }
 
         /// <summary>
         /// Input snapshot that can be used as input context of current program point
         /// </summary>
-        protected SnapshotBase Input
-        {
+        protected SnapshotBase Input {
             get { return InputSet.Snapshot; }
         }
 
         /// <summary>
         /// Output snapshot that can be used as output context of current program point
         /// </summary>
-        protected SnapshotBase Output
-        {
+        protected SnapshotBase Output {
             get { return OutputSet.Snapshot; }
         }
 
         #endregion
 
-		#region Function handling
+        private void copyInfoFromInToOutSnapshot (VarLikeConstructUse variable, AssumePoint p, EvaluationLog log)
+        {
+            var variableInfo = log.GetSnapshotEntry (variable);
+            if (variableInfo != null) {
+                var vals = variableInfo.ReadMemory (p.InSnapshot).PossibleValues;
+                variableInfo.WriteMemory (Output, new MemoryEntry (vals));
+            }
+        }
 
-		/// <summary>
-		/// Visits an extension sink point
-		/// </summary>
-		/// <param name="p">point to visit</param>
-		public override void VisitExtensionSink(ExtensionSinkPoint p)
-		{
-			_currentPoint = p;
-			var ends = p.OwningExtension.Branches.Select(c => c.Graph.End.OutSet).ToArray();
-			OutputSet.MergeWithCallLevel(p.Extension.Owner, ends);
+        private void propagateInfosToRefinedLocations (AssumePoint p)
+        {
+            var visitor = new VariableCollector ();
+            p.Condition.Parts.First ().SourceElement.VisitMe (visitor);
+            var variables = visitor.Variables;
+            foreach (var variable in variables) {
+                copyInfoFromInToOutSnapshot (variable, p, p.Log);
+            }
+        }
 
-			p.ResolveReturnValue();
-		}
+        /// <inheritdoc />
+        public override void VisitAssume (AssumePoint p)
+        {
+            propagateInfosToRefinedLocations (p);
+        }
 
-		/// <summary>
-		/// Visits an extension point
-		/// </summary>
-		/// <param name="p">point to visit</param>
-		public override void VisitExtension(ExtensionPoint p)
-		{
-			_currentPoint = p;
+        #region Assumption handling
 
-			if (p.Graph.FunctionName == null) 
-			{
-				return;
-			}
+        #endregion
 
-			var declaration = p.Graph.SourceObject;
-			var signature = getSignature(declaration);
-			var callPoint = p.Caller as RCallPoint;
-			if (callPoint != null) 
-			{
-				if (signature.HasValue) 
-				{
-					// We have names for passed arguments
-					setNamedArguments (OutputSet, callPoint.CallSignature, signature.Value, p.Arguments);
-				} else 
-				{
-					// There are no names - use numbered arguments
-					setOrderedArguments (OutputSet, p.Arguments, declaration);
-				}
-			}
+        #region Function handling
 
-		}
-			
-		private void setNamedArguments(FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
-		{
-			int i = 0;
-			foreach (var arg in arguments)
-			{
-				if (i >= signature.FormalParams.Count)
-					break;
-				var param = signature.FormalParams[i];
-				var argumentVar = callInput.GetVariable(new VariableIdentifier(param.Name));
+        /// <summary>
+        /// Visits an extension sink point
+        /// </summary>
+        /// <param name="p">point to visit</param>
+        public override void VisitExtensionSink (ExtensionSinkPoint p)
+        {
+            _currentPoint = p;
+            var ends = p.OwningExtension.Branches.Where (c => c.Graph.End.OutSet != null).Select (c => c.Graph.End.OutSet).ToArray ();
+            OutputSet.MergeWithCallLevel (p.Extension.Owner, ends);
 
-				var argumentValue = arg.Value.ReadMemory(Output);
-				argumentVar.WriteMemory(callInput.Snapshot, argumentValue);
+            p.ResolveReturnValue ();
+        }
 
-				++i;
-			}
-			// TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
+        /// <summary>
+        /// Visits an extension point
+        /// </summary>
+        /// <param name="p">point to visit</param>
+        public override void VisitExtension (ExtensionPoint p)
+        {
+            _currentPoint = p;
 
-		}
+            if (p.Graph.FunctionName == null) {
+                return;
+            }
 
-		private void setOrderedArguments(FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
-		{
-			var index = 0;
-			foreach (var arg in arguments)
-			{
-				var argVar = argument(index);
-				var argumentEntry = callInput.GetVariable(new VariableIdentifier(argVar));
+            var declaration = p.Graph.SourceObject;
+            var signature = getSignature (declaration);
+            var callPoint = p.Caller as RCallPoint;
+            if (callPoint != null) {
+                if (signature.HasValue) {
+                    // We have names for passed arguments
+                    setNamedArguments (OutputSet, callPoint.CallSignature, signature.Value, p.Arguments);
+                } else {
+                    // There are no names - use numbered arguments
+                    setOrderedArguments (OutputSet, p.Arguments, declaration);
+                }
+            }
 
-				//assign value for parameter
-				var argumentValue = arg.Value.ReadMemory(Output);
-				argumentEntry.WriteMemory(callInput.Snapshot, argumentValue);
+        }
 
-				++index;
-			}
-		}
+        private void setNamedArguments (FlowOutputSet callInput, CallSignature? callSignature, Signature signature, IEnumerable<ValuePoint> arguments)
+        {
+            int i = 0;
+            foreach (var arg in arguments) {
+                if (i >= signature.FormalParams.Count)
+                    break;
+                var param = signature.FormalParams [i];
+                var argumentVar = callInput.GetVariable (new VariableIdentifier (param.Name));
 
-		private static VariableName argument(int index)
-		{
-			if (index < 0)
-			{
-				throw new NotSupportedException("Cannot get argument variable for negative index");
-			}
+                var argumentValue = arg.Value.ReadMemory (Output);
+                argumentVar.WriteMemory (callInput.Snapshot, argumentValue);
 
-			return new VariableName(".arg" + index);
-		}
+                ++i;
+            }
+            // TODO: if (arguments.Count() < signature.FormalParams.Count) and exists i > arguments.Count() signature.FormalParams[i].InitValue != null
 
-		private Signature? getSignature(LangElement declaration)
-		{
-			// TODO: Resolving via visitor might be better
-			var methodDeclaration = declaration as MethodDecl;
-			if (methodDeclaration != null)
-			{
-				return methodDeclaration.Signature;
-			}
-			else
-			{
-				var functionDeclaration = declaration as FunctionDecl;
-				if (functionDeclaration != null)
-				{
-					return functionDeclaration.Signature;
-				}
-			}
+        }
 
-			return null;
-		}
+        private void setOrderedArguments (FlowOutputSet callInput, IEnumerable<ValuePoint> arguments, LangElement declaration)
+        {
+            var index = 0;
+            foreach (var arg in arguments) {
+                var argVar = argument (index);
+                var argumentEntry = callInput.GetVariable (new VariableIdentifier (argVar));
 
-		#endregion
+                //assign value for parameter
+                var argumentValue = arg.Value.ReadMemory (Output);
+                argumentEntry.WriteMemory (callInput.Snapshot, argumentValue);
+
+                ++index;
+            }
+        }
+
+        private static VariableName argument (int index)
+        {
+            if (index < 0) {
+                throw new NotSupportedException ("Cannot get argument variable for negative index");
+            }
+
+            return new VariableName (".arg" + index);
+        }
+
+        private Signature? getSignature (LangElement declaration)
+        {
+            // TODO: Resolving via visitor might be better
+            var methodDeclaration = declaration as MethodDecl;
+            if (methodDeclaration != null) {
+                return methodDeclaration.Signature;
+            } else {
+                var functionDeclaration = declaration as FunctionDecl;
+                if (functionDeclaration != null) {
+                    return functionDeclaration.Signature;
+                }
+            }
+
+            return null;
+        }
+
+        #endregion
     }
 }

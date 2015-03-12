@@ -34,6 +34,7 @@ using Weverca.AnalysisFramework.ProgramPoints;
 using Weverca.Analysis.NativeAnalyzers;
 using Weverca.Analysis;
 using Weverca.Analysis.FlowResolver;
+using Weverca.Common;
 
 namespace Weverca.Taint
 {
@@ -55,14 +56,16 @@ namespace Weverca.Taint
         /// <inheritdoc />
         public override void VisitAssume (AssumePoint p)
         {
+            base.VisitAssume(p);
             checkDefiniteVariablesInAssumption(p);
+
         }
 
         private void checkDefiniteVariablesInAssumption(AssumePoint p) 
         {
             foreach (var conditionPart in p.Condition.Parts)
             {
-                var visitor = new VariableVisitor();
+                var visitor = new VariableCollector();
                 conditionPart.SourceElement.VisitMe(visitor);
                 var variables = visitor.Variables;
                 foreach (var variable in variables)
@@ -72,7 +75,7 @@ namespace Weverca.Taint
             }
         }
 
-        private void checkDefiniteVariableInAssumption(VariableUse variable, AssumePoint p)
+        private void checkDefiniteVariableInAssumption(VarLikeConstructUse variable, AssumePoint p)
         {
             var variableInfo = p.Log.ReadSnapshotEntry(variable);
             if (variableInfo != null) 
@@ -84,11 +87,11 @@ namespace Weverca.Taint
                 {
                     if (memoryEntry.PossibleValues.Count()   == 1 && !(memoryEntry.PossibleValues.First() is AnyValue))
                     {
-						//AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, String.Format("Variable has just single possible value ({0}) and it is used in the assumption.", memoryEntry.PossibleValues.First().ToString()), variable, p, AnalysisWarningCause.OTHER));
+                        //AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, String.Format("Variable has just single possible value ({0}) and it is used in the assumption.", memoryEntry.PossibleValues.First().ToString()), variable, p, AnalysisWarningCause.OTHER));
                     }
                 } else
                 {
-					//AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, "Variable is not defined and it is used in the assumption.", variable, p, AnalysisWarningCause.OTHER));
+                        //AnalysisWarningHandler.SetWarning(Output, new AnalysisWarning(p.OwningScriptFullName, "Variable is not defined and it is used in the assumption.", variable, p, AnalysisWarningCause.OTHER));
                 }
             }
         }
@@ -141,10 +144,10 @@ namespace Weverca.Taint
                 warningsReportingFunct(p, outputTaint);
             }
 
-                // 2. Propagate arguments to the return value.
+            // 2. Propagate arguments to the return value.
 			// TODO: quick fix
-			if (outputTaint.tainted || outputTaint.nullValue)
-            	FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
+            if (outputTaint.tainted || outputTaint.nullValue)
+                FunctionResolverBase.SetReturn(OutputSet, new MemoryEntry(Output.CreateInfo(outputTaint)));
 
         }
 
@@ -165,7 +168,7 @@ namespace Weverca.Taint
                 var varID = getVariableIdentifier(val.Value);
                 List<Value> argumentValues = new List<Value>(val.Value.ReadMemory(Output).PossibleValues);
                 values.Add(new ValueInfo(argumentValues, varID));
-;                nullValue |= hasPossibleNullValue(val);
+                nullValue |= hasPossibleNullValue(val);
             }
 
             TaintInfo outputTaint = mergeTaint(values, nullValue);
@@ -323,10 +326,10 @@ namespace Weverca.Taint
                     
                 if (pEx.TrueAssume.Assumed && pEx.FalseAssume.Assumed)
                 {
-					var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
-					var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
+                    var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
+                    var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
 
-					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(pEx.TrueOperand.OutSnapshot).PossibleValues);
+                    List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(pEx.TrueOperand.OutSnapshot).PossibleValues);
                     List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(pEx.FalseOperand.OutSnapshot).PossibleValues);
 
                     //merge taint info from both branches
@@ -340,9 +343,9 @@ namespace Weverca.Taint
                 }
                 else if (pEx.TrueAssume.Assumed)
                 {
-					var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
+                    var truevarID = getVariableIdentifier(pEx.TrueOperand.Value);
 
-					List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
+                    List<Value> trueValues = new List<Value>(pEx.TrueOperand.Value.ReadMemory(Output).PossibleValues);
 
                     //only true value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
@@ -354,9 +357,9 @@ namespace Weverca.Taint
                 }
                 else
                 {
-					var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
+                    var falsevarID = getVariableIdentifier(pEx.FalseOperand.Value);
 
-					List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
+                    List<Value> falseValues = new List<Value>(pEx.FalseOperand.Value.ReadMemory(Output).PossibleValues);
 
                     //only false value is used
                     List<ValueInfo> values = new List<ValueInfo>();  
@@ -422,16 +425,18 @@ namespace Weverca.Taint
                     /*var returnValue = p.Expression.Value.ReadMemory(Input);
                     returnVar.WriteMemory(Output, returnValue);*/
 
-                    var varID = getVariableIdentifier(p.Expression.Value);
-                    List<Value> possibleValues = new List<Value>(p.Expression.Value.ReadMemory(Output).PossibleValues);
-                    List<ValueInfo> values = new List<ValueInfo>();
-                    values.Add(new ValueInfo(possibleValues, varID));
+                    if (p.Expression != null) 
+                    {
+                        var varID = getVariableIdentifier(p.Expression.Value);
+                        List<Value> possibleValues = new List<Value>(p.Expression.Value.ReadMemory(p.Expression.OutSnapshot).PossibleValues);
+                        List<ValueInfo> values = new List<ValueInfo>();
+                        values.Add(new ValueInfo(possibleValues, varID));
 
-                    bool nullValue = hasPossibleNullValue(p.Expression) || hasPossibleNullValue(p.Expression);
+                        bool nullValue = hasPossibleNullValue(p.Expression) || hasPossibleNullValue(p.Expression);
 
-                    TaintInfo outputTaint = mergeTaint(values, nullValue);
-                    returnVar.WriteMemory(Output, new MemoryEntry(Output.CreateInfo(outputTaint)));
-
+                        TaintInfo outputTaint = mergeTaint (values, nullValue);
+                        returnVar.WriteMemory (Output, new MemoryEntry (Output.CreateInfo (outputTaint)));
+                }
 
                     break;
                 default:
@@ -459,7 +464,7 @@ namespace Weverca.Taint
             var callPoint = p.Caller as RCallPoint;
             if (callPoint != null)
             {
-				_currentPoint = callPoint;
+                _currentPoint = callPoint;
                 if (signature.HasValue)
                 {
                     // We have names for passed arguments
@@ -800,7 +805,7 @@ namespace Weverca.Taint
                 TaintInfo argTaint = mergeTaint(values, nullValue);
                 setTaint(argumentVar, argTaint);
 
-				/*var argTaint = getTaint(arg.Value);
+                /*var argTaint = getTaint(arg.Value);
 
 				setTaint(argumentVar, argTaint);
 				//argumentVar.WriteMemory(callInput.Snapshot, argumentValue);*/
