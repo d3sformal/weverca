@@ -95,7 +95,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         /// <summary>
         /// Value that should be used to initialize the static variable represented by current point
         /// </summary>
-        private ValuePoint _initializer;
+        private readonly ValuePoint _initializer;
 
         /// <summary>
         /// Element represented by current point
@@ -115,7 +115,7 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             StaticVarDecl = staticVarDecl;
             _variable = variable;
             _initializer = initializer;
-
+            _variableName = variableName;
 
         }
 
@@ -129,13 +129,15 @@ namespace Weverca.AnalysisFramework.ProgramPoints
             // Get the variable from global store
             var variableInGlobalStore = OutSet.GetControlVariable (varNameInGlobalStore);
 
-            // Initialize the variable with _initializer if it may be uninitialized
+            // Initialize the variable with _initializer if it may be uninitialized and has an initializer
             var values = variableInGlobalStore.ReadMemory (OutSnapshot);
-            if (values.PossibleValues.Any (a => a is UndefinedValue))
+            if (_initializer != null && values.PossibleValues.Any (a => a is UndefinedValue))
             {
                 var newValues = new List<Value> (values.PossibleValues.Where (a => !(a is UndefinedValue)));
                 newValues.AddRange (_initializer.Values.PossibleValues);
                 variableInGlobalStore.WriteMemory (OutSnapshot, new MemoryEntry (newValues), true);
+            } else if (_initializer == null) {
+                variableInGlobalStore.WriteMemory (OutSnapshot, new MemoryEntry (OutSnapshot.UndefinedValue), true);
             }
 
             // Static variable is an alias of the variable from global store (this respects the implementation in official PHP interpreter)
