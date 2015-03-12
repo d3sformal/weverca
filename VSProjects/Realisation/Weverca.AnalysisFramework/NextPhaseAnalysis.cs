@@ -148,7 +148,10 @@ namespace Weverca.AnalysisFramework
 
                 if (point.InSet == null) continue;
 
-                extendInput(point);
+                try {
+                    extendInput(point);
+                }
+                catch (Exception e) { continue; }
 
                 flowThrough(point);
 
