@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
-    class AlgorithmEntry
+    public class AlgorithmEntry
     {
         private AlgorithmType algorithmType;
 

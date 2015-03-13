@@ -749,7 +749,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			{
 				case SnapshotMode.MemoryLevel:
 					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
 					algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
 
@@ -757,19 +756,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					Data = algorithm.GetMergedData();
 					CurrentData = Data;
 					CallLevel = algorithm.GetMergedLocalLevelNumber();
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
 					break;
 
 				case SnapshotMode.InfoLevel:
 					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 					algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
 
 					Infos = algorithm.GetMergedData();
 					CurrentData = Infos;
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 					break;
 
@@ -896,25 +892,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				case SnapshotMode.MemoryLevel:
 					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
 					Structure = algorithm.GetMergedStructure();
 					Data = algorithm.GetMergedData();
 					CurrentData = Data;
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
 					break;
 
 				case SnapshotMode.InfoLevel:
 					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
 					Infos = algorithm.GetMergedData();
 					CurrentData = Infos;
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
 					break;
 
@@ -1837,26 +1829,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				case SnapshotMode.MemoryLevel:
 					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					algorithm.Merge(this, snapshots);
 
 					Structure = algorithm.GetMergedStructure();
 					Data = algorithm.GetMergedData();
 					CurrentData = Data;
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					break;
 
 				case SnapshotMode.InfoLevel:
 					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
-					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					algorithm.Merge(this, snapshots);
 
 					Infos = algorithm.GetMergedData();
 					CurrentData = Infos;
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
-					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_GENERAL);
 					break;
 
 				default:

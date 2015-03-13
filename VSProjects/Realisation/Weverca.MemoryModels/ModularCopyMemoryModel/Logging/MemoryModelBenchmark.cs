@@ -49,6 +49,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         private double transactionMemory;
         private double algorithmMemory;
 
+        public IReadOnlyDictionary<AlgorithmType, AlgorithmEntry> AlgorithmResults { get { return algorithms; } }
+
+        public int TransactionStarts { get { return transactionStarts; } }
+
+        public int TransactionStops { get { return transactionStops; } }
+
+        public double TransactionTime { get { return transactionTime; } }
+
+        public int AlgorithmStarts { get { return algorithmStarts; } }
+
+        public int AlgorithmStops { get { return algorithmStops; } }
+
+        public double AlgorithmTime { get { return algorithmTime; } }
+
+        public int Initializations { get { return initializations; } }
+
+        public double TransactionMemory { get { return transactionMemory; } }
+
+        public double AlgorithmMemory { get { return algorithmMemory; } }
+
         public void InitializeSnapshot(Snapshot snapshot)
         {
 #if BENCHMARK
@@ -205,5 +225,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             return 0;
 #endif
         }
+
     }
 }

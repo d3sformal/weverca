@@ -47,16 +47,53 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         ITERATE_INDEXES,
         RESOLVE_TYPE,
         RESOLVE_METHOD,
-        MERGE_TO_TEMPORARY,
+        MERGE_TO_TEMPORARY
+    }
 
-        WRITE_CREATE_TEMPORARY,
-        WRITE_COLLECTING,
-        WRITE_ASSIGN,
-        WRITE_RELEASE_TEMPORARY,
-        NEW_ASSIGN_COLLECTOR,
-        NEW_ASSIGN,
-        MERGE_GENERAL
+    public class AlgorithmFamilies
+    {
+        public static readonly AlgorithmType[] Read = 
+        {                          
+            AlgorithmType.IS_DEFINED,
+            AlgorithmType.READ,
+            AlgorithmType.ITERATE_FIELDS,
+            AlgorithmType.ITERATE_INDEXES,
+            AlgorithmType.RESOLVE_TYPE,
+            AlgorithmType.RESOLVE_METHOD                                    
+        };
 
+        public static readonly AlgorithmType[] Write = 
+        {                       
+            AlgorithmType.WRITE,
+            AlgorithmType.WRITE_WITHOUT_COPY,   
+            AlgorithmType.SET_ALIAS    
+        };
+
+        public static readonly AlgorithmType[] Extend = 
+        {                              
+            AlgorithmType.EXTEND_AS_CALL,
+            AlgorithmType.EXTEND
+        };
+
+        public static readonly AlgorithmType[] Merge = 
+        {                         
+            AlgorithmType.MERGE_AT_SUBPROGRAM,   
+            AlgorithmType.MERGE_WITH_CALL,   
+            AlgorithmType.MERGE
+        };
+
+        public static readonly AlgorithmType[] Commit = 
+        {                                             
+            AlgorithmType.COMMIT,
+            AlgorithmType.WIDEN_COMMIT
+        };
+
+        public static readonly AlgorithmType[] Memory = 
+        {                          
+            AlgorithmType.COPY_MEMORY,    
+            AlgorithmType.DELETE_MEMORY,
+            AlgorithmType.MERGE_TO_TEMPORARY   
+        };
     }
 
     public interface IBenchmark
@@ -72,5 +109,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         void FinishAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType);
 
         void WriteResultsToFile(string benchmarkFile);
+
+        IReadOnlyDictionary<AlgorithmType, AlgorithmEntry> AlgorithmResults { get; }
+
+        int TransactionStarts { get; }
+        int TransactionStops { get; }
+        double TransactionTime { get; }
+        int AlgorithmStarts { get; }
+        int AlgorithmStops { get; }
+        double AlgorithmTime { get; }
+        int Initializations { get; }
+        double TransactionMemory { get; }
+        double AlgorithmMemory { get; }
     }
 }

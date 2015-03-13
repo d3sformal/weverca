@@ -257,15 +257,11 @@ namespace Weverca.ControlFlowGraph
         }
 
         /// <summary>
-        /// Recursive method used for generating the body of text representation of controlflow graph.
-        /// It generates the result for globalcode and dureing the generation it calls
-        /// itself resursivly on controlflow graphs of declared functions and methods.
+        /// Detects all blocks in CFG and adds them into the returned list
         /// </summary>
-        /// <param name="counter">Body of string representation in dot language of current conftrolflow graph.</param>
-        /// <returns></returns>
-        private string generateText(int counter)
+        /// <returns>List of all block in controlflow graph</returns>
+        public List<BasicBlock> CollectAllBasicBlocks()
         {
-            string result = "";
             List<BasicBlock> nodes = new List<BasicBlock>();
             Queue<BasicBlock> queue = new Queue<BasicBlock>();
 
@@ -298,7 +294,7 @@ namespace Weverca.ControlFlowGraph
                         queue.Enqueue(node.DefaultBranch.To);
                     }
 
-                    //PAVEL - protoze GOTO muze vytvorit nedostupne vetve, tak projdeme i vstupni hrany
+                    //Collecting nodes from input lines - because of goto can create noodes which has no input line
                     foreach (var edge in node.IncommingEdges)
                     {
                         if (!nodes.Contains(edge.From))
@@ -308,6 +304,21 @@ namespace Weverca.ControlFlowGraph
                     }
                 }
             }
+
+            return nodes;
+        }
+
+        /// <summary>
+        /// Recursive method used for generating the body of text representation of controlflow graph.
+        /// It generates the result for globalcode and dureing the generation it calls
+        /// itself resursivly on controlflow graphs of declared functions and methods.
+        /// </summary>
+        /// <param name="counter">Body of string representation in dot language of current conftrolflow graph.</param>
+        /// <returns></returns>
+        private string generateText(int counter)
+        {
+            string result = "";
+            List<BasicBlock> nodes = CollectAllBasicBlocks();
 
             /*
             generating text for all nodes

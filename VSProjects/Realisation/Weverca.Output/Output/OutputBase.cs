@@ -52,54 +52,54 @@ namespace Weverca.Output.Output
         /// Headline for section
         /// </summary>
         /// <param name="text">Text of headline</param>
-        protected abstract void head(string text);
+        public abstract void head(string text);
 
         /// <summary>
         /// Seconfd level headline
         /// </summary>
         /// <param name="text">Text of headline</param>
-        protected abstract void head2(string text);
+        public abstract void head2(string text);
 
         /// <summary>
         /// Info used in section
         /// </summary>
         /// <param name="text">Info text</param>
-        protected abstract void info(string text);
+        public abstract void info(string text);
 
         /// <summary>
         /// Hint used as additional description to some info
         /// </summary>
         /// <param name="text">Hint text</param>
-        protected abstract void hint(string text);
+        public abstract void hint(string text);
 
         /// <summary>
         /// Comment used in section
         /// </summary>
         /// <param name="text">Text of comment</param>
-        protected abstract void comment(string text);
+        public abstract void comment(string text);
 
         /// <summary>
         /// Delimiter of line elements
         /// </summary>
         /// <param name="text">Text of delimiter</param>
-        protected abstract void delimiter(string text);
+        public abstract void delimiter(string text);
 
         /// <summary>
         /// Variable name (used because of highliting)
         /// </summary>
         /// <param name="name">Name of variable</param>
-        protected abstract void variable(string name);
+        public abstract void variable(string name);
 
         /// <summary>
         /// Error
         /// </summary>
         /// <param name="error">Error text</param>
-        protected abstract void error(string error);
+        public abstract void error(string error);
 
         /// <summary>
         /// Force new line into output
         /// </summary>
-        protected abstract void line();
+        public abstract void line();
 
         /// <summary>
         /// Set level for indentation for new lines
@@ -242,7 +242,7 @@ namespace Weverca.Output.Output
         /// </summary>
         /// <param name="analysisWarnigs">list of analysis warning</param>
         /// <param name="securityWarnings">list of security warning</param>
-        public void Warnings<T>(IReadOnlyCollection<AnalysisWarning> analysisWarnigs, IReadOnlyCollection<T> securityWarnings, bool displayTaintFlows) where T : AnalysisWarning
+        public void Warnings<T>(IReadOnlyCollection<AnalysisWarning> analysisWarnigs, IReadOnlyCollection<T> securityWarnings, bool displayTaintFlows = false) where T : AnalysisWarning
 
         {
             Headline("Warnings");
@@ -274,7 +274,7 @@ namespace Weverca.Output.Output
             line();
         }
 
-        private void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows) where T : AnalysisWarning
+        public void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
         {
             line();
             Headline(headLine);
@@ -338,7 +338,7 @@ namespace Weverca.Output.Output
         /// Prints line with variable info
         /// </summary>
         /// <param name="variableLine">Line with variable info</param>
-        private void variableInfoLine(string variableLine)
+        public void variableInfoLine(string variableLine)
         {
             var parts = variableLine.Split(new char[] { ':' }, 2);
             variable(parts[0].Trim());

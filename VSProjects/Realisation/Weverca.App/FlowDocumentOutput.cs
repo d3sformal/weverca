@@ -37,7 +37,7 @@ namespace Weverca.App
         }
 
 
-        protected override void head(string text)
+        public override void head(string text)
         {
             Span header = new Span();
             header.FontWeight = FontWeights.Bold;
@@ -47,7 +47,7 @@ namespace Weverca.App
             currentParagraph.Inlines.Add(header);
         }
 
-        protected override void head2(string text)
+        public override void head2(string text)
         {
             Span header = new Span();
             header.FontWeight = FontWeights.Bold;
@@ -58,12 +58,12 @@ namespace Weverca.App
             currentParagraph.Inlines.Add(header);
         }
 
-        protected override void info(string text)
+        public override void info(string text)
         {
             currentParagraph.Inlines.Add(text);
         }
 
-        protected override void hint(string text)
+        public override void hint(string text)
         {
             Span span = new Span();
             span.Foreground = Brushes.DarkGray;
@@ -72,17 +72,17 @@ namespace Weverca.App
             currentParagraph.Inlines.Add(span);
         }
 
-        protected override void comment(string text)
+        public override void comment(string text)
         {
             currentParagraph.Inlines.Add(text);
         }
 
-        protected override void delimiter(string text)
+        public override void delimiter(string text)
         {
             currentParagraph.Inlines.Add(text);
         }
 
-        protected override void variable(string name)
+        public override void variable(string name)
         {
             Span span = new Span();
             span.Foreground = Brushes.Blue;
@@ -92,7 +92,7 @@ namespace Weverca.App
             currentParagraph.Inlines.Add(span);
         }
 
-        protected override void error(string error)
+        public override void error(string error)
         {
             Span span = new Span();
             span.Foreground = Brushes.DarkRed;
@@ -102,14 +102,14 @@ namespace Weverca.App
             currentParagraph.Inlines.Add(span);
         }
 
-        protected override void line()
+        public override void line()
         {
             newParagraph();
         }
 
         protected override void setIndentation(int level)
         {
-            this.paragraphLeftMargin = level * 10;
+            this.paragraphLeftMargin = level * 25;
         }
     }
 }

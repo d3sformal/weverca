@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -49,6 +50,9 @@ namespace Weverca.App
         private bool isSecondPhaseEndNotReported;
         FlowDocumentOutput analysisOutput;
 
+        BackgroundWorker worker;
+        private Thread currentAnalysisThred;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -74,6 +78,10 @@ namespace Weverca.App
             finalSnapshotTab.Visibility = System.Windows.Visibility.Collapsed;
             statsTab.Visibility = System.Windows.Visibility.Collapsed;
 
+            memoryText.Content = getMemoryText(GC.GetTotalMemory(true));
+
+            abortButton.IsEnabled = true;
+
             currentAnalyser = new Analyser();
             currentAnalyser.FileName = fileName;
             currentAnalyser.SecondPhaseType = secondPhaseType;
@@ -88,13 +96,15 @@ namespace Weverca.App
 
         private void startAnalyserMainMethod(object sender)
         {
+            currentAnalysisThred = System.Threading.Thread.CurrentThread;
             currentAnalyser.StartAnalysis();
         }
 
         private void analysisFinished()
         {
+            watch.Stop();
             timer.IsEnabled = false;
-            memoryText.Content = GC.GetTotalMemory(true).ToString();
+            memoryText.Content = getMemoryText(GC.GetTotalMemory(true));
 
             warningsTab.Visibility = System.Windows.Visibility.Visible;
             FlowDocumentOutput warningsOutput = new FlowDocumentOutput(warningsFlowDocument);
@@ -110,11 +120,20 @@ namespace Weverca.App
             FlowDocumentOutput statsOutput = new FlowDocumentOutput(statsFlowDocument);
             statsOutput.ClearDocument();
             currentAnalyser.GenerateMemoryModelStatisticsOutput(statsOutput);
+
+            abortButton.IsEnabled = false;
         }
 
         private void abortButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (currentAnalyser != null && !currentAnalyser.IsFinished)
+            {
+                if (currentAnalysisThred != null)
+                {
+                    reportEvent("Abort request - terminating the analysis");
+                    currentAnalysisThred.Abort();
+                }
+            }
         }
 
         void timer_Tick(object sender, EventArgs e)
@@ -153,16 +172,20 @@ namespace Weverca.App
             
             if (currentAnalyser.IsFinished)
             {
-                analysisFinished();
-                if (currentAnalyser.IsCrashed)
+                switch (currentAnalyser.EndState)
                 {
-                    reportAnalysisCrash();
-                }
-                else
-                {
-                    reportAnalysisEnd();
+                    case AnalysisEndState.Success:
+                        reportAnalysisEnd();
+                        break;
+                    case AnalysisEndState.Crash:
+                        reportAnalysisCrash();
+                        break;
+                    case AnalysisEndState.Abort:
+                        reportAnalysisAbort();
+                        break;
                 }
 
+                analysisFinished();
             }
         }
 
@@ -194,7 +217,7 @@ namespace Weverca.App
             if (memoryCounter == 0)
             {
                 memoryCounter = MEMORY_COUTER_LIMIT;
-                memoryText.Content = GC.GetTotalMemory(false).ToString();
+                memoryText.Content = getMemoryText(GC.GetTotalMemory(false));
             }
 
             memoryCounter--;
@@ -258,8 +281,21 @@ namespace Weverca.App
             reportEvent("Analysis crashed");
 
             analysisOutput.EmptyLine();
+            currentAnalyser.GenerateOutput(analysisOutput);
+
+            analysisOutput.EmptyLine();
             analysisOutput.Headline("Crash report");
             analysisOutput.Error(currentAnalyser.AnalysisException.ToString());
+        }
+
+        private void reportAnalysisAbort()
+        {
+            analysisStateText.Content = "Analysis aborted by user request";
+
+            reportEvent("Analysis aborted by user request");
+
+            analysisOutput.EmptyLine();
+            currentAnalyser.GenerateOutput(analysisOutput);
         }
 
         private void reportEvent(string text)
@@ -289,6 +325,32 @@ namespace Weverca.App
                 Title = string.Format("Wewerca PHP analyzer - [{0}]", fileName);
                 StartAnalysis();
             }
+        }
+
+        private string getMemoryText(long memorySize)
+        {
+            var units = new[] { "B", "KB", "MB", "GB", "TB" };
+            var index = 0;
+            double size = memorySize;
+            while (size > 1024 && index < units.Length - 1)
+            {
+                size /= 1024;
+                index++;
+            }
+
+            if (size / 100 > 1)
+            {
+                return string.Format("{0:0.0} {1}", size, units[index]);
+            }
+            else if (size / 10 > 1)
+            {
+                return string.Format("{0:0.00} {1}", size, units[index]);
+            }
+            else
+            {
+                return string.Format("{0:0.000} {1}", size, units[index]);
+            }
+
         }
 
         #region Menu handlers
@@ -321,12 +383,12 @@ namespace Weverca.App
 
         private void abortMenu_Click(object sender, RoutedEventArgs e)
         {
-            
+            abortButton_Click(sender, e);
         }
 
         private void exitMenu_Click(object sender, RoutedEventArgs e)
         {
-
+            this.Close();
         }
 
         private void exportPPGMenu_Click(object sender, RoutedEventArgs e)

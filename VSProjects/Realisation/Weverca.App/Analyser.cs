@@ -4,12 +4,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using Weverca.Analysis;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.App.Settings;
+using Weverca.ControlFlowGraph;
+using Weverca.MemoryModels.ModularCopyMemoryModel;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 using Weverca.Output.Output;
 using Weverca.Taint;
 
@@ -20,13 +24,18 @@ namespace Weverca.App
         Initialising, ForwardAnalysis, NextPhaseAnalysis
     }
 
+    enum AnalysisEndState
+    {
+        NotFinished, Success, Crash, Abort
+    }
+
     class Analyser
     {
         public MemoryModels.MemoryModels MemoryModel { get; set; }
 
         public bool IsFinished { get; private set; }
 
-        public bool IsCrashed { get; private set; }
+        public AnalysisEndState EndState { get; private set; }
 
         public bool IsFirstPhaseStarted { get; private set; }
 
@@ -69,7 +78,7 @@ namespace Weverca.App
         public Analyser()
         {
             IsFinished = false;
-            IsCrashed = false;
+            EndState = AnalysisEndState.NotFinished;
 
             IsFirstPhaseStarted = false;
             IsSecondPhaseStarted = false;
@@ -95,15 +104,23 @@ namespace Weverca.App
 
                 runFirstPhaseAnalysis();
                 runSecondPhaseAnalysis();
+
+                EndState = AnalysisEndState.Success;
+            }
+            catch (ThreadAbortException e)
+            {
+                EndState = AnalysisEndState.Abort;
             }
             catch (Exception e)
             {
                 AnalysisException = e;
-                IsCrashed = true;
+                EndState = AnalysisEndState.Crash;
             }
-
-            Watch.Stop();
-            IsFinished = true;
+            finally
+            {
+                Watch.Stop();
+                IsFinished = true;
+            }
         }
 
         #region Analysis methods
@@ -126,16 +143,22 @@ namespace Weverca.App
 
             WatchFirstPhase = Stopwatch.StartNew();
 
-            firstPhaseAnalysis = new Weverca.Analysis.ForwardAnalysis(controlFlowGraph, MemoryModel);
-            firstPhaseAnalysis.Analyse();
+            try
+            {
+                firstPhaseAnalysis = new Weverca.Analysis.ForwardAnalysis(controlFlowGraph, MemoryModel);
+                firstPhaseAnalysis.Analyse();
+            }
+            finally
+            {
+                WatchFirstPhase.Stop();
 
-            WatchFirstPhase.Stop();
+                programPointGraph = firstPhaseAnalysis.ProgramPointGraph;
 
-            programPointGraph = firstPhaseAnalysis.ProgramPointGraph;
+                analysisWarnings = AnalysisWarningHandler.GetWarnings();
+                securityWarnings = AnalysisWarningHandler.GetSecurityWarnings();
+            }
+
             IsFirstPhaseFinished = true;
-
-            analysisWarnings = AnalysisWarningHandler.GetWarnings();
-            securityWarnings = AnalysisWarningHandler.GetSecurityWarnings();
         }
 
         private void runSecondPhaseAnalysis()
@@ -148,9 +171,15 @@ namespace Weverca.App
                 State = AnalysisState.NextPhaseAnalysis;
                 IsSecondPhaseStarted = true;
 
-                WatchSecondPhase = Stopwatch.StartNew();
-                secondPhaseAnalysis.Analyse();
-                WatchSecondPhase.Stop();
+                try
+                {
+                    WatchSecondPhase = Stopwatch.StartNew();
+                    secondPhaseAnalysis.Analyse();
+                }
+                finally
+                {
+                    WatchSecondPhase.Stop();
+                }
 
                 IsSecondPhaseFinished = true;
             }
@@ -200,44 +229,63 @@ namespace Weverca.App
             output.Headline("Analysis summary");
 
 
-            output.EmptyLine();
-            output.Headline2("Time consumption");
-            output.CommentLine("Weverca analyzer time consumption: " + Watch.Elapsed.ToString());
-            output.CommentLine("First phase time consumption: " + WatchFirstPhase.Elapsed.ToString());
-            if (IsSecondPhaseFinished)
+            if (Watch != null)
             {
-                output.CommentLine("Second phase time consumption: " + WatchSecondPhase.Elapsed.ToString());
+                output.EmptyLine();
+                output.Headline2("Time consumption");
+                output.CommentLine("Weverca analyzer time consumption: " + Watch.Elapsed.ToString());
+                
+                if (IsFirstPhaseStarted)
+                {
+                    output.CommentLine("First phase time consumption: " + WatchFirstPhase.Elapsed.ToString());
+                }
+                if (IsSecondPhaseStarted)
+                {
+                    output.CommentLine("Second phase time consumption: " + WatchSecondPhase.Elapsed.ToString());
+                }
             }
 
 
             output.EmptyLine();
             output.Headline2("Code statistics");
 
-            var programLines = new Dictionary<string, HashSet<int>>();
-            output.CommentLine("The number of nodes in the application is: " + numProgramPoints(new HashSet<ProgramPointGraph>(), programLines, programPointGraph));
-
-            var programLinesNum = 0;
-            foreach (var script in programLines.Values)
+            if (controlFlowGraph != null)
             {
-                programLinesNum += script.Count;
+                List<BasicBlock> basicBlocks = controlFlowGraph.CollectAllBasicBlocks();
+                output.CommentLine("The number of basic blocks of code is: " + basicBlocks.Count);
             }
-            output.CommentLine("The number of processed lines of code is: " + programLinesNum);
 
-            if (programPointGraph != null && programPointGraph.End.OutSnapshot != null)
+            if (programPointGraph != null)
             {
-                output.CommentLine("The number of memory locations in final snapshot is: " + programPointGraph.End.OutSnapshot.NumMemoryLocations());
+                var programLines = new Dictionary<string, HashSet<int>>();
+                int numberOfProgramPoints = numProgramPoints(new HashSet<ProgramPointGraph>(), programLines, programPointGraph);
+                int numberOfProgramLines = numProgramLines(programLines);
+
+                output.CommentLine("The number of processed lines of code is: " + numberOfProgramLines);
+                output.CommentLine("The number of program points in the application is: " + numberOfProgramPoints);
+
+                if (programPointGraph.End.OutSet != null)
+                {
+                    output.CommentLine("The number of memory locations in final snapshot is: " + programPointGraph.End.OutSnapshot.NumMemoryLocations());
+                }
+                else
+                {
+                    output.CommentLine("End program point was not reached");
+                }
             }
             else
             {
-                output.CommentLine("End program point was not reached");
+                output.CommentLine("Program point graph was not built");
             }
-
 
             output.EmptyLine();
             output.Headline2("Warnings");
             output.CommentLine("Total number of warnings: " + GetNumberOfWarnings());
-            output.CommentLine("Number of warnings in the first phase: " + (analysisWarnings.Count + securityWarnings.Count));
-            if (IsSecondPhaseFinished)
+            if (IsFirstPhaseStarted)
+            {
+                output.CommentLine("Number of warnings in the first phase: " + (analysisWarnings.Count + securityWarnings.Count));
+            }
+            if (IsSecondPhaseStarted)
             {
                 output.CommentLine("Number of warnings in the second phase: " + secondPhaseWarnings.Count);
             }
@@ -250,32 +298,53 @@ namespace Weverca.App
             output.CommentLine("Total number of warnings: " + GetNumberOfWarnings());
 
 
-            if (IsFirstPhaseFinished)
+            if (IsFirstPhaseStarted)
             {
                 output.CommentLine("Number of analysis warnings in the first phase: " + (analysisWarnings.Count));
                 output.CommentLine("Number of security warnings in the first phase: " + (securityWarnings.Count));
             }
-            if (IsSecondPhaseFinished)
+            if (IsSecondPhaseStarted)
             {
                 output.CommentLine("Number of warnings in the second phase: " + secondPhaseWarnings.Count);
             }
 
-            if (IsFirstPhaseFinished)
+            if (IsFirstPhaseStarted)
             {
-                output.Warnings(analysisWarnings, "First phase analysis warnings");
-                output.Warnings(securityWarnings, "First phase security warnings");
+                GenerateWarningsOutput(output, analysisWarnings, "First phase analysis warnings");
+                GenerateWarningsOutput(output, securityWarnings, "First phase security warnings");
             }
-            if (IsSecondPhaseFinished)
+            if (IsSecondPhaseStarted)
             {
-                output.Warnings(secondPhaseWarnings, "Second phase analysis warnings");
+                GenerateWarningsOutput(output, secondPhaseWarnings, "Second phase analysis warnings", true);
             }
         }
 
         public void GenerateFinalSnapshotText(OutputBase output)
         {
-            if (programPointGraph != null && programPointGraph.End != null)
+            output.Headline("Final snapshot content");
+            output.EmptyLine();
+
+            if (programPointGraph != null && programPointGraph.End != null && programPointGraph.End.OutSet != null)
             {
-                output.ProgramPointInfo("", programPointGraph.End);
+                output.CommentLine("Number of memory locations: " + programPointGraph.End.OutSnapshot.NumMemoryLocations());
+
+                Snapshot snapshot = getSnapshot(programPointGraph.End);
+                if (snapshot != null)
+                {
+                    output.CommentLine("Number of variables: " + snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyVariables.Count);
+                    output.CommentLine("Number of control variables: " + snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyControllVariables.Count);
+                    output.CommentLine("Number of temporary variables: " + snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyTemporaryVariables.Count);
+                    output.CommentLine("Number of arrays: " + snapshot.Structure.Readonly.ArrayDescriptors.Count());
+                    output.CommentLine("Number of objects: " + snapshot.Structure.Readonly.ObjectDescriptors.Count());
+
+                    SnapshotTextGenerator generator = new SnapshotTextGenerator(output);
+                    generator.GenerateSnapshotText(snapshot);
+                }
+                else
+                {
+                    output.EmptyLine();
+                    output.ProgramPointInfo("", programPointGraph.End);
+                }
             }
             else
             {
@@ -285,7 +354,150 @@ namespace Weverca.App
 
         public void GenerateMemoryModelStatisticsOutput(OutputBase output)
         {
+            output.Headline("Memory model statistics");
+            output.EmptyLine();
 
+            if (programPointGraph != null && programPointGraph.End != null && programPointGraph.End.OutSet != null)
+            {
+                Snapshot snapshot = getSnapshot(programPointGraph.End);
+                if (snapshot != null)
+                {
+                    IBenchmark benchmark = Snapshot.Benchmark;
+
+                    output.CommentLine("Total number of memory model transactions: " + benchmark.TransactionStarts);
+                    output.CommentLine("Total number of memory model algorithm runs: " + benchmark.AlgorithmStops);
+                    output.CommentLine("Total time consumed by memory model algorithms: " + new TimeSpan(0, 0, 0, 0, (int)benchmark.AlgorithmTime).ToString());
+
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Write, "Write");
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Commit, "Commit");
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Merge, "Merge");
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Extend, "Extend");
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Read, "Read");
+                    generateAlgorithmFamilyResult(output, benchmark, AlgorithmFamilies.Memory, "Memory");
+                }
+                else
+                {
+                    output.Error("Memory model statistics report is allowed for ModularMemoryModel only");
+                }
+            }
+            else
+            {
+                output.Error("End point was not reached");
+            }
+        }
+
+        public void GenerateWarningsOutput<T>(OutputBase output, IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
+        {
+            output.line();
+            output.Headline(headLine);
+            if (warnings.Count == 0)
+            {
+                output.line();
+                output.comment("No warnings");
+                output.line();
+            }
+            string fileName = "/";
+            bool dedent = false;
+            foreach (var s in warnings)
+            {
+                if (fileName != s.FullFileName)
+                {
+                    if (dedent)
+                    {
+                        output.Dedent();
+                    }
+                    output.line();
+                    fileName = s.FullFileName;
+                    output.head2("File: " + fileName);
+
+                    output.Indent();
+                    dedent = true;
+
+                    output.line();
+                    output.line();
+                }
+                output.variableInfoLine(s.ToString());
+                output.Indent();
+                output.line();
+                output.hint("Called from: ");
+                output.comment(s.ProgramPoint.OwningPPGraph.Context.ToString());
+                if (s is AnalysisTaintWarning && displayTaintFlows)
+                {
+                    output.line();
+                    output.hint("Taint propagation: ");
+                    output.Indent();
+                    output.line();
+                    output.comment(((AnalysisTaintWarning)(object)s).TaintFlow);
+                    output.Dedent();
+                }
+                output.Dedent();
+
+                output.line();
+            }
+
+            if (dedent)
+            {
+                output.Dedent();
+            }
+            output.line();
+        }
+
+        private void generateAlgorithmFamilyResult(OutputBase output, IBenchmark benchmark, AlgorithmType[] algorithmType, string header)
+        {
+            output.EmptyLine();
+            output.Headline2(header + " algorithms statistics");
+
+            foreach (AlgorithmType type in algorithmType)
+            {
+                AlgorithmEntry data;
+                if (benchmark.AlgorithmResults.TryGetValue(type, out data))
+                {
+                    string name = getAlgorithmName(type);
+                    int runs = data.Stops;
+                    double time = data.Time;
+                    double timePercentil = time / benchmark.AlgorithmTime;
+
+                    output.line();
+                    output.variable(name);
+                    output.Indent();
+
+                    output.line();
+                    output.hint("Runs: ");
+                    output.info(runs.ToString());
+
+                    output.line();
+                    output.hint("Time: ");
+                    output.info(new TimeSpan(0, 0, 0, 0, (int)time).ToString());
+
+                    output.line();
+                    output.hint("Total percentil: ");
+                    output.info(String.Format("{0:0.0}%", timePercentil * 100));
+
+                    output.Dedent();
+                    output.line();
+                }
+            }
+
+            output.line();
+        }
+
+        private string getAlgorithmName(AlgorithmType type)
+        {
+            StringBuilder builder = new StringBuilder(type.ToString().ToLower());
+            if (builder.Length > 0)
+            {
+                for (int x = 0; x < builder.Length; x++)
+                {
+                    if (builder[x] == '_')
+                    {
+                        builder[x] = ' ';
+                    }
+                }
+
+                builder[0] = Char.ToUpper(builder[0]);
+            }
+
+            return builder.ToString();
         }
 
         #endregion
@@ -295,12 +507,12 @@ namespace Weverca.App
         public int GetNumberOfWarnings()
         {
             int warnings = 0;
-            if (IsFirstPhaseFinished)
+            if (IsFirstPhaseStarted)
             {
                 warnings += AnalysisWarningHandler.NumberOfWarnings;
             }
 
-            if (IsFirstPhaseFinished)
+            if (IsSecondPhaseStarted)
             {
                 warnings += secondPhaseWarnings.Count;
             }
@@ -314,7 +526,13 @@ namespace Weverca.App
 
 
 
+        #region Private helpers
 
+        private Snapshot getSnapshot(ProgramPointBase programPointBase)
+        {
+            SnapshotBase snapshotBase = programPointBase.OutSnapshot;
+            return snapshotBase as Snapshot;
+        }
 
         public static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, Dictionary<string, HashSet<int>> processedLines, ProgramPointGraph ppg)
         {
@@ -344,5 +562,17 @@ namespace Weverca.App
 
             return num;
         }
+
+        private int numProgramLines(Dictionary<string, HashSet<int>> programLines)
+        {
+            var programLinesNum = 0;
+            foreach (var script in programLines.Values)
+            {
+                programLinesNum += script.Count;
+            }
+            return programLinesNum;
+        }
+
+        #endregion
     }
 }

@@ -58,6 +58,7 @@
     </ApplicationDefinition>
     <Compile Include="Analyser.cs" />
     <Compile Include="FlowDocumentOutput.cs" />
+    <Compile Include="SnapshotTextGenerator.cs" />
     <Compile Include="Settings\LoggingOutputType.cs" />
     <Compile Include="Settings\LoggingStrategyType.cs" />
     <Compile Include="Settings\MemoryModelType.cs" />
