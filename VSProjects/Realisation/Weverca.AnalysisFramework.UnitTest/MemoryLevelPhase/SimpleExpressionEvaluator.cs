@@ -405,7 +405,7 @@ namespace Weverca.AnalysisFramework.UnitTest
             return new MemoryEntry(Flow.OutSet.CreateString(result.ToString()));
         }
 
-        public override void Echo(EchoStmt echo, MemoryEntry[] values)
+        public override void Echo(EchoStmt echo, MemoryEntry[] values, string[] pars)
         {
             throw new NotImplementedException();
         }

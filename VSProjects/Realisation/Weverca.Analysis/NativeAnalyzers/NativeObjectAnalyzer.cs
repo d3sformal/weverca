@@ -559,7 +559,7 @@ namespace Weverca.Analysis.NativeAnalyzers
         }
 
         /// <summary>
-        /// Models called method.
+        /// Models a called method.
         /// </summary>
         /// <param name="flow"></param>
         public void Analyze(FlowController flow)
@@ -618,7 +618,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                 {
                     if (FlagsHandler.IsDirty(inputValues, flag))
                     {
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag, methodIdentifier.Name.ToString()));
                         break;
                     }
                 }
@@ -679,7 +679,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                 {
                     if (FlagsHandler.IsDirty(inputValues, flag))
                     {
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, flag, methodIdentifier.Name.ToString()));
                         break;
                     }
                 }

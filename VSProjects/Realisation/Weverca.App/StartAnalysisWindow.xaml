@@ -14,7 +14,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="80" />
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Name="fileNameText">C:\Users\pavel\Desktop\test.php</TextBox>
+                    <TextBox Grid.Column="0" Name="fileNameText"></TextBox>
                     <Button Grid.Column="1" Margin="5,0,0,0" Name="browseFileNameButton" Click="browseFileNameButton_Click">Browse</Button>
                 </Grid>
 

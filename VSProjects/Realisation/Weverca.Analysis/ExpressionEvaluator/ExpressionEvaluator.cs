@@ -303,7 +303,7 @@ namespace Weverca.Analysis.ExpressionEvaluator
                 if (FlagsHandler.IsDirty(operand.PossibleValues, FlagType.HTMLDirty))
                 {
                     var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
-                        Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty);
+                        Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty, "parameter of print");
                     AnalysisWarningHandler.SetWarning(OutSet, warning);
                 }
             }
@@ -630,23 +630,29 @@ namespace Weverca.Analysis.ExpressionEvaluator
         /// </summary>
         /// <param name="echo">Echo statement</param>
         /// <param name="entries">Values to be converted to string and printed out</param>
-        public override void Echo(EchoStmt echo, MemoryEntry[] entries)
+        public override void Echo(EchoStmt echo, MemoryEntry[] entries, string[] pars)
         {
             // TODO: Optimalize, implementation is provided only for faultless progress and testing
             var isDirty = false;
+            string varCause = "";
             stringConverter.SetContext(Flow);
 
-            foreach (var entry in entries)
+            for (int i = 0; i < entries.Length; ++i) 
+            //foreach (var entry in entries)
             {
-                isDirty |= FlagsHandler.IsDirty(entry.PossibleValues, FlagType.HTMLDirty);
+                if (FlagsHandler.IsDirty(entries[i].PossibleValues, FlagType.HTMLDirty)) {
+                    isDirty |= true;
+                    varCause = pars[i];
+                }
+
                 bool isAlwaysConcrete;
-                stringConverter.Evaluate(entry, out isAlwaysConcrete);
+                stringConverter.Evaluate(entries[i], out isAlwaysConcrete);
             }
 
             if (isDirty)
             {
                 var warning = new AnalysisSecurityWarning(Flow.CurrentScript.FullName,
-                    Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty);
+                    Element, Flow.CurrentProgramPoint, FlagType.HTMLDirty, varCause);
                 AnalysisWarningHandler.SetWarning(OutSet, warning);
             }
         }

@@ -678,7 +678,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                 {
                     if (FlagsHandler.GetFlags(argumentValues).isDirty(type))
                     {
-                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, type));
+                        AnalysisWarningHandler.SetWarning(flow.OutSet, new AnalysisSecurityWarning(NativeAnalyzerUtils.GetCallerScript(flow.OutSet), flow.CurrentPartial, flow.CurrentProgramPoint, type, "parameter of `" + nativeFunctions[0].Name.ToString() + "'"));
                         break;
                     }
                 }

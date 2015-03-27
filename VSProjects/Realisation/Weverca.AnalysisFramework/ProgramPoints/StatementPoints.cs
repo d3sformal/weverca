@@ -233,12 +233,14 @@ namespace Weverca.AnalysisFramework.ProgramPoints
         protected override void flowThrough()
         {
             var values = new MemoryEntry[_parameters.Length];
+            var pars = new string[_parameters.Length];
 
             for (int i = 0; i < values.Length; ++i)
             {
                 values[i] = _parameters[i].Value.ReadMemory(OutSnapshot);
+                pars[i] = _parameters[i].Value.ToString();
             }
-            Services.Evaluator.Echo(Echo, values);
+            Services.Evaluator.Echo(Echo, values, pars);
         }
 
         /// <inheritdoc />

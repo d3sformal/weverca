@@ -67,43 +67,48 @@ namespace Weverca.Web.Definitions
             prefix = prefix.Replace(" ", "&nbsp;");
         }
 
-        protected override void head(string text)
+        public override void head(string text)
         {
             print(Head, text);
         }
 
-        protected override void info(string text)
+        public override void head2(string text)
+        {
+            print(Head, text);
+        }
+
+        public override void info(string text)
         {
               print(Info, System.Web.HttpUtility.HtmlEncode(text));
         }
 
-        protected override void hint(string text)
+        public override void hint(string text)
         {
             print(Hint, System.Web.HttpUtility.HtmlEncode(text));
         }
 
-        protected override void comment(string text)
+        public override void comment(string text)
         {
             print(Comment, text);
         }
 
-        protected override void delimiter(string text)
+        public override void delimiter(string text)
         {
             print(Delimiter, text);
         }
 
-        protected override void variable(string name)
+        public override void variable(string name)
         {
             print(Variable, System.Web.HttpUtility.HtmlEncode(name));
         }
 
-        protected override void line()
+        public override void line()
         {
             output.AppendLine("<br />");
             needPrefix = true;
         }
 
-        protected override void error(string error)
+        public override void error(string error)
         {
             print(ErrorColor, error);
         }

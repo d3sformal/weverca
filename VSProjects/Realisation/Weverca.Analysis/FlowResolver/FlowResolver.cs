@@ -116,7 +116,7 @@ namespace Weverca.Analysis.FlowResolver
         {
             if (FlagsHandler.IsDirty(includeFile.PossibleValues, FlagType.FilePathDirty))
             { 
-                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentScript.FullName,flow.CurrentPartial,flow.CurrentProgramPoint, FlagType.FilePathDirty));
+                AnalysisWarningHandler.SetWarning(flow.OutSet,new AnalysisSecurityWarning(flow.CurrentScript.FullName,flow.CurrentPartial,flow.CurrentProgramPoint, FlagType.FilePathDirty, ""));
             }
 
             bool isAlwaysConcrete = true;

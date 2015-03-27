@@ -453,7 +453,7 @@ namespace Weverca
                                     " char " + s.LangElement.Position.FirstColumn +
                                     " firstoffset " + s.LangElement.Position.FirstOffset +
                                     " lastoffset " + s.LangElement.Position.LastOffset +
-                                    " : " + s.Message.ToString());
+                                    ": " + s.Message.ToString());
                 fileOutput.WriteLine("Called from: ");
                 fileOutput.WriteLine(s.ProgramPoint.OwningPPGraph.Context.ToString());
 

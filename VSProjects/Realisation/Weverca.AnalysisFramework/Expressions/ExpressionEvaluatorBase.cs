@@ -243,7 +243,7 @@ namespace Weverca.AnalysisFramework.Expressions
         /// </summary>
         /// <param name="echo">Echo statement</param>
         /// <param name="entries">Values to be converted to string and printed out</param>
-        public abstract void Echo(EchoStmt echo, MemoryEntry[] entries);
+        public abstract void Echo(EchoStmt echo, MemoryEntry[] entries, string[] parameters);
 
         /// <summary>
         /// Determine whether snapshot entries can be defined or undefined.

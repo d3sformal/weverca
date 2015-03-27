@@ -293,7 +293,7 @@ namespace Weverca.Analysis
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            return Message.GetHashCode () + LangElement.Position.FirstOffset.GetHashCode () + FullFileName.GetHashCode ()
+			return Message.GetHashCode () + LangElement.Position.FirstOffset.GetHashCode () + FullFileName.GetHashCode ()
             + Cause.GetHashCode ();
             //+ ProgramPoint.OwningPPGraph.GetHashCode();
         }
@@ -363,6 +363,11 @@ namespace Weverca.Analysis
         public FlagType Flag { get; protected set; }
 
         /// <summary>
+        /// Name of the variable being tainted
+        /// </summary>
+        public string TaintedVarName { get; protected set; }
+
+        /// <summary>
         /// Construct new instance of <see cref="AnalysisSecurityWarning"/>
         /// </summary>
         /// <param name="fullFileName">Full name of source code file</param>
@@ -386,25 +391,26 @@ namespace Weverca.Analysis
         /// <param name="element">Element, where the warning was produced</param>
         /// <param name="programPoint">The program point, where the warning was produced</param>
         /// <param name="cause">Flag type</param>
-        public AnalysisSecurityWarning(string fullFileName, LangElement element, ProgramPointBase programPoint, FlagType cause):
+        public AnalysisSecurityWarning(string fullFileName, LangElement element, ProgramPointBase programPoint, FlagType cause, string taintedVar):
             base(programPoint)
         {
             FullFileName = fullFileName;
             switch (cause)
             {
                 case FlagType.HTMLDirty:
-                    Message = "Unsanitized value goes into browser";
+                    Message = "Unsanitized value " + (taintedVar != "" ? "(" + taintedVar + ") " : "") + "goes into browser";
                     break;
                 case FlagType.FilePathDirty:
-                    Message = "Unsanitized value used as a file name when opening a file";
+                    Message = "Unsanitized value " + (taintedVar != "" ? "(" + taintedVar + ") " : "") + "used as a filename when opening a file";
                     break;
                 case FlagType.SQLDirty:
-                    Message = "Unsanitized value goes into database";
+                    Message = "Unsanitized value " + (taintedVar != "" ? "(" + taintedVar + ") " : "") + "goes into database";
                     break;
             }
 
             LangElement = element;
             Flag = cause;
+            TaintedVarName = taintedVar;
         }
 
         /// <inheritdoc />
