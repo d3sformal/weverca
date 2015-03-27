@@ -19,7 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#define MEMORY_BENCHMARK
-#define BENCHMARK
+//#define BENCHMARK
 
 using System;
 using System.Collections.Generic;

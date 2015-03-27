@@ -253,16 +253,16 @@ namespace Weverca.Output.Output
             Warnings(securityWarnings, "Security warnings:", displayTaintFlows);
         }
 
-		/// <summary>
-		/// Prints taint warnings to output..
-		/// </summary>
-		/// <param name="taintWarnings">Taint warnings.</param>
+        /// <summary>
+        /// Prints taint warnings to output..
+        /// </summary>
+        /// <param name="taintWarnings">Taint warnings.</param>
         public void WarningsTaint(IReadOnlyCollection<AnalysisTaintWarning> taintWarnings) 
-		{
-			Headline("Taint analysis warnings");
-			CommentLine("Number: " + taintWarnings.Count);
+        {
+            Headline("Taint analysis warnings");
+            CommentLine("Number: " + taintWarnings.Count);
             Warnings(taintWarnings, "Taint analysis warnings:", true);
-		}
+        }
 
         /// <summary>
         /// Print metric to output
@@ -274,8 +274,27 @@ namespace Weverca.Output.Output
             line();
         }
 
-        public void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
+        void PrintWarning<T> (bool displayTaintFlows, T s) where T : AnalysisWarning
         {
+            variableInfoLine (s.ToString ());
+            line ();
+            comment ("Called from: ");
+            comment (s.ProgramPoint.OwningPPGraph.Context.ToString ());
+            if (s is AnalysisTaintWarning && displayTaintFlows) {
+                line ();
+                comment ("Taint propagation: ");
+                line ();
+                comment (((AnalysisTaintWarning)(object)s).TaintFlow);
+            }
+            line ();
+            line ();
+        }
+
+        private void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
+        {
+            List<T> sortedWarnings = new List<T>(warnings);
+            sortedWarnings.Sort((x, y) => x.FullFileName.CompareTo(y.FullFileName));
+
             line();
             Headline(headLine);
             if (warnings.Count == 0)
@@ -283,11 +302,18 @@ namespace Weverca.Output.Output
                 line();
                 comment("No warnings");
             }
+
+
+
             string fileName = "/";
-            foreach (var s in warnings)
+            List<T> warningsInFile = new List<T>();
+            foreach (var s in sortedWarnings)
             {
                 if (fileName != s.FullFileName)
                 {
+                    warningsInFile.Sort((x, y) => x.LangElement.Position.FirstLine.CompareTo(y.LangElement.Position.FirstLine));
+                    foreach (var warningInFile in warningsInFile) PrintWarning(displayTaintFlows, warningInFile);
+
                     comment("------------------------------------------------------------------------");
                     line();
 
@@ -297,20 +323,9 @@ namespace Weverca.Output.Output
                     comment("------------------------------------------------------------------------");
                     line();
                 }
-                variableInfoLine(s.ToString());
-                line();
-                comment("Called from: ");
-                comment(s.ProgramPoint.OwningPPGraph.Context.ToString());
-                if (s is AnalysisTaintWarning && displayTaintFlows) 
-				{
-					line();
-					comment("Taint propagation: ");
-                    line();
-					comment(((AnalysisTaintWarning)(object)s).TaintFlow);
-				}
+                warningsInFile.Add(s);
+             
 
-                line();
-                line();
             }
 
             line();
