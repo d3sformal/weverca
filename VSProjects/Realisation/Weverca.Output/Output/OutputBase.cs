@@ -274,7 +274,7 @@ namespace Weverca.Output.Output
             line();
         }
 
-        void PrintWarning<T> (bool displayTaintFlows, T s) where T : AnalysisWarning
+        private void PrintWarning<T> (bool displayTaintFlows, T s) where T : AnalysisWarning
         {
             variableInfoLine (s.ToString ());
             line ();
@@ -288,6 +288,20 @@ namespace Weverca.Output.Output
             }
             line ();
             line ();
+        }
+
+        private int positionOfWarning<T> (T warning) where T : AnalysisWarning 
+        {
+
+            if (warning.LangElement == null) return -1;
+            return warning.LangElement.Position.FirstLine;
+        }
+
+        private void SortAndPrintWarningsAccordingToLineNums<T> (List<T> warningsInFile, bool displayTaintFlows) where T : AnalysisWarning 
+        {
+            warningsInFile.Sort ((x, y) => positionOfWarning (x).CompareTo (positionOfWarning (y)));
+            foreach (var warningInFile in warningsInFile)
+                PrintWarning (displayTaintFlows, warningInFile);
         }
 
         private void Warnings<T>(IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
@@ -311,8 +325,8 @@ namespace Weverca.Output.Output
             {
                 if (fileName != s.FullFileName)
                 {
-                    warningsInFile.Sort((x, y) => x.LangElement.Position.FirstLine.CompareTo(y.LangElement.Position.FirstLine));
-                    foreach (var warningInFile in warningsInFile) PrintWarning(displayTaintFlows, warningInFile);
+                    SortAndPrintWarningsAccordingToLineNums (warningsInFile, displayTaintFlows);
+                    warningsInFile.Clear();
 
                     comment("------------------------------------------------------------------------");
                     line();
@@ -327,6 +341,7 @@ namespace Weverca.Output.Output
              
 
             }
+            if (warningsInFile.Count >= 0) SortAndPrintWarningsAccordingToLineNums(warningsInFile, displayTaintFlows);
 
             line();
 
