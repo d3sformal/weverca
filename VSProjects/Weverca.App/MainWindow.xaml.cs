@@ -50,7 +50,7 @@ namespace Weverca.App
         private bool isSecondPhaseEndNotReported;
         FlowDocumentOutput analysisOutput;
 
-        BackgroundWorker worker;
+        //BackgroundWorker worker;
         private Thread currentAnalysisThred;
 
         public MainWindow()

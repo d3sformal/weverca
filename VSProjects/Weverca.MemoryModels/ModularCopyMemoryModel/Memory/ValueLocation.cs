@@ -382,7 +382,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
     /// </summary>
     public class ArrayValueLocation : ValueLocation
     {
-        private MemoryIndex ContainingIndex;
+        //private MemoryIndex ContainingIndex;
         private MemberIdentifier index;
         private Value value;
 

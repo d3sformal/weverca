@@ -511,7 +511,7 @@ namespace Weverca.Analysis.NativeAnalyzers
                             var newField=newObject.ReadField(flow.OutSet.Snapshot, new VariableIdentifier(field.Name.Value));
                             try {
                                 newField.WriteMemory(flow.OutSet.Snapshot, NativeAnalyzerUtils.ResolveReturnValue(field.Type, flow));
-                            } catch (Exception e) {}
+                            } catch (Exception) {}
                         }
                     }
                 }

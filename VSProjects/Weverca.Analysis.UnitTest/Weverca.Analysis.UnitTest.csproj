@@ -3,11 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{95B23A3A-D548-483C-B1C4-52AADCFC64DA}</ProjectGuid>
+    <ProjectGuid>{2B198688-9ED7-4FD4-9A95-86C4173119C8}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Weverca.MemoryModels.UnitTest</RootNamespace>
-    <AssemblyName>Weverca.MemoryModels.UnitTest</AssemblyName>
+    <RootNamespace>Weverca.Analysis.UnitTest</RootNamespace>
+    <AssemblyName>Weverca.Analysis.UnitTest</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -86,18 +86,24 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="CopyMemoryModel\AssignAlias.cs" />
-    <Compile Include="CopyMemoryModel\AssignFromMemoryTest.cs" />
-    <Compile Include="CopyMemoryModel\AssignTest.cs" />
-    <Compile Include="CopyMemoryModel\MemoryIndexTest.cs" />
-    <Compile Include="CopyMemoryModel\MergeTest.cs" />
-    <Compile Include="CopyMemoryModel\ReadTest.cs" />
-    <Compile Include="SnapshotTestFramework\SnapshotEntryFactory.cs" />
-    <Compile Include="SnapshotTestFramework\SnapshotTester.cs" />
+    <Compile Include="ClassConstantTests.cs" />
+    <Compile Include="CondtionTester.cs" />
+    <Compile Include="OtherTests.cs" />
+    <Compile Include="MemoryAsistantTester.cs" />
+    <Compile Include="IndexTester.cs" />
+    <Compile Include="StaticFieldTester.cs" />
+    <Compile Include="ExceptionTester.cs" />
+    <Compile Include="FlagTester.cs" />
+    <Compile Include="ExpressionResolverTester.cs" />
+    <Compile Include="IncludeTests.cs" />
+    <Compile Include="NativeFuntionTester.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SnapshotTestFramework\TestOperation.cs" />
-    <Compile Include="SnapshotTestFramework\TestOperationLogger.cs" />
-    <Compile Include="VirtualReferenceModelTest.cs" />
+    <Compile Include="NativeConstantTester.cs" />
+    <Compile Include="NativeObjectTester.cs" />
+    <Compile Include="StaticFunctionTester.cs" />
+    <Compile Include="TestUtils.cs" />
+    <Compile Include="FunctionTester.cs" />
+    <Compile Include="ClassTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
@@ -108,15 +114,24 @@
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
-      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
-      <Name>Weverca.Analysis</Name>
+    <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
+      <Project>{3cee322a-b262-453b-9a92-47d39807e166}</Project>
+      <Name>Weverca.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
+      <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
+      <Name>Weverca.ControlFlowGraph</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
       <Name>Weverca.MemoryModels</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
+      <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
+      <Name>Weverca.Parser</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

@@ -20,7 +20,7 @@ namespace Weverca.App
     /// </summary>
     public partial class StartAnalysisWindow : Window
     {
-        private MainWindow mainWindow;
+        //private MainWindow mainWindow;
 
         public string FileName { get; set; }
         public SecondPhaseType SecondPhaseType { get; set; }

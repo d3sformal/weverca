@@ -274,14 +274,6 @@
       <Project>{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
-      <Project>{ED9CA050-4D5B-4196-BFBE-DE908A25FCDC}</Project>
-      <Name>Weverca.AnalysisFramework</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
-      <Project>{C0520BD9-F65F-4DD9-BC71-8E3D3B306707}</Project>
-      <Name>Weverca.ControlFlowGraph</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
