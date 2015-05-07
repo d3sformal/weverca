@@ -70,6 +70,24 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mono|AnyCPU'">
+    <OutputPath>bin\Mono\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Mono|x64'">
+    <OutputPath>bin\x64\Mono\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
   </ItemGroup>
@@ -106,13 +124,17 @@
     <Compile Include="ClassTester.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
+    <ProjectReference Include="..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
+      <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
+      <Name>Weverca.Analysis</Name>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Common\Weverca.Common.csproj">
       <Project>{3cee322a-b262-453b-9a92-47d39807e166}</Project>
@@ -129,6 +151,10 @@
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
       <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
       <Name>Weverca.Parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Weverca\Weverca.csproj">
+      <Project>{4a26a734-9a13-4b70-b2e1-7c448d4c73ac}</Project>
+      <Name>Weverca</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
