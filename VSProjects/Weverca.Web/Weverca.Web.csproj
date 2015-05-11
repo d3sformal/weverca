@@ -8,7 +8,7 @@
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{FC47902F-C2DE-4DFA-B525-22C4A611E263}</ProjectGuid>
-    <ProjectTypeGuids>{E3E379DF-F4C6-4180-9B81-6769533ABE47};{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Weverca.Web</RootNamespace>
@@ -46,9 +46,17 @@
     <Reference Include="Microsoft.CSharp">
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.6.0.8\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="NLog, Version=3.2.1.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NLog.3.2.1\lib\net45\NLog.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System">
       <Private>True</Private>
@@ -89,8 +97,22 @@
     <Reference Include="System.Web.Extensions">
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web.Mvc, Version=4.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Web.Routing">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Deployment, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml">
@@ -105,24 +127,9 @@
     <Reference Include="System.EnterpriseServices">
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Web.Mvc.FixedDisplayModes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.Mvc.FixedDisplayModes.1.0.0\lib\net40\Microsoft.Web.Mvc.FixedDisplayModes.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebApi.Client.4.0.30506.0\lib\net40\System.Net.Http.Formatting.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Helpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.Helpers.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebApi.Core.4.0.30506.0\lib\net40\System.Web.Http.dll</HintPath>
@@ -131,22 +138,6 @@
     <Reference Include="System.Web.Http.WebHost, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebApi.WebHost.4.0.30506.0\lib\net40\System.Web.Http.WebHost.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Web.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.Razor.2.0.30506.0\lib\net40\System.Web.Razor.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Deployment, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.Deployment.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web.WebPages.Razor, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <Private>True</Private>
-      <HintPath>..\..\..\Solutions\Realisation\Weverca.Web\packages\Microsoft.AspNet.WebPages.2.0.30506.0\lib\net40\System.Web.WebPages.Razor.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq">
       <Private>True</Private>
@@ -203,6 +194,7 @@
     <Content Include="Content\Tabs.css" />
     <Content Include="Global.asax" />
     <Content Include="jQuery\jquery-1.7.2.js" />
+    <None Include="Properties\PublishProfiles\Perun x64.pubxml" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -254,38 +246,47 @@
     <ProjectReference Include="..\..\External Sources\PhalangerOriginal\Source\Core\Core.csproj">
       <Project>{9a2867a2-981c-4b5a-a1c5-eaccc80b5148}</Project>
       <Name>Core</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Common.WebDefinitions\Common.WebDefinitions.csproj">
       <Project>{c7975503-5314-44c7-be79-6321c16a92a2}</Project>
       <Name>Common.WebDefinitions</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.AnalysisFramework\Weverca.AnalysisFramework.csproj">
       <Project>{ed9ca050-4d5b-4196-bfbe-de908a25fcdc}</Project>
       <Name>Weverca.AnalysisFramework</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Analysis\Weverca.Analysis.csproj">
       <Project>{40cac1fe-2e53-4f41-abea-1a2bb0a4e782}</Project>
       <Name>Weverca.Analysis</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.CodeMetrics\Weverca.CodeMetrics.csproj">
       <Project>{880143f7-bd66-4abd-96e7-86fda5cf8161}</Project>
       <Name>Weverca.CodeMetrics</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.ControlFlowGraph\Weverca.ControlFlowGraph.csproj">
       <Project>{c0520bd9-f65f-4dd9-bc71-8e3d3b306707}</Project>
       <Name>Weverca.ControlFlowGraph</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.MemoryModels\Weverca.MemoryModels.csproj">
       <Project>{01f0a818-ebe4-431b-9091-0e5dc99382ad}</Project>
       <Name>Weverca.MemoryModels</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Output\Weverca.Output.csproj">
       <Project>{d43d84c1-1686-48d4-8b9a-bad6860b6315}</Project>
       <Name>Weverca.Output</Name>
+      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Weverca.Parser\Weverca.Parser.csproj">
       <Project>{cadf9418-c0f6-4e56-b39e-33522603d0bc}</Project>
       <Name>Weverca.Parser</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
