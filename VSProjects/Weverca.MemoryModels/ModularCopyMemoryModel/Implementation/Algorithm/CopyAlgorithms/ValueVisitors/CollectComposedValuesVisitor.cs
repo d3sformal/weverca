@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IArrayDescriptor descriptor;
                 try {
                     descriptor = snapshot.Structure.Readonly.GetDescriptor(arrayValue);
-                } catch (Exception e) {
+                } catch (Exception) {
                     continue;
                 }
                 foreach (var index in descriptor.Indexes)

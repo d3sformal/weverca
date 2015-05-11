@@ -151,7 +151,7 @@ namespace Weverca.AnalysisFramework
                 try {
                     extendInput(point);
                 }
-                catch (Exception e) { continue; }
+                catch (Exception) { continue; }
 
                 flowThrough(point);
 
