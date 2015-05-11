@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <Menu Grid.ColumnSpan="2">
-            <MenuItem Header="Analysys">
+            <MenuItem Header="Analysis">
                 <MenuItem Header="Start new analysis" Name="startMenu" Click="startMenu_Click" />
                 <MenuItem Header="Repeat analysis" Name="repeateMenu" Click="repeateMenu_Click" />
                 <MenuItem Header="Abort analysis" Name="abortMenu" Click="abortMenu_Click" />
