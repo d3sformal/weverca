@@ -275,19 +275,43 @@ namespace Weverca.Analysis.FlowResolver
         /// </summary>
         private FileInfo findFile(FlowController flow, string fileName)
         {
+            FileInfo fileInfo;
             // the file has relative path and it is in main script directory
-            var fileInfo = new FileInfo(flow.EntryScript.DirectoryName + "/" + fileName);
-            if (fileInfo.Exists) return fileInfo;
+            try
+            {
+                fileInfo = new FileInfo(flow.EntryScript.DirectoryName + Path.DirectorySeparatorChar + fileName);
+                if (fileInfo.Exists) return fileInfo;
+            }
+            catch (System.NotSupportedException)
+            {
+                // not a well-formed file name, try it differently
+            }
 
+            
             // the file has relative path and it is in current script directory
-            fileInfo = new FileInfo(flow.CurrentProgramPoint.OwningPPGraph.OwningScript.DirectoryName + "/" + fileName);
-            if (fileInfo.Exists) return fileInfo;
+            try
+            {
+                fileInfo = new FileInfo(flow.CurrentProgramPoint.OwningPPGraph.OwningScript.DirectoryName + Path.DirectorySeparatorChar + fileName);
+                if (fileInfo.Exists) return fileInfo;
+            }
+            catch (System.NotSupportedException)
+            {
+                // not a well-formed file name, try it differently
+            }
+
 
             // the file has absolute path
 			if (fileName.Length == 0)
 				return null;
-            fileInfo = new FileInfo(fileName);
-            if (fileInfo.Exists) return fileInfo;
+            try
+            {
+                fileInfo = new FileInfo(fileName);
+                if (fileInfo.Exists) return fileInfo;
+            }
+            catch (System.NotSupportedException)
+            {
+                // not a well-formed file name, give up
+            }
 
             return null;
         }
