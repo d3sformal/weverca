@@ -97,8 +97,9 @@ if ($_GET[1])
 
 $action = 'managefilters';
 
+// To Pavel: check to analyze different parts of the application
 //if ($_GET[1])
-	//$action = 'forward'; // found xss!!, not working: first phase
+	//$action = 'forward'; // not working: first phase
 //if ($_GET[1])
 //$action = 'aff_mail'; // ok
 //if ($_GET[1])
