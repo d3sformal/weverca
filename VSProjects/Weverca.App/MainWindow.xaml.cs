@@ -40,7 +40,7 @@ namespace Weverca.App
         private MemoryModelType memoryModelType = MemoryModelType.TrackingCopyAlgorithms;
         private LoggingOutputType loggingOutputType = LoggingOutputType.GuiOnly;
         private LoggingStrategyType loggingStrategyType = LoggingStrategyType.Deactivated;
-        private int memoryLimit;
+        private long memoryLimit;
 
         Stopwatch watch;
         DispatcherTimer timer = new DispatcherTimer();
@@ -64,7 +64,7 @@ namespace Weverca.App
             analysisOutput = new FlowDocumentOutput(outputFlowDocument);
 
             showStartAnalysisDialog();
-            memoryLimitText.Content = memoryLimit.ToString() + " MB";
+            memoryLimitText.Content = getMemoryText(memoryLimit);
         }
 
 
@@ -224,10 +224,10 @@ namespace Weverca.App
                 memoryCounter = MEMORY_COUTER_LIMIT;
                 long memoryConsumption = GC.GetTotalMemory(false);
                 memoryText.Content = getMemoryText(memoryConsumption);
-                if (getMemoryInMB(memoryConsumption) > memoryLimit)
+                if (memoryConsumption > memoryLimit)
                 {
                     memoryConsumption = GC.GetTotalMemory(true);
-                    if (getMemoryInMB(memoryConsumption) > memoryLimit && currentAnalyser != null && !currentAnalyser.IsFinished)
+                    if (memoryConsumption > memoryLimit && currentAnalyser != null && !currentAnalyser.IsFinished)
                     {
                         if (currentAnalysisThred != null)
                         {
