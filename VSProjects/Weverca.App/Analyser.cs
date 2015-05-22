@@ -26,7 +26,7 @@ namespace Weverca.App
 
     enum AnalysisEndState
     {
-        NotFinished, Success, Crash, Abort
+        NotFinished, Success, Crash, Abort, AbortMemory
     }
 
     class Analyser
@@ -109,7 +109,7 @@ namespace Weverca.App
             }
             catch (ThreadAbortException e)
             {
-                EndState = AnalysisEndState.Abort;
+                EndState = (AnalysisEndState)e.ExceptionState;
             }
             catch (Exception e)
             {

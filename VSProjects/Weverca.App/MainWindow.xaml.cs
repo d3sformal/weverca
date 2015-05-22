@@ -40,6 +40,7 @@ namespace Weverca.App
         private MemoryModelType memoryModelType = MemoryModelType.TrackingCopyAlgorithms;
         private LoggingOutputType loggingOutputType = LoggingOutputType.GuiOnly;
         private LoggingStrategyType loggingStrategyType = LoggingStrategyType.Deactivated;
+        private int memoryLimit;
 
         Stopwatch watch;
         DispatcherTimer timer = new DispatcherTimer();
@@ -63,6 +64,7 @@ namespace Weverca.App
             analysisOutput = new FlowDocumentOutput(outputFlowDocument);
 
             showStartAnalysisDialog();
+            memoryLimitText.Content = memoryLimit.ToString() + " MB";
         }
 
 
@@ -131,7 +133,7 @@ namespace Weverca.App
                 if (currentAnalysisThred != null)
                 {
                     reportEvent("Abort request - terminating the analysis");
-                    currentAnalysisThred.Abort();
+                    currentAnalysisThred.Abort(AnalysisEndState.Abort);
                 }
             }
         }
@@ -183,6 +185,9 @@ namespace Weverca.App
                     case AnalysisEndState.Abort:
                         reportAnalysisAbort();
                         break;
+                    case AnalysisEndState.AbortMemory:
+                        reportAnalysisAbortMemory();
+                        break;
                 }
 
                 analysisFinished();
@@ -217,7 +222,24 @@ namespace Weverca.App
             if (memoryCounter == 0)
             {
                 memoryCounter = MEMORY_COUTER_LIMIT;
-                memoryText.Content = getMemoryText(GC.GetTotalMemory(false));
+                long memoryConsumption = GC.GetTotalMemory(false);
+                memoryText.Content = getMemoryText(memoryConsumption);
+                if (getMemoryInMB(memoryConsumption) > memoryLimit)
+                {
+                    memoryConsumption = GC.GetTotalMemory(true);
+                    if (getMemoryInMB(memoryConsumption) > memoryLimit && currentAnalyser != null && !currentAnalyser.IsFinished)
+                    {
+                        if (currentAnalysisThred != null)
+                        {
+                            // try to garbage collect
+                            memoryConsumption = GC.GetTotalMemory(true);
+                            reportEvent("Memory limit reached - terminating the analysis");
+                            currentAnalysisThred.Abort(AnalysisEndState.AbortMemory);
+                        }
+                    }
+
+                }
+
             }
 
             memoryCounter--;
@@ -297,6 +319,15 @@ namespace Weverca.App
             analysisOutput.EmptyLine();
             currentAnalyser.GenerateOutput(analysisOutput);
         }
+        private void reportAnalysisAbortMemory()
+        {
+            analysisStateText.Content = "Analysis reached memory limit";
+
+            reportEvent("Analysis reached memory limit");
+
+            analysisOutput.EmptyLine();
+            currentAnalyser.GenerateOutput(analysisOutput);
+        }
 
         private void reportEvent(string text)
         {
@@ -321,8 +352,9 @@ namespace Weverca.App
                 secondPhaseType = startAnalysisWindow.SecondPhaseType;
                 loggingOutputType = startAnalysisWindow.LoggingOutputType;
                 loggingStrategyType = startAnalysisWindow.LoggingStrategyType;
+                memoryLimit = startAnalysisWindow.MemoryLimit;
 
-                Title = string.Format("Wewerca PHP analyzer - [{0}]", fileName);
+                Title = string.Format("Weverca PHP analyzer - [{0}]", fileName);
                 StartAnalysis();
             }
         }
@@ -351,6 +383,11 @@ namespace Weverca.App
                 return string.Format("{0:0.000} {1}", size, units[index]);
             }
 
+        }
+
+        private int getMemoryInMB(long memorySize)
+        {
+            return (int)(memorySize / (1024 * 1024));
         }
 
         #region Menu handlers

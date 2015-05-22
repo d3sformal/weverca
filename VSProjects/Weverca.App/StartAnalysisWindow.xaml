@@ -3,11 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Weverca.App"
         xmlns:settings="clr-namespace:Weverca.App.Settings"
-        Title="Start New Analysis" Height="411" Width="400" SizeToContent="Height" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        Title="Start New Analysis" Height="497.526" Width="400" SizeToContent="Height" ResizeMode="NoResize" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
         >
     <StackPanel>
-        <GroupBox Header="Analysis settings" Margin="5" Padding="2">
-            <StackPanel>
+        <GroupBox Header="Analysis settings" Margin="5" Padding="2" Height="230">
+            <StackPanel Margin="0,0,0,1">
                 <Label>File name</Label>
                 <Grid Margin="5,0,5,5">
                     <Grid.ColumnDefinitions>
@@ -30,27 +30,27 @@
                     <ComboBoxItem Tag="{x:Static settings:MemoryModelType.LazyCopyAlgorithms}">Lazy copy algorithms</ComboBoxItem>
                     <ComboBoxItem Tag="{x:Static settings:MemoryModelType.TrackingCopyAlgorithms}" IsSelected="True">Tracking copy algorithms</ComboBoxItem>
                 </ComboBox>
+                <Label Content="Memory limit for analysis: 512 MB" Name="memoryLimitLabel"/>
+                <Slider HorizontalAlignment="Right" Width="353" Margin="0,0,5,0" Minimum="6.24" Maximum="11.090354" Name="memoryLimitSlider" ValueChanged="memoryLimitSlider_ValueChanged" />
             </StackPanel>
         </GroupBox>
-
         <GroupBox Header="Memory model logging" Margin="5" Padding="2">
             <StackPanel>
-                <Label>Logging strategy</Label>
-                <ComboBox Margin="5,0,5,5" Name="loggingStrategyCombo">
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.Deactivated}" IsSelected="True">Deactivated</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationsLog}">Operations log</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationLogWithValues}">Operations log with snapshot values</ComboBoxItem>
+                <Label Content="Logging strategy"/>
+                <ComboBox Margin="5,0,5,5" x:Name="loggingStrategyCombo">
+                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.Deactivated}" IsSelected="True" Content="Deactivated"/>
+                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationsLog}" Content="Operations log"/>
+                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationLogWithValues}" Content="Operations log with snapshot values"/>
                 </ComboBox>
 
-                <Label>File output</Label>
-                <ComboBox Margin="5,0,5,5" Name="fileOutputCombo">
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.GuiOnly}" IsSelected="True">Only to GUI</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.AfterAnalysis}">After each phase of analysis</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.DuringAnalysis}">During the analysis</ComboBoxItem>
+                <Label Content="File output"/>
+                <ComboBox Margin="5,0,5,5" x:Name="fileOutputCombo">
+                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.GuiOnly}" IsSelected="True" Content="Only to GUI"/>
+                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.AfterAnalysis}" Content="After each phase of analysis"/>
+                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.DuringAnalysis}" Content="During the analysis"/>
                 </ComboBox>
             </StackPanel>
         </GroupBox>
-
-        <Button Margin="6,2,6,10" Padding="5" FontSize="14" Name="startAnalysisButton" Click="startAnalysisButton_Click"> Start analysis</Button>
+        <Button Margin="6,2,6,10" Padding="5" FontSize="14" x:Name="startAnalysisButton" Click="startAnalysisButton_Click" Content="Start analysis"/>
     </StackPanel>
 </Window>

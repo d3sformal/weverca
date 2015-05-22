@@ -27,6 +27,7 @@ namespace Weverca.App
         public MemoryModelType MemoryModelType { get; set; }
         public LoggingOutputType LoggingOutputType { get; set; }
         public LoggingStrategyType LoggingStrategyType { get; set; }
+        public int MemoryLimit {get; set; }
 
         public StartAnalysisWindow()
         {
@@ -60,6 +61,7 @@ namespace Weverca.App
                 loggingStrategyCombo.SelectedIndex = (int)LoggingStrategyType;
             }
 
+
             return base.ShowDialog();
         }
 
@@ -87,6 +89,7 @@ namespace Weverca.App
                 MemoryModelType = (MemoryModelType)((ComboBoxItem)memoryModelCombo.SelectedItem).Tag;
                 LoggingOutputType = (LoggingOutputType)((ComboBoxItem)fileOutputCombo.SelectedItem).Tag;
                 LoggingStrategyType = (LoggingStrategyType)((ComboBoxItem)loggingStrategyCombo.SelectedItem).Tag;
+                MemoryLimit = computeMemoryLimit(memoryLimitSlider.Value);
 
                 this.DialogResult = true;
                 this.Close();
@@ -110,5 +113,17 @@ namespace Weverca.App
                 return false;
             }
         }
+
+        private void memoryLimitSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            memoryLimitLabel.Content = "Memory limit for analysis: " + computeMemoryLimit(memoryLimitSlider.Value) + " MB";
+        }
+
+        private int computeMemoryLimit(double sliderValue)
+        {
+            return (int)(Math.Exp(sliderValue));
+        }
+
+        
     }
 }
