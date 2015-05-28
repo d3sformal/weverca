@@ -169,6 +169,9 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="NLog">
+      <HintPath>..\..\..\..\VSProjects\packages\NLog.3.2.1\lib\net40\NLog.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -606,6 +609,7 @@
     <None Include="Generators\Generate.cmd" />
     <None Include="Generators\Lexer.lex" />
     <None Include="Generators\Parser.y" />
+    <None Include="packages.config" />
     <None Include="Reflection\DAssembly.cd" />
     <None Include="Reflection\DMember.cd" />
     <None Include="Reflection\DMemberDesc.cd" />
