@@ -9348,6 +9348,19 @@
 <arg type="resource" optional="true" byReference="false" dots="false" value="NULL"  />
 </function>
 
+<function name="mysqli_init" returnType="object">
+</function>
+<function name="mysqli_real_connect" returnType="void">
+<arg type="object" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="string" optional="false" byReference="false" dots="false"  />
+<arg type="int" optional="false" byReference="false" dots="false"  />
+</function>
+
 <function name="mysqli_disable_reads_from_master" returnType="bool">
 <arg type="mysqli" optional="false" byReference="false" dots="false"  />
 </function>

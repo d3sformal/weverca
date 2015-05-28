@@ -62,14 +62,14 @@ namespace Weverca.AnalysisFramework
                 if (OwningPPGraph == caller.OwningPPGraph)
                     continue;
 
-                result.Append("->");
-                result.Append("(");
+                result.Append(" -> ");
+                //result.Append("(");
 
 				//result.Append(caller.OwningPPGraph.OwningScript.FullName + " at position " + caller.Partial.Position);
                 result.Append(caller.OwningScriptFullName + " at position " + caller.Partial.Position);
                 result.Append(caller.OwningPPGraph.Context);
 
-                result.Append(")");
+                //result.Append(")");
                 if (c != _callers.Count - 1) result.Append("or");
 
                 //result.Append("( " + caller.ToString() + " )");

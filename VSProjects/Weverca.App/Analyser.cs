@@ -88,6 +88,8 @@ namespace Weverca.App
 
             State = AnalysisState.Initialising;
 
+            AnalysisWarningHandler.ResetWarnings();
+
             if (MemoryModel == null)
             {
                 MemoryModel = MemoryModels.MemoryModels.ModularCopyMM;

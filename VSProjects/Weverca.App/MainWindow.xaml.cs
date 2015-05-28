@@ -63,8 +63,7 @@ namespace Weverca.App
 
             analysisOutput = new FlowDocumentOutput(outputFlowDocument);
 
-            showStartAnalysisDialog();
-            memoryLimitText.Content = getMemoryText(memoryLimit);
+            showStartAnalysisDialog();            
         }
 
 
@@ -74,6 +73,8 @@ namespace Weverca.App
             isFirstPhaseEndNotReported = true;
             isSecondPhaseStartNotReported = true;
             isSecondPhaseEndNotReported = true;
+
+            memoryLimitText.Content = getMemoryText(memoryLimit);
 
             outputTab.IsSelected = true;
             warningsTab.Visibility = System.Windows.Visibility.Collapsed;
@@ -226,6 +227,7 @@ namespace Weverca.App
                 memoryText.Content = getMemoryText(memoryConsumption);
                 if (memoryConsumption > memoryLimit)
                 {
+                    reportEvent("Memory limit reached - trying to garbage collect");
                     memoryConsumption = GC.GetTotalMemory(true);
                     if (memoryConsumption > memoryLimit && currentAnalyser != null && !currentAnalyser.IsFinished)
                     {

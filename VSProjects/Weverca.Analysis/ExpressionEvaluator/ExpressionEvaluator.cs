@@ -669,8 +669,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             foreach (var snapshotEntry in entries)
             {
                 var entry = snapshotEntry.ReadMemory(OutSnapshot);
-                Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
-                    "Memory entry must always have at least one value");
+                // TODO: This is not correct solution! 
+                // TODO: Need a patch in processing of "global" without an existing global var
+                // Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
+                //    "Memory entry must always have at least one value");
+                if (!entry.PossibleValues.GetEnumerator().MoveNext())
+                    return new[] { OutSet.CreateBool(false) };
 
                 foreach (var value in entry.PossibleValues)
                 {
@@ -716,8 +720,12 @@ namespace Weverca.Analysis.ExpressionEvaluator
             if (snapshotEntry.IsDefined(OutSnapshot))
             {
                 var entry = snapshotEntry.ReadMemory(OutSnapshot);
-                Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
-                    "Memory entry must always have at least one value");
+                // TODO: This is not correct solution! 
+                // TODO: Need a patch in processing of "global" without an existing global var
+                //Debug.Assert(entry.PossibleValues.GetEnumerator().MoveNext(),
+                //    "Memory entry must always have at least one value");
+                if (!entry.PossibleValues.GetEnumerator().MoveNext())
+                    return new MemoryEntry(OutSet.CreateBool(true));
 
                 booleanConverter.SetContext(OutSnapshot);
 

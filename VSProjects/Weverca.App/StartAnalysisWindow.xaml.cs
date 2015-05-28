@@ -11,6 +11,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Diagnostics;
 using Weverca.App.Settings;
 
 namespace Weverca.App
@@ -60,6 +61,11 @@ namespace Weverca.App
             {
                 loggingStrategyCombo.SelectedIndex = (int)LoggingStrategyType;
             }
+
+            // sets the default value for memory limit
+            // the default value is 70% of installed ram, which works nicely with 4GB...
+            memoryLimitSlider.Value = Math.Log(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (1024*1024) * 0.7);
+            
 
 
             return base.ShowDialog();

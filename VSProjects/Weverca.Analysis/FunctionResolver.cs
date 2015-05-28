@@ -104,11 +104,11 @@ namespace Weverca.Analysis
         {
             if (nativeFunctionAnalyzer.existNativeFunction(new QualifiedName(declaration.Name)))
             {
-                setWarning("Fuction allready exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
+                setWarning("Function already exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
             }
             else if (OutSet.ResolveFunction(new QualifiedName(declaration.Name)).Count() > 0)
             {
-                setWarning("Fuction allready exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
+                setWarning("Function already exists", AnalysisWarningCause.FUNCTION_ALLREADY_EXISTS);
             }
             else
             {

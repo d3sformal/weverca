@@ -65,7 +65,7 @@
 
                 <Label Grid.Row="3" Content="Memory limit:"/>
                 <Label Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" x:Name="memoryLimitText" Content="N/A" RenderTransformOrigin="0.532,1.558"/>
-                <Label Grid.Row="4" Grid.Column="1" HorizontalAlignment="Right" Name="numOfWarningsText" Grid.RowSpan="2" Margin="0,0,0,-26">N/A</Label>
+                <Label Grid.Row="4" Grid.Column="1" HorizontalAlignment="Right" Name="numOfWarningsText" Margin="0,0,0,54">N/A</Label>
                 <Label Grid.Row="4" Content="Number of warnings" Margin="0,0,0,54"/>
             </Grid>
         </StackPanel>
