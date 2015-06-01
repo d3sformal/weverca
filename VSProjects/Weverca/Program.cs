@@ -226,27 +226,42 @@ namespace Weverca
 #else
 
 					console.CommentLine(string.Format("File path: {0}\n", fileInfo.FullName));
+                    TaintForwardAnalysis nextPhase = null;
+                    System.Diagnostics.Stopwatch watch = null;
 
-					var watch = System.Diagnostics.Stopwatch.StartNew();
-					var ppGraph = Analyzer.Run(fileInfo, memoryModel);
-					watch.Stop();
+                    try
+                    {
+                        watch = System.Diagnostics.Stopwatch.StartNew();
+                        var ppGraph = Analyzer.Run(fileInfo, memoryModel);
+                        watch.Stop();
 
-					if (ppGraph.End.OutSet != null)
-					{
-						//console.ProgramPointInfo("End point", ppGraph.End);
-					}
-					else
-					{
-						//console.Error("End point was not reached");
-					}
-					console.CommentLine(string.Format("First phase of the analysis completed in: {0}ms\n", watch.ElapsedMilliseconds));
+                        if (ppGraph.End.OutSet != null)
+                        {
+                            //console.ProgramPointInfo("End point", ppGraph.End);
+                        }
+                        else
+                        {
+                            //console.Error("End point was not reached");
+                        }
+                        console.CommentLine(string.Format("First phase of the analysis completed in: {0} seconds\n", watch.ElapsedMilliseconds/1000));
 
-                    var nextPhase = new TaintForwardAnalysis(ppGraph);
-                    nextPhase.Analyse();
+                        nextPhase = new TaintForwardAnalysis(ppGraph);
+                        nextPhase.Analyse();
+                    }
+                    catch (OutOfMemoryException)
+                    {
+                        watch.Stop();
+                        console.Error(string.Format("The analyser ran out of memory after {0} seconds, terminating the analysis.\n", watch.ElapsedMilliseconds/1000));
+                    }
+                    catch (Exception e)
+                    {
+                        console.Error("Analyser crashed (" + e.Message + ").");
+                    }
+                    finally
+                    {   
+                            console.Warnings(AnalysisWarningHandler.GetWarnings(), nextPhase != null ? nextPhase.analysisTaintWarnings : new List<AnalysisTaintWarning>(), displayTaintFlows);
 
-
-                    console.Warnings(AnalysisWarningHandler.GetWarnings(), nextPhase.analysisTaintWarnings, displayTaintFlows);
-				
+                    }
 
 #endif
 				   
