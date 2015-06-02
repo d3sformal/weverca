@@ -227,8 +227,8 @@ namespace Weverca.App
                 memoryText.Content = getMemoryText(memoryConsumption);
                 if (memoryConsumption > memoryLimit)
                 {
-                    reportEvent("Memory limit reached - trying to garbage collect");
-                    memoryConsumption = GC.GetTotalMemory(true);
+                    //reportEvent("Memory limit reached - trying to garbage collect");
+                    //memoryConsumption = GC.GetTotalMemory(true);
                     if (memoryConsumption > memoryLimit && currentAnalyser != null && !currentAnalyser.IsFinished)
                     {
                         if (currentAnalysisThred != null)
@@ -437,7 +437,36 @@ namespace Weverca.App
 
         private void exportResultsMenu_Click(object sender, RoutedEventArgs e)
         {
+            var content = new TextRange(warningsFlowDocument.ContentStart, warningsFlowDocument.ContentEnd);
 
+
+            if (content.CanSave(DataFormats.Rtf))
+            {
+                Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+                dlg.FileName = "Warnings.rtf"; // Default file name
+                dlg.DefaultExt = ".rtf"; // Default file extension
+                dlg.Filter = "Rich-Text-Format documents (.rtf)|*.rtf"; // Filter files by extension 
+
+                // Show save file dialog box
+                Nullable<bool> result = dlg.ShowDialog();
+
+                // Process save file dialog box results 
+                if (result == true)
+                {
+                    try
+                    {
+                        var stream = new FileStream(dlg.FileName, FileMode.OpenOrCreate);
+                        content.Save(stream, DataFormats.Rtf);
+                        stream.Close();
+                        MessageBox.Show("The warning report saved succesfully.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("Error saving the results into a file (" + ex.Message + ")", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                }
+            }
         }
 
         private void aboutMenu_Click(object sender, RoutedEventArgs e)

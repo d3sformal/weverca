@@ -233,17 +233,24 @@ namespace Weverca.App
 
             if (Watch != null)
             {
+                var ts = Watch.Elapsed;
+
                 output.EmptyLine();
                 output.Headline2("Time consumption");
-                output.CommentLine("Weverca analyzer time consumption: " + Watch.Elapsed.ToString());
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts.Hours, ts.Minutes, ts.Seconds);
+                output.CommentLine("Weverca analyzer time consumption: " + elapsedTime);
                 
                 if (IsFirstPhaseStarted)
                 {
-                    output.CommentLine("First phase time consumption: " + WatchFirstPhase.Elapsed.ToString());
+                    var ts1 = WatchFirstPhase.Elapsed;
+                    elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts1.Hours, ts1.Minutes, ts1.Seconds);
+                    output.CommentLine("First phase time consumption: " + elapsedTime);
                 }
                 if (IsSecondPhaseStarted)
                 {
-                    output.CommentLine("Second phase time consumption: " + WatchSecondPhase.Elapsed.ToString());
+                    var ts2 = WatchSecondPhase.Elapsed;
+                    elapsedTime = String.Format("{0:00}:{1:00}:{2:00}", ts2.Hours, ts2.Minutes, ts2.Seconds);
+                    output.CommentLine("Second phase time consumption: " + elapsedTime);
                 }
             }
 
