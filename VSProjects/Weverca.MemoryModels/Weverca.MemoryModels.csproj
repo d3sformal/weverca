@@ -166,6 +166,10 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyMemoryAlias.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectValueContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataFactory.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataProxy.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureFactory.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureProxy.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\AssignInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MergeInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Common\ProcessValueAsLocationVisitor.cs" />
