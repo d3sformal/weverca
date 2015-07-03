@@ -25,7 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.CopyMemoryModel;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 {
     /// <summary>
     /// Represents readonly version of set to store collection ofdistinct values.

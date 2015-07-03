@@ -76,7 +76,7 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         private readonly SimpleFunctionResolver _functionResolver;
 
-        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, Weverca.MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+        public SimpleAnalysis(ControlFlowGraph.ControlFlowGraph entryCFG, Weverca.MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             : base(entryCFG, memoryModel.CreateSnapshot)
         {
             _flowResolver = new SimpleFlowResolver();

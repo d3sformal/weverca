@@ -26,7 +26,8 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {    
@@ -60,7 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             unknownIndex = container.UnknownIndex;
 
             indexes = new Dictionary<string, MemoryIndex>();
-            CollectionTools.AddAll(indexes, container.Indexes);
+            CollectionMemoryUtils.AddAll(indexes, container.Indexes);
         }
 
         /// <inheritdoc />

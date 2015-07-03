@@ -10,7 +10,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
@@ -66,7 +66,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             if (targetSnapshot.StructureCallChanges != null)
             {
-                CollectionTools.AddAll(this.changeTree, targetSnapshot.StructureCallChanges);
+                CollectionMemoryUtils.AddAll(this.changeTree, targetSnapshot.StructureCallChanges);
             }
 
             targetSnapshot.StructureCallChanges = changeTree.Changes;
@@ -74,7 +74,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructure()
         {
-            Structure = Snapshot.SnapshotStructureFactory.CopyInstance(targetSnapshot, callSnapshot.Structure);
+            Structure = targetSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(targetSnapshot, callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
@@ -116,7 +116,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     IEnumerable<FunctionValue> decl;
                     if (context.SourceStructure.TryGetFunction(functionName, out decl))
                     {
-                        CollectionTools.AddAll(declarations, decl);
+                        CollectionMemoryUtils.AddAll(declarations, decl);
                     }
                 }
                 writeableTargetStructure.SetFunctionDeclarations(functionName, declarations);
@@ -130,7 +130,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     IEnumerable<TypeValue> decl;
                     if (context.SourceStructure.TryGetClass(className, out decl))
                     {
-                        CollectionTools.AddAll(declarations, decl);
+                        CollectionMemoryUtils.AddAll(declarations, decl);
                     }
                 }
                 writeableTargetStructure.SetClassDeclarations(className, declarations);

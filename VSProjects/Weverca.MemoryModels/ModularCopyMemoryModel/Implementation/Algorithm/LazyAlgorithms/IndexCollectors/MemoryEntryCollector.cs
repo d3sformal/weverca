@@ -8,7 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
@@ -132,15 +132,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             
             if (ScalarValues != null)
             {
-                CollectionTools.AddAll(entryValues, ScalarValues);
+                CollectionMemoryUtils.AddAll(entryValues, ScalarValues);
             }
             if (Arrays != null)
             {
-                CollectionTools.AddAll(entryValues, Arrays);
+                CollectionMemoryUtils.AddAll(entryValues, Arrays);
             }
             if (Objects != null)
             {
-                CollectionTools.AddAll(entryValues, Objects);
+                CollectionMemoryUtils.AddAll(entryValues, Objects);
             }
 
             return new MemoryEntry(entryValues);

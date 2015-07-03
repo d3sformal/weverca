@@ -316,7 +316,7 @@ namespace Weverca
             return new SyntaxParser(sourceFile, code);
         }
 
-        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel)
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModelFactory memoryModel)
         {
             var bigWatch = System.Diagnostics.Stopwatch.StartNew();
             var console = new ConsoleOutput();

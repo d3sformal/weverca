@@ -134,7 +134,7 @@ namespace Weverca
 			}
 		}
 
-		private static void showBenchmarkResult(MemoryModels.MemoryModels memoryModel, string benchmarkFile)
+        private static void showBenchmarkResult(MemoryModels.MemoryModelFactory memoryModel, string benchmarkFile)
 		{
 			if (memoryModel == MemoryModels.MemoryModels.ModularCopyMM)
 			{
@@ -147,7 +147,7 @@ namespace Weverca
 		/// </summary>
 		/// <param name="filenames">List of file name patterns from command line</param>
 		/// <param name="memoryModel">The memory model used for analysis</param>
-        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModels memoryModel, bool displayTaintFlows)
+        private static void RunStaticAnalysis(string[] filenames, MemoryModels.MemoryModelFactory memoryModel, bool displayTaintFlows)
 		{
 			var console = new ConsoleOutput();
 			console.CommentLine("Using " + memoryModel.ToString());

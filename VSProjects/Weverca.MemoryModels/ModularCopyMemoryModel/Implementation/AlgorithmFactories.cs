@@ -23,8 +23,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation
 {
     /// <summary>
     /// Contains factories for creating all algorithms for memory model.

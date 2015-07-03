@@ -31,7 +31,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
@@ -53,12 +53,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             switch (extendedSnapshot.CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+                    structure = extendedSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
                     extendedSnapshot.AssignCreatedAliases(extendedSnapshot, data);
                     break;
 
@@ -73,15 +73,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             switch (extendedSnapshot.CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+                    structure = extendedSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
                     localLevel = sourceSnapshot.CallLevel + 1;
 
                     structure.Writeable.AddLocalLevel();
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
                     break;
 
                 default:
@@ -96,7 +96,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 case SnapshotMode.MemoryLevel:
                     {
-                        MergeWorker worker = new MergeWorker(snapshot, snapshots);
+                        localLevel = findMaxCallLevel(snapshots);
+
+                        MergeWorker worker = new MergeWorker(snapshot, snapshots, localLevel);
                         worker.Merge();
 
                         structure = worker.Structure;
@@ -106,7 +108,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 case SnapshotMode.InfoLevel:
                     {
-                        MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots);
+                        localLevel = findMaxCallLevel(snapshots);
+                        MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, localLevel);
                         worker.Merge();
 
                         structure = worker.Structure;
@@ -117,6 +120,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 default:
                     throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
             }
+        }
+
+        private int findMaxCallLevel(List<Snapshot> snapshots)
+        {
+            int callLevel = -1;
+            foreach (var snapshot in snapshots)
+            {
+                if (callLevel > 0)
+                {
+                    if (callLevel != snapshot.CallLevel)
+                    {
+                        throw new NotImplementedException("Cannot merge snapshots with different call levels");
+                    }
+                }
+                else
+                {
+                    callLevel = snapshot.CallLevel;
+                }
+            }
+
+            return callLevel;
         }
 
         /// <inheritdoc />
@@ -132,7 +156,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 case SnapshotMode.MemoryLevel:
                     {
-                        MergeWorker worker = new MergeWorker(snapshot, snapshots, true);
+                        localLevel = callSnapshot.CallLevel;
+                        MergeWorker worker = new MergeWorker(snapshot, snapshots, localLevel, true);
                         worker.Merge();
 
                         structure = worker.Structure;
@@ -142,7 +167,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 case SnapshotMode.InfoLevel:
                     {
-                        MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, true);
+                        localLevel = callSnapshot.CallLevel;
+                        MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, localLevel, true);
                         worker.Merge();
 
                         structure = worker.Structure;

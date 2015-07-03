@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
@@ -79,7 +80,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(location.ContainingIndex);
             HashSet<Value> newValues = new HashSet<Value>();
-            CollectionTools.AddAll(newValues, oldEntry.PossibleValues);
+            CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);
 
             if (IsMust)
             {
@@ -87,7 +88,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
 
             IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
-            CollectionTools.AddAll(newValues, values);
+            CollectionMemoryUtils.AddAll(newValues, values);
 
             snapshot.CurrentData.Writeable.SetMemoryEntry(location.ContainingIndex, snapshot.CreateMemoryEntry(newValues));
         }
@@ -120,7 +121,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(location.ContainingIndex);
 
             HashSet<Value> newValues = new HashSet<Value>();
-            CollectionTools.AddAll(newValues, oldEntry.PossibleValues);
+            CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);
 
             IEnumerable<Value> values = location.WriteValues(snapshot.MemoryAssistant, entry);
             newValues.Add(location.Value);

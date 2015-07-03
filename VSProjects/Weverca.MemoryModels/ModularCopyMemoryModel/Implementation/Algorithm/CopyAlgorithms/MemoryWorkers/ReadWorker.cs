@@ -25,8 +25,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
@@ -73,20 +74,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 foreach (MemoryIndex index in collector.MustIndexes)
                 {
                     MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
-                    CollectionTools.AddAll(values, entry.PossibleValues);
+                    CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
                 }
 
                 foreach (ValueLocation location in collector.MustLocation)
                 {
                     if (snapshot.CurrentMode == SnapshotMode.MemoryLevel)
                     {
-                        CollectionTools.AddAll(values, location.ReadValues(snapshot.MemoryAssistant));
+                        CollectionMemoryUtils.AddAll(values, location.ReadValues(snapshot.MemoryAssistant));
                     }
                     else
                     {
                         InfoLocationVisitor visitor = new InfoLocationVisitor(snapshot);
                         location.Accept(visitor);
-                        CollectionTools.AddAll(values, visitor.Value);
+                        CollectionMemoryUtils.AddAll(values, visitor.Value);
                     }
                 }
 

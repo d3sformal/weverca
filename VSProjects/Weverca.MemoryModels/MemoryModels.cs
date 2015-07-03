@@ -27,22 +27,23 @@ using Weverca.AnalysisFramework.Memory;
 namespace Weverca.MemoryModels
 {
     /// <summary>
-    /// Enumeration class containing instances representing memory models.
+    /// Enumeration class containing default instances representing memory models.
     /// </summary>
     public abstract class MemoryModels
     {
         /// <summary>
         /// Virtual reference memory model (Weverca.MemoryModels.VirtualReferenceModel)
         /// </summary>
-        public static readonly MemoryModels VirtualReferenceMM = new VirtualReferenceMMCl();
+        public static readonly MemoryModelFactory VirtualReferenceMM = new VirtualReferenceMMCl();
         /// <summary>
         /// Copy memory model (Weverca.MemoryModels.VirtualReferenceModel)
         /// </summary>
-        public static readonly MemoryModels CopyMM = new CopyMMCl();
+        public static readonly MemoryModelFactory CopyMM = new CopyMMCl();
         /// <summary>
         /// Modular copy memory model (Weverca.MemoryModels.ModularCopyMemoryModel)
         /// </summary>
-        public static readonly MemoryModels ModularCopyMM = new ModularCopyMMCl();
+        public static readonly MemoryModelFactory ModularCopyMM 
+            = Weverca.MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.TrackingImplementation;
 
         /// <summary>
         /// Creates a snapshot of given memory model.
@@ -52,9 +53,9 @@ namespace Weverca.MemoryModels
 
         private MemoryModels() { }
 
-        private class VirtualReferenceMMCl : MemoryModels
+        private class VirtualReferenceMMCl : MemoryModelFactory
         {
-            public override SnapshotBase CreateSnapshot()
+            public SnapshotBase CreateSnapshot()
             {
                 return new Weverca.MemoryModels.VirtualReferenceModel.Snapshot();
             }
@@ -65,9 +66,9 @@ namespace Weverca.MemoryModels
             }
 
         }
-        private class CopyMMCl : MemoryModels
+        private class CopyMMCl : MemoryModelFactory
         {
-            public override SnapshotBase CreateSnapshot()
+            public SnapshotBase CreateSnapshot()
             {
                 return new Weverca.MemoryModels.CopyMemoryModel.Snapshot();
             }
@@ -75,18 +76,6 @@ namespace Weverca.MemoryModels
             public override string ToString()
             {
                 return "Copy memory model";
-            }
-        }
-        private class ModularCopyMMCl : MemoryModels
-        {
-            public override SnapshotBase CreateSnapshot()
-            {
-                return new Weverca.MemoryModels.ModularCopyMemoryModel.Snapshot();
-            }
-
-            public override string ToString()
-            {
-                return "Modular copy memory model";
             }
         }
     }

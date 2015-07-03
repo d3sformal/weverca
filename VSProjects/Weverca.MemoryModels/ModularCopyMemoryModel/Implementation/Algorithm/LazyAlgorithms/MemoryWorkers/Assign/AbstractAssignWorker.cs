@@ -8,7 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyA
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
@@ -298,8 +298,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 else
                 {
                     HashSet<MemoryIndex> aliases = new HashSet<MemoryIndex>();
-                    CollectionTools.AddAll(aliases, memoryAlias.MustAliases);
-                    CollectionTools.AddAll(aliases, memoryAlias.MayAliases);
+                    CollectionMemoryUtils.AddAll(aliases, memoryAlias.MustAliases);
+                    CollectionMemoryUtils.AddAll(aliases, memoryAlias.MayAliases);
 
                     foreach (MemoryIndex alias in aliases)
                     {

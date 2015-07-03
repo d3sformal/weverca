@@ -28,10 +28,11 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms
 {
@@ -204,7 +205,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private void widenAndSimplifyData(int simplifyLimit, MemoryAssistantBase assistant)
         {
             List<MemoryIndex> indexes = new List<MemoryIndex>();
-            CollectionTools.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
+            CollectionMemoryUtils.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
 
             var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
             var currentTracker = newData.Writeable.WriteableChangeTracker;
@@ -246,7 +247,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private void simplifyData(int simplifyLimit, MemoryAssistantBase assistant)
         {
             List<MemoryIndex> indexes = new List<MemoryIndex>();
-            CollectionTools.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
+            CollectionMemoryUtils.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
             
             var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
             var currentTracker = newData.Writeable.WriteableChangeTracker;
@@ -279,7 +280,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             if (previousTracker != null)
             {
                 List<MemoryIndex> indexes = new List<MemoryIndex>();
-                CollectionTools.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
+                CollectionMemoryUtils.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
 
                 IReadOnlySnapshotStructure previousStructure = previousTracker.Container;
                 foreach (MemoryIndex index in indexes)
@@ -301,7 +302,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             if (previousTracker != null)
             {
                 List<MemoryIndex> indexes = new List<MemoryIndex>();
-                CollectionTools.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
+                CollectionMemoryUtils.AddAll(indexes, newStructure.Readonly.ReadonlyChangeTracker.IndexChanges);
 
                 IReadOnlySnapshotData previousData = previousTracker.Container;
                 foreach (MemoryIndex index in indexes)
@@ -606,9 +607,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     trackerB = swap;
                 }
 
-                CollectionTools.AddAll(indexChanges, trackerA.IndexChanges);
-                CollectionTools.AddAllIfNotNull(functionChanges, trackerA.FunctionChanges);
-                CollectionTools.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
+                CollectionMemoryUtils.AddAll(indexChanges, trackerA.IndexChanges);
+                CollectionMemoryUtils.AddAllIfNotNull(functionChanges, trackerA.FunctionChanges);
+                CollectionMemoryUtils.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
                 
                 trackerA = trackerA.PreviousTracker;
             }

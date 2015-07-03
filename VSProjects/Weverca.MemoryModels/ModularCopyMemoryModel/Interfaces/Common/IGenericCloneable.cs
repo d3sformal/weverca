@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 {
     /// <summary>
     /// Generic version of cloneable interface.

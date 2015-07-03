@@ -23,8 +23,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
@@ -88,7 +89,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         public void AddAll(IEnumerable<T> values)
         {
             copy();
-            CollectionTools.AddAll(valueSet, values);
+            CollectionMemoryUtils.AddAll(valueSet, values);
         }
 
         /// <inheritdoc />

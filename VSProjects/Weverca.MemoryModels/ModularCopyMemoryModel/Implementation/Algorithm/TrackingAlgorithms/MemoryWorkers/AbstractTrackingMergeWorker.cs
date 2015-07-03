@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers
 {
@@ -388,17 +389,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     swapped = true;
                 }
 
-                CollectionTools.AddAll(currentChanges, trackerA.IndexChanges);
-                CollectionTools.AddAll(this.changeTree, trackerA.IndexChanges);
+                CollectionMemoryUtils.AddAll(currentChanges, trackerA.IndexChanges);
+                CollectionMemoryUtils.AddAll(this.changeTree, trackerA.IndexChanges);
 
-                CollectionTools.AddAllIfNotNull(functionChages, trackerA.FunctionChanges);
-                CollectionTools.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
+                CollectionMemoryUtils.AddAllIfNotNull(functionChages, trackerA.FunctionChanges);
+                CollectionMemoryUtils.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
 
                 if (swapped)
                 {
                     foreach (MemoryIndexTree tree in changes)
                     {
-                        CollectionTools.AddAll(tree, trackerA.IndexChanges);
+                        CollectionMemoryUtils.AddAll(tree, trackerA.IndexChanges);
                     }
                 }
 
@@ -423,11 +424,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 {
                     done = tracker.ConnectionType == TrackerConnectionType.CALL_EXTEND;
 
-                    CollectionTools.AddAll(currentChanges, tracker.IndexChanges);
-                    CollectionTools.AddAll(this.changeTree, tracker.IndexChanges);
+                    CollectionMemoryUtils.AddAll(currentChanges, tracker.IndexChanges);
+                    CollectionMemoryUtils.AddAll(this.changeTree, tracker.IndexChanges);
 
-                    CollectionTools.AddAllIfNotNull(functionChages, tracker.FunctionChanges);
-                    CollectionTools.AddAllIfNotNull(classChanges, tracker.ClassChanges);
+                    CollectionMemoryUtils.AddAllIfNotNull(functionChages, tracker.FunctionChanges);
+                    CollectionMemoryUtils.AddAllIfNotNull(classChanges, tracker.ClassChanges);
 
                     tracker = tracker.PreviousTracker;
                 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             if (obejcts != null && obejcts.Count > 0)
             {
                 hasObjects = true;
-                CollectionTools.AddAll(objectValues, obejcts.Values);
+                CollectionMemoryUtils.AddAll(objectValues, obejcts.Values);
             }
         }
 

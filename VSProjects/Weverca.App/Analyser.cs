@@ -31,7 +31,7 @@ namespace Weverca.App
 
     class Analyser
     {
-        public MemoryModels.MemoryModels MemoryModel { get; set; }
+        public MemoryModels.MemoryModelFactory MemoryModel { get; set; }
 
         public bool IsFinished { get; private set; }
 

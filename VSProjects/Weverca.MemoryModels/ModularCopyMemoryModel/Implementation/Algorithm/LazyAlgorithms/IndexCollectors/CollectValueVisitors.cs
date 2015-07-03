@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors

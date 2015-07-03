@@ -31,9 +31,12 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 using Weverca.AnalysisFramework.GraphVisualizer;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
@@ -56,7 +59,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 	/// </summary>
 	public class Snapshot : SnapshotBase, IReferenceHolder
 	{
-		#region Variables and properties
+		#region Snapshot Settings
+
+		/// <summary>
+		/// Gets the implementation variant with all implementation factories
+		/// </summary>
+        public ModularMemoryModelFactory MemoryModelFactory { get; private set; }
 
 		/// <summary>
 		/// Gets the logger object which should be used to log snapshot operations.
@@ -73,41 +81,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		public static IVisualizer Visualizer = new MemoryModelVisualizer();
 
-		/// <summary>
-		/// Gets the snapshot data factory.
-		/// </summary>
-		/// <value>
-		/// The snapshot data factory.
-		/// </value>
-		public static ISnapshotDataFactory SnapshotDataFactory
-			= new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data.TrackingSnapshotDataFactory();
+		#endregion
 
-		/// <summary>
-		/// Gets the snapshot structure factory.
-		/// </summary>
-		/// <value>
-		/// The snapshot structure factory.
-		/// </value>
-		public static ISnapshotStructureFactory SnapshotStructureFactory
-			= new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.TrackingSnapshotStructureFactory();
+		#region Variables and properties
 
 		#region Algorithm Factories
-
-		/// <summary>
-		/// The algorithm factories for the memory phase.
-		/// </summary>
-		public static AlgorithmFactories MemoryAlgorithmFactories
-			= Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithmFactories.Factories;
-
-		/// <summary>
-		/// The algorithm factories for the info phase.
-		/// </summary>
-		public static AlgorithmFactories InfoAlgorithmFactories
-			= Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithmFactories.Factories;
-
-		private static bool hasInitialProxyInstances = false;
-		private static ISnapshotDataProxy initialSnapshotDataInstance = null;
-		private static ISnapshotStructureProxy initialSnapshotStructureInstance = null;
 
 		/// <summary>
 		/// Gets the algorithm factories for the current memory mode.
@@ -119,17 +97,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		{
 			get
 			{
-				switch (CurrentMode)
-				{
-					case SnapshotMode.MemoryLevel:
-						return MemoryAlgorithmFactories;
-
-					case SnapshotMode.InfoLevel:
-						return InfoAlgorithmFactories;
-
-					default:
-						throw new NotSupportedException("Current mode: " + CurrentMode);
-				}
+                return MemoryModelFactory.GetAlgorithmFactories(CurrentMode);
 			}
 		}
 
@@ -273,10 +241,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		ISnapshotDataProxy oldMemory = null;
 		ISnapshotDataProxy oldInfos = null;
 		int oldCallLevel;
+        private bool isInitialized;
 
-        public AssignInfo AssignInfo { get; set; }
+		public AssignInfo AssignInfo { get; set; }
 
-        public MergeInfo MergeInfo { get; set; }
+		public MergeInfo MergeInfo { get; set; }
 
 		/// <summary>
 		/// Gets the number of transactions.
@@ -291,34 +260,38 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		
 		#endregion
 
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Snapshot"/> class. Sets the call information for global code
-		/// and initializes empty data.
-		/// </summary>
-		public Snapshot()
-		{
-			SnapshotId = SNAP_ID++;
 
-			CallLevel = GLOBAL_CALL_LEVEL;
-			oldCallLevel = GLOBAL_CALL_LEVEL;
+        internal Snapshot(ModularMemoryModelFactory memoryModelFactory)
+        {
+            SnapshotId = SNAP_ID++;
+            MemoryModelFactory = memoryModelFactory;
 
-			if (!Snapshot.hasInitialProxyInstances)
-			{
-				Snapshot.initialSnapshotStructureInstance = SnapshotStructureFactory.CreateGlobalContextInstance(this);
-				Snapshot.initialSnapshotDataInstance = SnapshotDataFactory.CreateEmptyInstance(this);
+            isInitialized = false;
+        }
 
-				Snapshot.hasInitialProxyInstances = true;
-			}
+        internal void InitializeMemoryModel()
+        {
+            if (isInitialized)
+            {
+                throw new Exception("Memory model can not be initialized more than once");
+            }
 
-			Data = SnapshotDataFactory.CopyInstance(this, Snapshot.initialSnapshotDataInstance);
-			Infos = SnapshotDataFactory.CopyInstance(this, Snapshot.initialSnapshotDataInstance);
-			CurrentData = Data;
-			Structure = SnapshotStructureFactory.CopyInstance(this, Snapshot.initialSnapshotStructureInstance);
-			NumberOfTransactions = 0;
+            Data = MemoryModelFactory.SnapshotDataFactory.CopyInstance(this, MemoryModelFactory.InitialSnapshotDataInstance);
+            Infos = MemoryModelFactory.SnapshotDataFactory.CopyInstance(this, MemoryModelFactory.InitialSnapshotDataInstance);
+            Structure = MemoryModelFactory.SnapshotStructureFactory.CopyInstance(this, MemoryModelFactory.InitialSnapshotStructureInstance);
 
-			Benchmark.InitializeSnapshot(this);
-			Logger.Log(this, "Constructed snapshot");
-		}
+            CallLevel = GLOBAL_CALL_LEVEL;
+            oldCallLevel = GLOBAL_CALL_LEVEL;
+
+            NumberOfTransactions = 0;
+            CurrentData = Data;
+
+            isInitialized = true;
+
+            Benchmark.InitializeSnapshot(this);
+            Logger.Log(this, "Constructed snapshot");
+        }
+
 
 		/// <summary>
 		/// Gets the snapshot identification which consists of snapshot and data ID separated by colons.
@@ -382,8 +355,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			oldStructure = Structure;
 			oldMemory = Data;
 
-			Data = SnapshotDataFactory.CopyInstance(this, oldMemory);
-			Structure = SnapshotStructureFactory.CopyInstance(this, oldStructure);
+            Data = MemoryModelFactory.SnapshotDataFactory.CopyInstance(this, oldMemory);
+            Structure = MemoryModelFactory.SnapshotStructureFactory.CopyInstance(this, oldStructure);
 			CurrentData = Data;
 
 			Structure.Locked = false;
@@ -395,7 +368,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		private void startInfoTransaction()
 		{
 			oldInfos = Infos;
-			Infos = SnapshotDataFactory.CopyInstance(this, oldInfos);
+            Infos = MemoryModelFactory.SnapshotDataFactory.CopyInstance(this, oldInfos);
 			CurrentData = Infos;
 
 			Structure.Locked = false;
@@ -534,7 +507,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 		#endregion
 
-
 		#region Objects
 
 		/// <summary>
@@ -624,7 +596,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			HashSet<FunctionValue> functions = new HashSet<FunctionValue>();
 			foreach (Value value in entry.PossibleValues)
 			{
-				CollectionTools.AddAll(functions, resolveMethod(value, methodName));
+				CollectionMemoryUtils.AddAll(functions, resolveMethod(value, methodName));
 			}
 
 			return functions;
@@ -682,8 +654,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			Structure.Writeable.SetArray(arrayIndex, createdArray);
 			Structure.Writeable.SetDescriptor(createdArray, descriptor);
 
-            Data.Writeable.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
-            Data.Writeable.SetMemoryEntry(descriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
+			Data.Writeable.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
+			Data.Writeable.SetMemoryEntry(descriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
 		}
 
 		/// <summary>
@@ -748,7 +720,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			switch (CurrentMode)
 			{
 				case SnapshotMode.MemoryLevel:
-					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
 					algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
 
@@ -760,7 +732,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					break;
 
 				case SnapshotMode.InfoLevel:
-					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 					algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
 
@@ -816,7 +788,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			switch (CurrentMode)
 			{
 				case SnapshotMode.MemoryLevel:
-					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 					algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
 
@@ -828,7 +800,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					break;
 
 				case SnapshotMode.InfoLevel:
-					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 					algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
 
@@ -890,7 +862,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			switch (CurrentMode)
 			{
 				case SnapshotMode.MemoryLevel:
-					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
 					algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
@@ -901,7 +873,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					break;
 
 				case SnapshotMode.InfoLevel:
-					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
 					algorithm.MergeWithCall(this, callSnapshot, snapshots);
 
@@ -1385,11 +1357,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="targetIndex">Index of the target.</param>
 		internal void MakeMustReferenceObject(ObjectValue objectValue, MemoryIndex targetIndex)
 		{
-            var writeableStructure = Structure.Writeable;
+			var writeableStructure = Structure.Writeable;
 			IObjectValueContainerBuilder objects = Structure.Readonly
-                .GetObjects(targetIndex).Builder(writeableStructure);
+				.GetObjects(targetIndex).Builder(writeableStructure);
 			objects.Add(objectValue);
-            writeableStructure.SetObjects(targetIndex, objects.Build(writeableStructure));
+			writeableStructure.SetObjects(targetIndex, objects.Build(writeableStructure));
 		}
 
 		/// <summary>
@@ -1398,17 +1370,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="objects">The objects.</param>
 		/// <param name="targetIndex">Index of the target.</param>
 		internal void MakeMayReferenceObject(HashSet<ObjectValue> objects, MemoryIndex targetIndex)
-        {
-            var writeableStructure = Structure.Writeable;
+		{
+			var writeableStructure = Structure.Writeable;
 			IObjectValueContainerBuilder objectsContainer = Structure.Readonly
-                .GetObjects(targetIndex).Builder(writeableStructure);
+				.GetObjects(targetIndex).Builder(writeableStructure);
 
 			foreach (ObjectValue objectValue in objects)
 			{
 				objectsContainer.Add(objectValue);
 			}
 
-            writeableStructure.SetObjects(targetIndex, objectsContainer.Build(writeableStructure));
+			writeableStructure.SetObjects(targetIndex, objectsContainer.Build(writeableStructure));
 		}
 
 		/// <summary>
@@ -1450,11 +1422,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				CurrentData.Writeable.SetMemoryEntry(parentIndex, this.CreateMemoryEntry(values));
 			}
 
-            var writeableStructure = Structure.Writeable;
-            IObjectValueContainerBuilder objectValues = Structure.Readonly.GetObjects(parentIndex).Builder(writeableStructure);
+			var writeableStructure = Structure.Writeable;
+			IObjectValueContainerBuilder objectValues = Structure.Readonly.GetObjects(parentIndex).Builder(writeableStructure);
 			objectValues.Add(value);
 
-            writeableStructure.SetObjects(parentIndex, objectValues.Build(writeableStructure));
+			writeableStructure.SetObjects(parentIndex, objectValues.Build(writeableStructure));
 			return value;
 		}
 
@@ -1489,15 +1461,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				throw new Exception("Field " + fieldName + " is already defined");
 			}
 
-            var writeableStructure = Structure.Writeable;
+			var writeableStructure = Structure.Writeable;
 			MemoryIndex fieldIndex = ObjectIndex.Create(descriptor.ObjectValue, fieldName);
-            writeableStructure.NewIndex(fieldIndex);
+			writeableStructure.NewIndex(fieldIndex);
 
-            IObjectDescriptorBuilder builder = descriptor.Builder(writeableStructure);
+			IObjectDescriptorBuilder builder = descriptor.Builder(writeableStructure);
 			builder.AddIndex(fieldName, fieldIndex);
-            descriptor = builder.Build(writeableStructure);
+			descriptor = builder.Build(writeableStructure);
 
-            writeableStructure.SetDescriptor(descriptor.ObjectValue, descriptor);
+			writeableStructure.SetDescriptor(descriptor.ObjectValue, descriptor);
 
 			if (copyFromUnknown)
 			{
@@ -1513,12 +1485,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="parentIndex">Index of the parent.</param>
 		/// <param name="value">The value.</param>
 		internal void DestroyObject(MemoryIndex parentIndex, ObjectValue value)
-        {
-            var writeableStructure = Structure.Writeable;
+		{
+			var writeableStructure = Structure.Writeable;
 			IObjectValueContainerBuilder objects = Structure.Readonly
-                .GetObjects(parentIndex).Builder(writeableStructure);
+				.GetObjects(parentIndex).Builder(writeableStructure);
 			objects.Remove(value);
-            writeableStructure.SetObjects(parentIndex, objects.Build(writeableStructure));
+			writeableStructure.SetObjects(parentIndex, objects.Build(writeableStructure));
 		}
 
 		#endregion
@@ -1542,17 +1514,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			IArrayDescriptor oldDescriptor = Structure.Readonly.GetDescriptor(value);
 			closeTemporaryArray(oldDescriptor);
 
-            IWriteableSnapshotStructure structure = Structure.Writeable;
-            IArrayDescriptorBuilder builder = oldDescriptor.Builder(structure);
+			IWriteableSnapshotStructure structure = Structure.Writeable;
+			IArrayDescriptorBuilder builder = oldDescriptor.Builder(structure);
 			builder.SetParentIndex(parentIndex);
 			builder.SetUnknownIndex(parentIndex.CreateUnknownIndex());
-            IArrayDescriptor newDescriptor = builder.Build(structure);
+			IArrayDescriptor newDescriptor = builder.Build(structure);
 
 			structure.NewIndex(newDescriptor.UnknownIndex);
 			structure.SetArray(parentIndex, value);
-            structure.SetDescriptor(value, newDescriptor);
+			structure.SetDescriptor(value, newDescriptor);
 
-            Data.Writeable.SetMemoryEntry(newDescriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
+			Data.Writeable.SetMemoryEntry(newDescriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
 			return value;
 		}
 
@@ -1651,15 +1623,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 			MemoryIndex indexIndex = descriptor.ParentIndex.CreateIndex(indexName);
 
-            var structure = Structure.Writeable;
+			var structure = Structure.Writeable;
 
-            structure.NewIndex(indexIndex);
+			structure.NewIndex(indexIndex);
 
-            IArrayDescriptorBuilder builder = descriptor.Builder(structure);
+			IArrayDescriptorBuilder builder = descriptor.Builder(structure);
 			builder.AddIndex(indexName, indexIndex);
-            descriptor = builder.Build(structure);
+			descriptor = builder.Build(structure);
 
-            structure.SetDescriptor(descriptor.ArrayValue, descriptor);
+			structure.SetDescriptor(descriptor.ArrayValue, descriptor);
 
 			if (copyFromUnknown)
 			{
@@ -1770,7 +1742,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			switch (CurrentMode)
 			{
 				case SnapshotMode.MemoryLevel:
-					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND);
 					algorithm.Extend(this, snapshot);
 
@@ -1781,7 +1753,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					break;
 
 				case SnapshotMode.InfoLevel:
-					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND);
 					algorithm.Extend(this, snapshot);
 
@@ -1827,18 +1799,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			switch (CurrentMode)
 			{
 				case SnapshotMode.MemoryLevel:
-					algorithm = MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.MemoryAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
 					algorithm.Merge(this, snapshots);
 
 					Structure = algorithm.GetMergedStructure();
 					Data = algorithm.GetMergedData();
+					CallLevel = algorithm.GetMergedLocalLevelNumber();
 					CurrentData = Data;
 					Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
 					break;
 
 				case SnapshotMode.InfoLevel:
-					algorithm = InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                    algorithm = MemoryModelFactory.InfoAlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
 					Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
 					algorithm.Merge(this, snapshots);
 
@@ -1876,51 +1849,51 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 		#region Aliases
 
-        public void AssignCreatedAliases(Snapshot snapshot, ISnapshotDataProxy data)
-        {
-            if (snapshot.AssignInfo != null)
-            {
-                List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
+		public void AssignCreatedAliases(Snapshot snapshot, ISnapshotDataProxy data)
+		{
+			if (snapshot.AssignInfo != null)
+			{
+				List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
 
-                foreach (var item in snapshot.AssignInfo.AliasAssignModifications.Modifications)
-                {
-                    MemoryIndex index = item.Key;
-                    MemoryIndexModification indexModification = item.Value;
+				foreach (var item in snapshot.AssignInfo.AliasAssignModifications.Modifications)
+				{
+					MemoryIndex index = item.Key;
+					MemoryIndexModification indexModification = item.Value;
 
-                    HashSet<Value> values = new HashSet<Value>();
-                    valuesToAssign.Add(new Tuple<MemoryIndex, HashSet<Value>>(index, values));
+					HashSet<Value> values = new HashSet<Value>();
+					valuesToAssign.Add(new Tuple<MemoryIndex, HashSet<Value>>(index, values));
 
-                    foreach (var datasource in indexModification.Datasources)
-                    {
-                        MemoryEntry entry;
-                        
-                        ISnapshotDataProxy infos;
-                        if (snapshot == datasource.SourceSnapshot)
-                        {
-                            infos = data;
-                        }
-                        else
-                        {
-                            infos = datasource.SourceSnapshot.Infos;
-                        }
+					foreach (var datasource in indexModification.Datasources)
+					{
+						MemoryEntry entry;
+						
+						ISnapshotDataProxy infos;
+						if (snapshot == datasource.SourceSnapshot)
+						{
+							infos = data;
+						}
+						else
+						{
+							infos = datasource.SourceSnapshot.Infos;
+						}
 
-                        if (infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
-                        {
-                            CollectionTools.AddAll(values, entry.PossibleValues);
-                        }
-                    }
-                }
+						if (infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
+						{
+							CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
+						}
+					}
+				}
 
-                foreach (var item in valuesToAssign)
-                {
-                    MemoryIndex index = item.Item1;
-                    HashSet<Value> values = item.Item2;
+				foreach (var item in valuesToAssign)
+				{
+					MemoryIndex index = item.Item1;
+					HashSet<Value> values = item.Item2;
 
-                    MemoryEntry entry = new MemoryEntry(values);
-                    data.Writeable.SetMemoryEntry(index, entry);
-                }
-            }
-        }
+					MemoryEntry entry = new MemoryEntry(values);
+					data.Writeable.SetMemoryEntry(index, entry);
+				}
+			}
+		}
 
 		/// <summary>
 		/// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
@@ -1931,25 +1904,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="mayAliases">The may aliases.</param>
 		public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
 		{
-            var writeableStructure = Structure.Writeable;
+			var writeableStructure = Structure.Writeable;
 			IMemoryAliasBuilder alias;
 			IMemoryAlias oldAlias;
 			if (Structure.Readonly.TryGetAliases(index, out oldAlias))
 			{
-                alias = oldAlias.Builder(writeableStructure);
+				alias = oldAlias.Builder(writeableStructure);
 			}
 			else
 			{
-                alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+				alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
 			}
 
 			if (mustAliases != null)
 			{
-                addAllAliases(index, mustAliases, alias.MustAliases);
+				addAllAliases(index, mustAliases, alias.MustAliases);
 			}
 			if (mayAliases != null)
-            {
-                addAllAliases(index, mayAliases, alias.MayAliases);
+			{
+				addAllAliases(index, mayAliases, alias.MayAliases);
 			}
 
 			foreach (MemoryIndex mustIndex in alias.MustAliases)
@@ -1960,8 +1933,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				}
 			}
 
-            IMemoryAlias memoryAlias = alias.Build(writeableStructure);
-            writeableStructure.SetAlias(index, memoryAlias);
+			IMemoryAlias memoryAlias = alias.Build(writeableStructure);
+			writeableStructure.SetAlias(index, memoryAlias);
 		}
 
 		/// <summary>
@@ -1972,17 +1945,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="mustAlias">The must alias.</param>
 		/// <param name="mayAlias">The may alias.</param>
 		public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
-        {
-            var writeableStructure = Structure.Writeable;
+		{
+			var writeableStructure = Structure.Writeable;
 			IMemoryAliasBuilder alias;
 			IMemoryAlias oldAlias;
 			if (Structure.Readonly.TryGetAliases(index, out oldAlias))
 			{
-                alias = oldAlias.Builder(writeableStructure);
+				alias = oldAlias.Builder(writeableStructure);
 			}
 			else
 			{
-                alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+				alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
 			}
 
 			if (mustAlias != null && !mustAlias.Equals(index))
@@ -1995,51 +1968,51 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				}
 			}
 
-            if (mayAlias != null && !mayAlias.Equals(index) && !alias.MustAliases.Contains(mayAlias))
+			if (mayAlias != null && !mayAlias.Equals(index) && !alias.MustAliases.Contains(mayAlias))
 			{
 				alias.MayAliases.Add(mayAlias);
 			}
 
-            IMemoryAlias memoryAlias = alias.Build(writeableStructure);
-            writeableStructure.SetAlias(index, memoryAlias);
+			IMemoryAlias memoryAlias = alias.Build(writeableStructure);
+			writeableStructure.SetAlias(index, memoryAlias);
 		}
 
-        /// <summary>
-        /// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
-        /// Alias entry of the given alias indexes are not changed.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="mustAliases">The must aliases.</param>
-        /// <param name="mayAliases">The may aliases.</param>
-        public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
-        {
-            var writeableStructure = Structure.Writeable;
-            DestroyAliases(index);
+		/// <summary>
+		/// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
+		/// Alias entry of the given alias indexes are not changed.
+		/// </summary>
+		/// <param name="index">The index.</param>
+		/// <param name="mustAliases">The must aliases.</param>
+		/// <param name="mayAliases">The may aliases.</param>
+		public void MustSetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+		{
+			var writeableStructure = Structure.Writeable;
+			DestroyAliases(index);
 
-            IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
-            addAllAliases(index, mustAliases, builder.MustAliases);
-            addAllAliases(index, mayAliases, builder.MayAliases);
+			IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+			addAllAliases(index, mustAliases, builder.MustAliases);
+			addAllAliases(index, mayAliases, builder.MayAliases);
 
-            writeableStructure.SetAlias(index, builder.Build(writeableStructure));
-        }
+			writeableStructure.SetAlias(index, builder.Build(writeableStructure));
+		}
 
-        /// <summary>
-        /// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
-        /// Alias entry of the given alias indexes are not changed.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="mustAliases">The must aliases.</param>
-        /// <param name="mayAliases">The may aliases.</param>
-        public void MustSetAliasesWithoutDelete(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
-        {
-            var writeableStructure = Structure.Writeable;
+		/// <summary>
+		/// Must the set aliases of the given index operation. Clears old alias entry if is set and set new alias to given index.
+		/// Alias entry of the given alias indexes are not changed.
+		/// </summary>
+		/// <param name="index">The index.</param>
+		/// <param name="mustAliases">The must aliases.</param>
+		/// <param name="mayAliases">The may aliases.</param>
+		public void MustSetAliasesWithoutDelete(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
+		{
+			var writeableStructure = Structure.Writeable;
 
-            IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
-            addAllAliases(index, mustAliases, builder.MustAliases);
-            addAllAliases(index, mayAliases, builder.MayAliases);
+			IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+			addAllAliases(index, mustAliases, builder.MustAliases);
+			addAllAliases(index, mayAliases, builder.MayAliases);
 
-            writeableStructure.SetAlias(index, builder.Build(writeableStructure));
-        }
+			writeableStructure.SetAlias(index, builder.Build(writeableStructure));
+		}
 
 		/// <summary>
 		/// May the set aliases of the given index operation. All must aliases of given index are converted into may.
@@ -2048,22 +2021,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="index">The index.</param>
 		/// <param name="mayAliases">The may aliases.</param>
 		public void MaySetAliases(MemoryIndex index, IEnumerable<MemoryIndex> mayAliases)
-        {
-            var writeableStructure = Structure.Writeable;
+		{
+			var writeableStructure = Structure.Writeable;
 			IMemoryAliasBuilder builder;
 			IMemoryAlias oldAlias;
 			if (Structure.Readonly.TryGetAliases(index, out oldAlias))
 			{
-                builder = oldAlias.Builder(writeableStructure);
+				builder = oldAlias.Builder(writeableStructure);
 				ConvertAliasesToMay(index, builder);
 			}
 			else
 			{
-                builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+				builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
 			}
 
 			builder.MayAliases.AddAll(mayAliases);
-            writeableStructure.SetAlias(index, builder.Build(writeableStructure));
+			writeableStructure.SetAlias(index, builder.Build(writeableStructure));
 		}
 
 		/// <summary>
@@ -2072,19 +2045,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="index">The index.</param>
 		/// <param name="builder">The builder.</param>
 		public void ConvertAliasesToMay(MemoryIndex index, IMemoryAliasBuilder builder)
-        {
-            var writeableStructure = Structure.Writeable;
+		{
+			var writeableStructure = Structure.Writeable;
 			foreach (MemoryIndex mustIndex in builder.MustAliases)
 			{
 				IMemoryAlias alias = Structure.Readonly.GetAliases(mustIndex);
 
-                IMemoryAliasBuilder mustBuilder = Structure.Readonly.GetAliases(mustIndex).Builder(writeableStructure);
+				IMemoryAliasBuilder mustBuilder = Structure.Readonly.GetAliases(mustIndex).Builder(writeableStructure);
 				mustBuilder.MustAliases.Remove(index);
 				mustBuilder.MayAliases.Add(index);
-                writeableStructure.SetAlias(index, mustBuilder.Build(writeableStructure));
+				writeableStructure.SetAlias(index, mustBuilder.Build(writeableStructure));
 			}
 
-            addAllAliases(index, builder.MustAliases, builder.MayAliases);
+			addAllAliases(index, builder.MustAliases, builder.MayAliases);
 			builder.MustAliases.Clear();
 		}
 
@@ -2095,21 +2068,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="targetIndex">Index of the target.</param>
 		/// <param name="isMust">if set to <c>true</c> operation is must otherwise all must aliases are copied as may.</param>
 		internal void CopyAliases(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
-        {
+		{
 			IMemoryAlias aliases;
 			if (Structure.Readonly.TryGetAliases(sourceIndex, out aliases))
-            {
-                var writeableStructure = Structure.Writeable;
+			{
+				var writeableStructure = Structure.Writeable;
 
-                IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(targetIndex).Builder(writeableStructure);
+				IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(targetIndex).Builder(writeableStructure);
 				foreach (MemoryIndex mustAlias in aliases.MustAliases)
 				{
-                    if (mustAlias.Equals(targetIndex))
-                    {
-                        continue;
-                    }
+					if (mustAlias.Equals(targetIndex))
+					{
+						continue;
+					}
 
-                    IMemoryAliasBuilder mustBuilder = Structure.Readonly.GetAliases(mustAlias).Builder(writeableStructure);
+					IMemoryAliasBuilder mustBuilder = Structure.Readonly.GetAliases(mustAlias).Builder(writeableStructure);
 					if (isMust)
 					{
 						builder.MustAliases.Add(mustAlias);
@@ -2120,25 +2093,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 						builder.MayAliases.Add(mustAlias);
 						mustBuilder.MayAliases.Add(targetIndex);
 					}
-                    writeableStructure.SetAlias(mustAlias, mustBuilder.Build(writeableStructure));
+					writeableStructure.SetAlias(mustAlias, mustBuilder.Build(writeableStructure));
 				}
 
 				foreach (MemoryIndex mayAlias in aliases.MayAliases)
-                {
-                    if (mayAlias.Equals(targetIndex))
-                    {
-                        continue;
-                    }
+				{
+					if (mayAlias.Equals(targetIndex))
+					{
+						continue;
+					}
 
-                    IMemoryAliasBuilder mayBuilder = Structure.Readonly.GetAliases(mayAlias).Builder(writeableStructure);
+					IMemoryAliasBuilder mayBuilder = Structure.Readonly.GetAliases(mayAlias).Builder(writeableStructure);
 
 					builder.MayAliases.Add(mayAlias);
 					mayBuilder.MayAliases.Add(targetIndex);
 
-                    writeableStructure.SetAlias(mayAlias, mayBuilder.Build(writeableStructure));
+					writeableStructure.SetAlias(mayAlias, mayBuilder.Build(writeableStructure));
 				}
 
-                writeableStructure.SetAlias(targetIndex, builder.Build(writeableStructure));
+				writeableStructure.SetAlias(targetIndex, builder.Build(writeableStructure));
 			}
 		}
 
@@ -2152,22 +2125,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			if (!Structure.Readonly.TryGetAliases(index, out aliases))
 			{
 				return;
-            }
+			}
 
-            var writeableStructure = Structure.Writeable;
+			var writeableStructure = Structure.Writeable;
 
 			foreach (MemoryIndex mustIndex in aliases.MustAliases)
 			{
 				IMemoryAlias alias = Structure.Readonly.GetAliases(mustIndex);
 				if (alias.MustAliases.Count == 1 && alias.MayAliases.Count == 0)
 				{
-                    writeableStructure.RemoveAlias(mustIndex);
+					writeableStructure.RemoveAlias(mustIndex);
 				}
 				else
 				{
-                    IMemoryAliasBuilder builder = Structure.Readonly.GetAliases(mustIndex).Builder(writeableStructure);
+					IMemoryAliasBuilder builder = Structure.Readonly.GetAliases(mustIndex).Builder(writeableStructure);
 					builder.MustAliases.Remove(index);
-                    writeableStructure.SetAlias(mustIndex, builder.Build(writeableStructure));
+					writeableStructure.SetAlias(mustIndex, builder.Build(writeableStructure));
 				}
 			}
 
@@ -2176,27 +2149,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				IMemoryAlias alias = Structure.Readonly.GetAliases(mayIndex);
 				if (alias.MustAliases.Count == 0 && alias.MayAliases.Count == 1)
 				{
-                    writeableStructure.RemoveAlias(mayIndex);
+					writeableStructure.RemoveAlias(mayIndex);
 				}
 				else
 				{
-                    IMemoryAliasBuilder builder = Structure.Readonly.GetAliases(mayIndex).Builder(writeableStructure);
+					IMemoryAliasBuilder builder = Structure.Readonly.GetAliases(mayIndex).Builder(writeableStructure);
 					builder.MayAliases.Remove(index);
-                    writeableStructure.SetAlias(mayIndex, builder.Build(writeableStructure));
+					writeableStructure.SetAlias(mayIndex, builder.Build(writeableStructure));
 				}
 			}
 		}
 
-        private void addAllAliases(MemoryIndex targetIndex, IEnumerable<MemoryIndex> sourceAliases, IWriteableSet<MemoryIndex> targetAliases)
-        {
-            foreach (MemoryIndex alias in sourceAliases)
-            {
-                if (!targetIndex.Equals(alias))
-                {
-                    targetAliases.Add(alias);
-                }
-            }
-        }
+		private void addAllAliases(MemoryIndex targetIndex, IEnumerable<MemoryIndex> sourceAliases, IWriteableSet<MemoryIndex> targetAliases)
+		{
+			foreach (MemoryIndex alias in sourceAliases)
+			{
+				if (!targetIndex.Equals(alias))
+				{
+					targetAliases.Add(alias);
+				}
+			}
+		}
 
 		#endregion
 

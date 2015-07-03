@@ -8,7 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
@@ -84,7 +84,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private IReadonlyChangeTracker<IReadOnlySnapshotData> collectDataChangesAndFindAncestor()
         {
-            CollectionTools.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
+            CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
 
             IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = sourceSnapshots[0].CurrentData.Readonly.ReadonlyChangeTracker;
             for (int x = 1; x < sourceSnapshots.Count; x++)
@@ -97,7 +97,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void collectDataChangesFromCallSnapshot(Snapshot callSnapshot)
         {
-            CollectionTools.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
+            CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
 
             for (int x = 0; x < sourceSnapshots.Count; x++)
             {
@@ -108,7 +108,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor)
         {
-            Data = Snapshot.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
@@ -116,7 +116,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCallSnapshot(Snapshot callSnapshot)
         {
-            Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.CurrentData);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.CurrentData);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(callSnapshot.CurrentData.Readonly);
@@ -190,7 +190,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     }
                     else
                     {
-                        CollectionTools.AddAll(values, sourceEntry.PossibleValues);
+                        CollectionMemoryUtils.AddAll(values, sourceEntry.PossibleValues);
                     }
                 }
                 else
@@ -235,7 +235,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     trackerB = swap;
                 }
 
-                CollectionTools.AddAll(indexChanges, trackerA.IndexChanges);
+                CollectionMemoryUtils.AddAll(indexChanges, trackerA.IndexChanges);
                 trackerA = trackerA.PreviousTracker;
             }
 
@@ -254,7 +254,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 {
                     done = tracker.ConnectionType == TrackerConnectionType.CALL_EXTEND;
 
-                    CollectionTools.AddAll(indexChanges, tracker.IndexChanges);
+                    CollectionMemoryUtils.AddAll(indexChanges, tracker.IndexChanges);
                     tracker = tracker.PreviousTracker;
                 }
                 else

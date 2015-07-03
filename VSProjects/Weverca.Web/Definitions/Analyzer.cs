@@ -73,7 +73,7 @@ namespace Weverca.Web.Definitions
             return parser;
         }
 
-        static ProgramPointGraph Analyze(ControlFlowGraph.ControlFlowGraph entryMethod, string fileName, MemoryModels.MemoryModels memoryModel)
+        static ProgramPointGraph Analyze(ControlFlowGraph.ControlFlowGraph entryMethod, string fileName, MemoryModels.MemoryModelFactory memoryModel)
         {
             FileInfo fileInfo = new FileInfo(fileName);
             var analysis = new ForwardAnalysis(entryMethod, memoryModel);
@@ -81,7 +81,7 @@ namespace Weverca.Web.Definitions
             return analysis.ProgramPointGraph;
         }
 
-        static string RunVerification(ControlFlowGraph.ControlFlowGraph controlFlowGraph, string fileName, MemoryModels.MemoryModels memoryModel)
+        static string RunVerification(ControlFlowGraph.ControlFlowGraph controlFlowGraph, string fileName, MemoryModels.MemoryModelFactory memoryModel)
         {
 
             var output = new WebOutput();

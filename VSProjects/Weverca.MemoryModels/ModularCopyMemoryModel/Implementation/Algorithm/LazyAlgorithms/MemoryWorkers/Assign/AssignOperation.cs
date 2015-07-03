@@ -7,7 +7,7 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
@@ -70,7 +70,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 IObjectValueContainer objects = Worker.Snapshot.Structure.CreateObjectValueContainer(Node.Objects);
                 Worker.Structure.SetObjects(TargetIndex, objects);
 
-                CollectionTools.AddAll(Values, Node.Objects);
+                CollectionMemoryUtils.AddAll(Values, Node.Objects);
             }
         }
 
@@ -83,12 +83,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 if (Node.Objects != null)
                 {
                     builder.AddAll(Node.Objects);
-                    CollectionTools.AddAll(Values, Node.Objects);
+                    CollectionMemoryUtils.AddAll(Values, Node.Objects);
                 }
 
                 Worker.Structure.SetObjects(TargetIndex, builder.Build(Worker.Structure));
 
-                CollectionTools.AddAll(Values, objects.Values);
+                CollectionMemoryUtils.AddAll(Values, objects.Values);
             }
             else
             {
@@ -135,7 +135,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(TargetIndex);
             if (Node.ScalarValues != null)
             {
-                CollectionTools.AddAll(Values, Node.ScalarValues);
+                CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
 
             processArrays(definition.Array);
@@ -307,11 +307,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(TargetIndex);
             if (Node.ScalarValues != null)
             {
-                CollectionTools.AddAll(Values, Node.ScalarValues);
+                CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
 
             MemoryEntry oldEntry = Worker.Data.GetMemoryEntry(TargetIndex);
-            CollectionTools.AddAll(Values, oldEntry.PossibleValues);
+            CollectionMemoryUtils.AddAll(Values, oldEntry.PossibleValues);
 
             processArrays(definition.Array);
             processAliases(definition.Aliases);
@@ -532,7 +532,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             IIndexDefinition definition = Worker.Structure.GetIndexDefinition(SourceIndex);
             if (Node.ScalarValues != null)
             {
-                CollectionTools.AddAll(Values, Node.ScalarValues);
+                CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
 
             processSourceValues();
@@ -561,7 +561,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
             else
             {
-                CollectionTools.AddAll(Values, oldEntry.PossibleValues);
+                CollectionMemoryUtils.AddAll(Values, oldEntry.PossibleValues);
             }
         }
 
@@ -696,12 +696,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 if (Node.HasAliases || memoryAlias != null && memoryAlias.HasAliases)
                 {
                     HashSet<MemoryIndex> aliases = new HashSet<MemoryIndex>();
-                    CollectionTools.AddAll(aliases, Node.References.GetAllReferences());
+                    CollectionMemoryUtils.AddAll(aliases, Node.References.GetAllReferences());
 
                     if (memoryAlias != null && memoryAlias.HasAliases)
                     {
-                        CollectionTools.AddAll(aliases, memoryAlias.MustAliases);
-                        CollectionTools.AddAll(aliases, memoryAlias.MayAliases);
+                        CollectionMemoryUtils.AddAll(aliases, memoryAlias.MustAliases);
+                        CollectionMemoryUtils.AddAll(aliases, memoryAlias.MayAliases);
                     }
 
                     foreach (MemoryIndex alias in aliases)
@@ -728,7 +728,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (Node.ScalarValues != null)
             {
-                CollectionTools.AddAll(Values, Node.ScalarValues);
+                CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
 
             processArrays();
@@ -799,7 +799,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (Node.ScalarValues != null)
             {
-                CollectionTools.AddAll(Values, Node.ScalarValues);
+                CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
             Values.Add(Worker.Snapshot.UndefinedValue);
 

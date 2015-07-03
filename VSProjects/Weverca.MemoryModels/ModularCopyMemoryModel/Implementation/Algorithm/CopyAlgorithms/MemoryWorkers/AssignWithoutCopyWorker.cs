@@ -26,9 +26,10 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
@@ -115,7 +116,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
                     snapshot.Structure.Writeable.SetObjects(mustIndex, objects);
-                    if (data.Objects != null) CollectionTools.AddAll(values, data.Objects);
+                    if (data.Objects != null) CollectionMemoryUtils.AddAll(values, data.Objects);
                 }
             }
 
@@ -135,15 +136,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             if (composedValues.Objects.Count > 0)
             {
                 HashSet<ObjectValue> objectsSet = new HashSet<ObjectValue>(data.Objects);
-                CollectionTools.AddAll(objectsSet, composedValues.Objects);
+                CollectionMemoryUtils.AddAll(objectsSet, composedValues.Objects);
                 IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
                 snapshot.Structure.Writeable.SetObjects(mayIndex, objects);
 
                 //if (data.Objects != null) 
-                CollectionTools.AddAll(values, data.Objects);
+                CollectionMemoryUtils.AddAll(values, data.Objects);
             }
 
-            CollectionTools.AddAll(values, snapshot.CurrentData.Readonly.GetMemoryEntry(mayIndex).PossibleValues);
+            CollectionMemoryUtils.AddAll(values, snapshot.CurrentData.Readonly.GetMemoryEntry(mayIndex).PossibleValues);
             snapshot.CurrentData.Writeable.SetMemoryEntry(mayIndex, snapshot.CreateMemoryEntry(values));
         }
 
@@ -257,10 +258,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 if (!isMust)
                 {
                     MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
-                    CollectionTools.AddAll(newValues, oldEntry.PossibleValues);
+                    CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);
                 }
 
-                CollectionTools.AddAll(newValues, entry.PossibleValues);
+                CollectionMemoryUtils.AddAll(newValues, entry.PossibleValues);
 
                 snapshot.CurrentData.Writeable.SetMemoryEntry(index, snapshot.CreateMemoryEntry(newValues));
             }

@@ -8,7 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
@@ -59,7 +59,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             if (targetSnapshot.DataCallChanges != null)
             {
-                CollectionTools.AddAll(this.changeTree, targetSnapshot.DataCallChanges);
+                CollectionMemoryUtils.AddAll(this.changeTree, targetSnapshot.DataCallChanges);
             }
 
             targetSnapshot.DataCallChanges = changeTree.Changes;
@@ -67,7 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = Snapshot.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.Data);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.Data);
             writeableTargetData = Data.Writeable;
         }
 

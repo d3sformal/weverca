@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
@@ -52,6 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         private bool isCallMerge;
         private IWriteableSnapshotStructure writeableStrucure;
+        private int targetSnapshotCallLevel;
 
         /// <summary>
         /// Gets the result structure of merge operation.
@@ -75,15 +77,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <param name="targetSnapshot">The target snapshot.</param>
         /// <param name="sourceSnapshots">The source snapshots.</param>
         /// <param name="isCallMerge">if set to <c>true</c> [is call merge].</param>
-        public MergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
+        public MergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, int targetCallLevel, bool isCallMerge = false)
         {
-            Data = Snapshot.SnapshotDataFactory.CreateEmptyInstance(targetSnapshot);
-            Structure = Snapshot.SnapshotStructureFactory.CreateEmptyInstance(targetSnapshot);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateEmptyInstance(targetSnapshot);
+            Structure = targetSnapshot.MemoryModelFactory.SnapshotStructureFactory.CreateEmptyInstance(targetSnapshot);
 
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
             this.isCallMerge = isCallMerge;
             this.writeableStrucure = Structure.Writeable;
+            this.targetSnapshotCallLevel = targetCallLevel;
         }
 
         /// <summary>
@@ -95,12 +98,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// </summary>
         internal void Merge()
         {
-            ContainerOperations[] collectVariables = new ContainerOperations[targetSnapshot.CallLevel + 1];
-            ContainerOperations[] collectControl = new ContainerOperations[targetSnapshot.CallLevel + 1];
+            ContainerOperations[] collectVariables = new ContainerOperations[targetSnapshotCallLevel + 1];
+            ContainerOperations[] collectControl = new ContainerOperations[targetSnapshotCallLevel + 1];
             MergeOperation returnOperation = new MergeOperation();
 
             // Prepares empty structure for target snapshot
-            for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+            for (int x = 0; x <= targetSnapshotCallLevel; x++)
             {
                 writeableStrucure.AddLocalLevel();
 
@@ -116,10 +119,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 collectObjects(snapshot);
 
-                for (int sourceLevel = 0, targetLevel = 0; targetLevel <= targetSnapshot.CallLevel; sourceLevel++, targetLevel++)
+                for (int sourceLevel = 0, targetLevel = 0; targetLevel <= targetSnapshotCallLevel; sourceLevel++, targetLevel++)
                 {
                     // Local levels of snaphot has to be merged together no matter to call level of each snapshot.
-                    if (sourceLevel == snapshot.CallLevel && snapshot.CallLevel != targetSnapshot.CallLevel)
+                    if (sourceLevel == snapshot.CallLevel && snapshot.CallLevel != targetSnapshotCallLevel)
                     {
                         if (isCallMerge)
                         {
@@ -128,7 +131,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                         }
                         else
                         {
-                            targetLevel = targetSnapshot.CallLevel;
+                            targetLevel = targetSnapshotCallLevel;
                         }
                     }
 
@@ -172,7 +175,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             mergeObjects();
 
             // Prepares operations for all root locations
-            for (int x = 0; x <= targetSnapshot.CallLevel; x++)
+            for (int x = 0; x <= targetSnapshotCallLevel; x++)
             {
                 collectVariables[x].MergeContainers();
                 collectControl[x].MergeContainers();
@@ -224,8 +227,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IMemoryAlias aliases;
                 if (snapshot.Structure.Readonly.TryGetAliases(index, out aliases))
                 {
-                    references.CollectMust(aliases.MustAliases, targetSnapshot.CallLevel);
-                    references.CollectMay(aliases.MayAliases, targetSnapshot.CallLevel);
+                    references.CollectMust(aliases.MustAliases, targetSnapshotCallLevel);
+                    references.CollectMay(aliases.MayAliases, targetSnapshotCallLevel);
                 }
                 else
                 {

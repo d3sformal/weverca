@@ -4,8 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 {
     public class MemoryIndexTree : MemoryIndexVisitor, ICollection<MemoryIndex>
     {

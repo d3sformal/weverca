@@ -13,7 +13,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms
 {
@@ -35,13 +35,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             switch (extendedSnapshot.CurrentMode)
             {
                 case SnapshotMode.MemoryLevel:
-                    structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+                    structure = extendedSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
                     localLevel = sourceSnapshot.CallLevel;
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
                     extendedSnapshot.AssignCreatedAliases(extendedSnapshot, data);
                     break;
 
@@ -57,7 +57,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 case SnapshotMode.MemoryLevel:
                     localLevel = calleeProgramPoint.ProgramPointGraphID;
-                    structure = Snapshot.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
+                    structure = extendedSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Structure);
 
                     if (!structure.Writeable.ContainsStackWithLevel(localLevel))
                     {
@@ -67,14 +67,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     structure.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
                     structure.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
 
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Data);
                     data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
                     data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
 
                     break;
 
                 case SnapshotMode.InfoLevel:
-                    data = Snapshot.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+                    data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
                     data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
                     data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
                     break;

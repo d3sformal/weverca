@@ -66,7 +66,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = Snapshot.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);

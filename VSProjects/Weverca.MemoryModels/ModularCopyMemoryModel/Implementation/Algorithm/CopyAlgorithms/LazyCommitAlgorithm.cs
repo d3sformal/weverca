@@ -26,10 +26,11 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
@@ -127,8 +128,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             }
 
             HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
-            CollectionTools.AddAll(usedIndexes, newStructure.Readonly.Indexes);
-            CollectionTools.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
+            CollectionMemoryUtils.AddAll(usedIndexes, newStructure.Readonly.Indexes);
+            CollectionMemoryUtils.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
 
             IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
 
@@ -190,8 +191,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             bool areEqual = true;
 
             HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
-            CollectionTools.AddAll(indexes, newData.Readonly.Indexes);
-            CollectionTools.AddAll(indexes, oldData.Readonly.Indexes);
+            CollectionMemoryUtils.AddAll(indexes, newData.Readonly.Indexes);
+            CollectionMemoryUtils.AddAll(indexes, oldData.Readonly.Indexes);
 
             foreach (MemoryIndex index in indexes)
             {

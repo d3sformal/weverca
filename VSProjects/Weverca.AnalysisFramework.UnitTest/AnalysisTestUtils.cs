@@ -68,46 +68,46 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// Creates an instance of ForwardAnalysis corresponding to given enumeration item.
         /// </summary>
         /// <returns>an instance of ForwardAnalysis corresponding to given enumeration item</returns>
-        internal abstract ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer);
+        internal abstract ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer);
         /// <summary>
         /// Creates an instance of ForwardAnalysis corresponding to given enumeration item.
         /// </summary>
         /// <param name="entryMethodGraph">the method where the analysis starts</param>
         /// <param name="memoryModel">memory model used for the analysis</param>
         /// <returns></returns>
-        public abstract ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel);
+        public abstract ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel);
 
         private Analyses() { }
 
         private class SimpleAnalysisTestCl : Analyses
         {
-            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             {
                 return new SimpleAnalysis(entryMethodGraph, memoryModel, initializer);
             }
-            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel)
             {
                 throw new NotImplementedException();
             }
         }
         private class WevercaAnalysisTestCl : Analyses
         {
-            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             {
                 return new WevercaAnalysisTest(entryMethodGraph, memoryModel, initializer);
             }
-            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel)
             {
                 throw new NotImplementedException();
             }
         }
         private class SimpleAnalysisCl : Analyses
         {
-            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             {
                 return new SimpleAnalysis(entryMethodGraph, memoryModel, initializer);
             }
-            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel)
             {
                 return createAnalysis(entryMethodGraph, memoryModel, EnvironmentInitializer);
             }
@@ -119,11 +119,11 @@ namespace Weverca.AnalysisFramework.UnitTest
         }
         private class WevercaAnalysisCl : Analyses
         {
-            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+            internal override ForwardAnalysisBase createAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             {
                 return new Weverca.Analysis.ForwardAnalysis(entryMethodGraph, memoryModel);
             }
-            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel)
+            public override ForwardAnalysisBase CreateAnalysis(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel)
             {
                 return createAnalysis(entryMethodGraph, memoryModel, delegate(FlowOutputSet o) { });
             }
@@ -138,7 +138,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly WevercaFlowResolverTest _flowResolver;
         private readonly WevercaFunctionResolverTest _functionResolver;
 
-        public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModels memoryModel, EnvironmentInitializer initializer)
+        public WevercaAnalysisTest(ControlFlowGraph.ControlFlowGraph entryMethodGraph, MemoryModels.MemoryModelFactory memoryModel, EnvironmentInitializer initializer)
             : base(entryMethodGraph, memoryModel)
         {
             _flowResolver = new WevercaFlowResolverTest();
@@ -640,7 +640,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         private readonly HashSet<string> _nonDeterminiticVariables = new HashSet<string>();
         private readonly HashSet<string> _sharedFunctions = new HashSet<string>();
 
-        private readonly List<MemoryModels.MemoryModels> _memoryModels = new List<MemoryModels.MemoryModels>() { MemoryModels.MemoryModels.ModularCopyMM };
+        private readonly List<MemoryModels.MemoryModelFactory> _memoryModels = new List<MemoryModels.MemoryModelFactory>() { MemoryModels.MemoryModels.ModularCopyMM };
         private readonly List<Analyses> _analyses = new List<Analyses>() { Analyses.WevercaAnalysisTest };
 
         /// <summary>
@@ -727,7 +727,7 @@ namespace Weverca.AnalysisFramework.UnitTest
         /// </summary>
         /// <param name="memoryModel">the memory model to be used in the test case</param>
         /// <returns></returns>
-        internal TestCase MemoryModel(MemoryModels.MemoryModels memoryModel)
+        internal TestCase MemoryModel(MemoryModels.MemoryModelFactory memoryModel)
         {
             _memoryModels.Clear();
             _memoryModels.Add(memoryModel);

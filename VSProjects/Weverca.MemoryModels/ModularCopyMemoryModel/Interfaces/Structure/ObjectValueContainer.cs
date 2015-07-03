@@ -24,6 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {

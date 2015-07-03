@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
     {
         #region Structure Data
 
-        private int localLevel = 0;
+        private int localLevel = -1;
         private List<CopyStackContext> memoryStack;
         private Dictionary<AssociativeArray, IArrayDescriptor> arrayDescriptors;
         private Dictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
@@ -167,7 +167,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             {
                 if (memoryStack.Count > 0)
                 {
-                    return memoryStack[localLevel - 1];
+                    return memoryStack[localLevel];
                 }
                 else
                 {
@@ -218,7 +218,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             {
                 if (memoryStack.Count > 0)
                 {
-                    return memoryStack[localLevel - 1];
+                    return memoryStack[localLevel];
                 }
                 else
                 {

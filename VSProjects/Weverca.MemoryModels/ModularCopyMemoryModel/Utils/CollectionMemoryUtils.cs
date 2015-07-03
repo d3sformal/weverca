@@ -24,12 +24,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Tools
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Utils
 {
     /// <summary>
-    /// Static tool class. Contains generic static helper methods for sets and collections.
+    /// Static util class. Contains generic static helper methods for sets and collections.
     /// </summary>
-    public class CollectionTools
+    public class CollectionMemoryUtils
     {
         /// <summary>
         /// Adds all values to target collection.

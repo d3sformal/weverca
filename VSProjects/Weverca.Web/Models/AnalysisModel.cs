@@ -71,7 +71,7 @@ namespace Weverca.Web.Models
             MemoryModel = MemoryModelType.Copy;
         }
 
-        public MemoryModels.MemoryModels GetMemoryModel()
+        public MemoryModels.MemoryModelFactory GetMemoryModel()
         {
             if (MemoryModel == MemoryModelType.Copy) return MemoryModels.MemoryModels.ModularCopyMM;
             return MemoryModels.MemoryModels.VirtualReferenceMM;

@@ -25,9 +25,10 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors
 {
@@ -241,7 +242,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IMemoryAlias alias;
                 if (snapshot.Structure.Readonly.TryGetAliases(index, out alias))
                 {
-                    CollectionTools.AddAll(mustAliases, alias.MustAliases);
+                    CollectionMemoryUtils.AddAll(mustAliases, alias.MustAliases);
 
                     foreach (MemoryIndex mayIndex in alias.MayAliases)
                     {
@@ -255,8 +256,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 IMemoryAlias alias;
                 if (snapshot.Structure.Readonly.TryGetAliases(index, out alias))
                 {
-                    CollectionTools.AddAll(mayAliases, alias.MustAliases);
-                    CollectionTools.AddAll(mayAliases, alias.MayAliases);
+                    CollectionMemoryUtils.AddAll(mayAliases, alias.MustAliases);
+                    CollectionMemoryUtils.AddAll(mayAliases, alias.MayAliases);
                 }
             }
 
@@ -623,7 +624,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// </summary>
         internal void SetAllToMust()
         {
-            CollectionTools.AddAll(mustIndexes, mayIndexes);
+            CollectionMemoryUtils.AddAll(mustIndexes, mayIndexes);
             mayIndexes.Clear();
         }
 

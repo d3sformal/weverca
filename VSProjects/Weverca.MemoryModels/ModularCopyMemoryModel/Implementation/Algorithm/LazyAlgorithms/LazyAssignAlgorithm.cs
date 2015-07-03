@@ -32,7 +32,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Tools;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms
@@ -81,7 +81,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
                     if (indexModification.IsCollectedIndex)
                     {
-                        CollectionTools.AddAll(values, value.PossibleValues);
+                        CollectionMemoryUtils.AddAll(values, value.PossibleValues);
                     }
 
                     foreach (var datasource in indexModification.Datasources)
@@ -89,7 +89,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                         MemoryEntry entry;
                         if (datasource.SourceSnapshot.Infos.Readonly.TryGetMemoryEntry(datasource.SourceIndex, out entry))
                         {
-                            CollectionTools.AddAll(values, entry.PossibleValues);
+                            CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
                         }
                     }
                 }
