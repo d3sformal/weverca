@@ -71,9 +71,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// <param name="targetSnapshot">The target snapshot.</param>
         /// <param name="sourceSnapshots">The source snapshots.</param>
         /// <param name="isCallMerge">if set to <c>true</c> [is call merge].</param>
-        public MergeInfoWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, int targetCallLevel, bool isCallMerge = false)
+        public MergeInfoWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, int targetCallLevel, bool isCallMerge = false)
         {
-            Infos = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateEmptyInstance(targetSnapshot);
+            Factories = factories;
+            Infos = Factories.SnapshotDataFactory.CreateEmptyInstance(Factories, targetSnapshot);
             Structure = targetSnapshot.Structure;
             Structure.Locked = true;
 
@@ -317,5 +318,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             return operation;
         }
+
+        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

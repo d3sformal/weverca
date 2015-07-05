@@ -40,7 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             if (hasObjects)
             {
-                IObjectValueContainer objectsContainer = worker.Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(writeableTargetStructure, objectValues);
+                IObjectValueContainer objectsContainer = worker.Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(writeableTargetStructure, objectValues);
                 writeableTargetStructure.SetObjects(targetIndex, objectsContainer);
 
                 hasObjects = false;

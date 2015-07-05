@@ -10,20 +10,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 {
     class LazyCommitMemoryAlgorithmFactory : IAlgorithmFactory<ICommitAlgorithm>
     {
-        private LazyCommitMemoryAlgorithm singletonInstance = new LazyCommitMemoryAlgorithm();
-
-        public ICommitAlgorithm CreateInstance()
+        public ICommitAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return singletonInstance;
+            return new LazyCommitMemoryAlgorithm(factories);
         }
     }
 
-    class LazyCommitMemoryAlgorithm : ICommitAlgorithm
+    class LazyCommitMemoryAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
+        public LazyCommitMemoryAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             LazyCommitWorker worker = new LazyCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(false);
         }
@@ -31,7 +34,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             LazyCommitWorker worker = new LazyCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(true);
         }

@@ -38,20 +38,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     public class CopySnapshotDataFactory : ISnapshotDataFactory
     {
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateEmptyInstance(Snapshot snapshot)
+        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
         {
             return new CopySnapshotDataProxy(snapshot);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CopyInstance(Snapshot snapshot, ISnapshotDataProxy oldData)
+        public ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData)
         {
             CopySnapshotDataProxy proxy = CopySnapshotDataProxy.Convert(oldData);
             return new CopySnapshotDataProxy(snapshot, proxy);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData)
+        public ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData)
         {
             SnapshotDataAssociativeContainer data = oldData as SnapshotDataAssociativeContainer;
             if (data != null)

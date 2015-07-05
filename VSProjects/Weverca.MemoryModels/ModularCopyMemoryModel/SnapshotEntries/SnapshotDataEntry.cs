@@ -116,7 +116,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 temporaryIndex = snapshot.CreateTemporary();
                 temporaryLocation = new SnapshotEntry(MemoryPath.MakePathTemporary(temporaryIndex));
 
-                IMergeAlgorithm algorithm = snapshot.AlgorithmFactories.MergeAlgorithmFactory.CreateInstance();
+                IMergeAlgorithm algorithm = snapshot.Algorithms.MergeAlgorithm;
+
                 Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.MERGE_TO_TEMPORARY);
                 algorithm.MergeMemoryEntry(snapshot, temporaryIndex, dataEntry);
                 Snapshot.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.MERGE_TO_TEMPORARY);
@@ -330,7 +331,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
-                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
                 Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_METHOD);
                 var methods = algorithm.GetMethod(snapshot, values, methodName);
@@ -407,7 +408,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
-                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
                 Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_FIELDS);
                 var fields = algorithm.GetFields(snapshot, values);
@@ -436,7 +437,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
-                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
                 Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_INDEXES);
                 var indexes = algorithm.GetIndexes(snapshot, values);
@@ -465,7 +466,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
                 Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
-                IReadAlgorithm algorithm = snapshot.AlgorithmFactories.ReadAlgorithmFactory.CreateInstance();
+                IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
                 Snapshot.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_TYPE);
                 var types = algorithm.GetObjectType(snapshot, values);

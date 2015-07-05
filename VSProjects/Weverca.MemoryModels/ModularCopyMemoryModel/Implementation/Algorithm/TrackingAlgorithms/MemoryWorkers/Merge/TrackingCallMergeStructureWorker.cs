@@ -19,13 +19,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private Snapshot callSnapshot;
 
         internal Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
-        
-        public TrackingCallMergeStructureWorker(Snapshot targetSnapshot, Snapshot callSnapshot,  List<Snapshot> sourceSnapshots)
-            : base(targetSnapshot, sourceSnapshots, true)
+
+
+        public TrackingCallMergeStructureWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, Snapshot callSnapshot, List<Snapshot> sourceSnapshots)
+            : base(factories, targetSnapshot, sourceSnapshots, true)
         {
             this.callSnapshot = callSnapshot;
 
             MemoryAliases = new Dictionary<MemoryIndex, MemoryAliasInfo>();
+            Factories = factories;
         }
 
         public void MergeStructure()
@@ -74,7 +76,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructure()
         {
-            Structure = targetSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(targetSnapshot, callSnapshot.Structure);
+            Structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
@@ -234,7 +236,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             MemoryAliasInfo aliasInfo;
             if (!MemoryAliases.TryGetValue(index, out aliasInfo))
             {
-                IMemoryAliasBuilder alias = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableTargetStructure, index).Builder(writeableTargetStructure);
+                IMemoryAliasBuilder alias = Factories.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableTargetStructure, index).Builder(writeableTargetStructure);
                 aliasInfo = new MemoryAliasInfo(alias, false);
 
                 MemoryAliases[index] = aliasInfo;

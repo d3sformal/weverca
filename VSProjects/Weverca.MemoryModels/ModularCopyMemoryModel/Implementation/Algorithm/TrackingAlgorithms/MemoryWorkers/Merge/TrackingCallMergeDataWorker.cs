@@ -18,8 +18,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private IWriteableSnapshotData writeableTargetData;
         private Snapshot callSnapshot;
 
-        public TrackingCallMergeDataWorker(Snapshot targetSnapshot, Snapshot callSnapshot, List<Snapshot> sourceSnapshots)
-            : base(targetSnapshot, sourceSnapshots, true)
+        public TrackingCallMergeDataWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, Snapshot callSnapshot, List<Snapshot> sourceSnapshots)
+            : base(factories, targetSnapshot, sourceSnapshots, true)
         {
             this.callSnapshot = callSnapshot;
         }
@@ -67,7 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.Data);
+            Data = Factories.SnapshotDataFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Data);
             writeableTargetData = Data.Writeable;
         }
 

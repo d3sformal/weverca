@@ -24,9 +24,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         private LinkedList<AssignOperation> operationQueue = new LinkedList<AssignOperation>();
         private AssignValueLocationVisitor valueLocationVisitor;
 
-        public AssignWorker(Snapshot snapshot, MemoryEntryCollector memoryEntryCollector,
+        public AssignWorker(ModularMemoryModelFactories factories, Snapshot snapshot, MemoryEntryCollector memoryEntryCollector,
             TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
-            : base(snapshot, treeCollector, pathModifications)
+            : base(factories, snapshot, treeCollector, pathModifications)
         {
             this.memoryEntryCollector = memoryEntryCollector;
 

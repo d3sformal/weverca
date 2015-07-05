@@ -67,7 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (Node.Objects != null && Node.Objects.Count > 0)
             {
-                IObjectValueContainer objects = Worker.Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Worker.Structure, Node.Objects);
+                IObjectValueContainer objects = Worker.Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Worker.Structure, Node.Objects);
                 Worker.Structure.SetObjects(TargetIndex, objects);
 
                 CollectionMemoryUtils.AddAll(Values, Node.Objects);
@@ -78,7 +78,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (objects != null && objects.Count > 0)
             {
-                IObjectValueContainerBuilder builder = Worker.Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Worker.Structure, objects).Builder(Worker.Structure);
+                IObjectValueContainerBuilder builder = Worker.Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Worker.Structure, objects).Builder(Worker.Structure);
 
                 if (Node.Objects != null)
                 {

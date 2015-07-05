@@ -11,16 +11,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 {
     class CopyAssignInfoAlgorithmFactory : IAlgorithmFactory<IAssignAlgorithm>
     {
-        CopyAssignInfoAlgorithm instance = new CopyAssignInfoAlgorithm();
-
-        public IAssignAlgorithm CreateInstance()
+        public IAssignAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new CopyAssignInfoAlgorithm(factories);
         }
     }
 
-    class CopyAssignInfoAlgorithm : IAssignAlgorithm
+    class CopyAssignInfoAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
+        public CopyAssignInfoAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
+
         public void Assign(Snapshot snapshot, Memory.MemoryPath path, AnalysisFramework.Memory.MemoryEntry value, bool forceStrongWrite)
         {
             AssignCollector collector = new AssignCollector(snapshot);
@@ -31,7 +35,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 collector.SetAllToMust();
             }
 
-            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
+            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(Factories, snapshot);
             worker.Assign(collector, value);
         }
 
@@ -45,7 +49,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             AssignCollector collector = new AssignCollector(snapshot);
             collector.ProcessPath(path);
 
-            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(snapshot);
+            AssignWithoutCopyWorker worker = new AssignWithoutCopyWorker(Factories, snapshot);
             worker.Assign(collector, value);
         }
     }

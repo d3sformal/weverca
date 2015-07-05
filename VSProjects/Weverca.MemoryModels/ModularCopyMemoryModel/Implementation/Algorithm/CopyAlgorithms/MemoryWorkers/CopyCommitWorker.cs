@@ -23,10 +23,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private int simplifyLimit;
         private MemoryAssistantBase assistant;
 
-        public CopyCommitWorker(Snapshot snapshot, int simplifyLimit, 
+        public CopyCommitWorker(ModularMemoryModelFactories factories, Snapshot snapshot, int simplifyLimit, 
             ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
             ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
         {
+            Factories = factories;
             this.snapshot = snapshot;
             this.simplifyLimit = simplifyLimit;
             this.assistant = snapshot.MemoryAssistant;
@@ -43,7 +44,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             CollectionMemoryUtils.AddAll(usedIndexes, newStructure.Readonly.Indexes);
             CollectionMemoryUtils.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
 
-            IIndexDefinition emptyDefinition = snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(newStructure.Writeable);
+            IIndexDefinition emptyDefinition = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(newStructure.Writeable);
 
             bool areEqual = true;
 
@@ -170,7 +171,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             if (mdifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
             {
-                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, currentVisitor.Objects);
+                IObjectValueContainer objects = Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, currentVisitor.Objects);
                 snapshot.Structure.Writeable.SetObjects(index, objects);
             }
 
@@ -274,5 +275,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             return true;
         }
+
+        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

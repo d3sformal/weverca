@@ -11,7 +11,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
-    class OldTrackingMergeDataWorker : AbstractTrackingMergeWorker
+/*    class OldTrackingMergeDataWorker : AbstractTrackingMergeWorker
     {
         public ISnapshotDataProxy Data { get; set; }
         private IWriteableSnapshotData writeableTargetData;
@@ -66,7 +66,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot.MemoryModelFactory, targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
@@ -152,5 +152,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
             return false;
         }
-    }
+    }*/
 }

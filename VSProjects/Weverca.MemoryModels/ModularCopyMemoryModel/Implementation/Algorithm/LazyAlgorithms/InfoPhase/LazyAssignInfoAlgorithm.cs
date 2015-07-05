@@ -13,16 +13,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 {
     class LazyAssignInfoAlgorithmFactory : IAlgorithmFactory<IAssignAlgorithm>
     {
-        private LazyAssignInfoAlgorithm singletonInstance = new LazyAssignInfoAlgorithm();
-
-        public IAssignAlgorithm CreateInstance()
+        public IAssignAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return singletonInstance;
+            return new LazyAssignInfoAlgorithm(factories);
         }
     }
 
-    class LazyAssignInfoAlgorithm : IAssignAlgorithm
+    class LazyAssignInfoAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
+        public LazyAssignInfoAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
         public void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite)
         {
             if (snapshot.AssignInfo == null)
@@ -77,7 +80,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             collector.ProcessPath(path);
 
             Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker worker
-                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker(snapshot);
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker(Factories, snapshot);
             worker.Assign(collector, value);
         }
     }

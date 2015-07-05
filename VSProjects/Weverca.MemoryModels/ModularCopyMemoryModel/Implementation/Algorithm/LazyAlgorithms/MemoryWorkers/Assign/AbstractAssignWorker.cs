@@ -24,9 +24,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         protected LinkedList<LocationCollectorNode> collectorNodesQueue = new LinkedList<LocationCollectorNode>();
         private CopyValuesVisitor copyValuesVisitor = new CopyValuesVisitor();
 
-        public AbstractAssignWorker(Snapshot snapshot,
+        public AbstractAssignWorker(ModularMemoryModelFactories factories, Snapshot snapshot,
             TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
         {
+            Factories = factories;
+
             this.Snapshot = snapshot;
             this.treeCollector = treeCollector;
             this.PathModifications = pathModifications;
@@ -346,7 +348,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (objects != null && objects.Count > 0)
             {
-                IObjectValueContainer targetObjects = Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Structure, objects);
+                IObjectValueContainer targetObjects = Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Structure, objects);
                 Structure.SetObjects(node.TargetIndex, targetObjects);
             }
         }
@@ -473,5 +475,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
         }
+
+        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

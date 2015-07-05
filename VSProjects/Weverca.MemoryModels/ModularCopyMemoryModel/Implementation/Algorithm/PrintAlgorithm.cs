@@ -33,19 +33,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
     
     class PrintAlgorithmFactory : IAlgorithmFactory<IPrintAlgorithm>
     {
-        PrintAlgorithm instance = new PrintAlgorithm();
-
-        public IPrintAlgorithm CreateInstance()
+        public IPrintAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new PrintAlgorithm(factories);
         }
     }
 
-    class PrintAlgorithm : IPrintAlgorithm
+    class PrintAlgorithm : AlgorithmBase, IPrintAlgorithm
     {
-        public IPrintAlgorithm CreateInstance()
+        public PrintAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
         {
-            return new PrintAlgorithm();
+
         }
 
         public string SnapshotToString(Snapshot snapshot)

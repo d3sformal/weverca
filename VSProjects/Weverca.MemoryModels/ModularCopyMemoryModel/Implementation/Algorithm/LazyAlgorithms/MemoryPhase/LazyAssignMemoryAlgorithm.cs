@@ -14,16 +14,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 {
     class LazyAssignMemoryAlgorithmFactory : IAlgorithmFactory<IAssignAlgorithm>
     {
-        private IAssignAlgorithm singletonIstance = new LazyAssignMemoryAlgorithm();
-
-        public IAssignAlgorithm CreateInstance()
+        public IAssignAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return singletonIstance;
+            return new LazyAssignMemoryAlgorithm(factories);
         }
     }
 
-    class LazyAssignMemoryAlgorithm : IAssignAlgorithm
+    class LazyAssignMemoryAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
+        public LazyAssignMemoryAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
         /// <inheritdoc />
         public void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite)
         {
@@ -40,7 +43,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             treeCollector.PostProcessAliases = true;
             treeCollector.ProcessPath(path);
 
-            AssignWorker worker = new AssignWorker(snapshot, entryCollector, treeCollector, pathModifications);
+            AssignWorker worker = new AssignWorker(Factories, snapshot, entryCollector, treeCollector, pathModifications);
             worker.ForceStrongWrite = forceStrongWrite;
             worker.Assign();
         }
@@ -58,7 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             aliasSourcesCollector.ProcessPath(sourcePath);
 
             // Creates missing source locations and collect source data
-            AliasWorker aliasWorker = new AliasWorker(snapshot, aliasSourcesCollector, snapshot.AssignInfo.AliasAssignModifications);
+            AliasWorker aliasWorker = new AliasWorker(Factories, snapshot, aliasSourcesCollector, snapshot.AssignInfo.AliasAssignModifications);
             aliasWorker.CollectAliases();
 
             // Collects target locations
@@ -66,7 +69,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             aliasTargetCollector.ProcessPath(targetPath);
 
             // Creates missing target locations, create aliases and assign source data
-            AssignWorker assignWorker = new AssignWorker(snapshot, aliasWorker.EntryCollector, aliasTargetCollector, snapshot.AssignInfo.AliasAssignModifications);
+            AssignWorker assignWorker = new AssignWorker(Factories, snapshot, aliasWorker.EntryCollector, aliasTargetCollector, snapshot.AssignInfo.AliasAssignModifications);
             assignWorker.AssignAliasesIntoCollectedIndexes = true;
             assignWorker.Assign();
         }
@@ -78,7 +81,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             collector.ProcessPath(path);
 
             Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker worker
-                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker(snapshot);
+                = new Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers.AssignWithoutCopyWorker(Factories, snapshot);
             worker.Assign(collector, value);
         }
     }

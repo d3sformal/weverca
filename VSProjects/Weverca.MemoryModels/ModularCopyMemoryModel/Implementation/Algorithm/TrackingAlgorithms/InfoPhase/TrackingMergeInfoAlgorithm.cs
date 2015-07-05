@@ -16,21 +16,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 {
     class TrackingMergeInfoAlgorithmFactory : IAlgorithmFactory<IMergeAlgorithm>
     {
-        TrackingMergeInfoAlgorithm instance = new TrackingMergeInfoAlgorithm();
-
-        public IMergeAlgorithm CreateInstance()
+        public IMergeAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new TrackingMergeInfoAlgorithm(factories);
         }
     }
 
 
-    class TrackingMergeInfoAlgorithm : IMergeAlgorithm
+    class TrackingMergeInfoAlgorithm : AlgorithmBase, IMergeAlgorithm
     {
+        public TrackingMergeInfoAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
 
+        }
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)
         {
-            ISnapshotDataProxy data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Infos);
             extendedSnapshot.AssignCreatedAliases(extendedSnapshot, data);
 
             extendedSnapshot.SetInfoMergeResult(data);
@@ -38,7 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
-            ISnapshotDataProxy data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Infos);
             data.Writeable.WriteableChangeTracker.SetCallLevel(extendedSnapshot.CallLevel);
             data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
 
@@ -47,7 +49,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public void Merge(Snapshot snapshot, List<Snapshot> snapshots)
         {
-            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
             dataWorker.MergeInfo();
             ISnapshotDataProxy data = dataWorker.Data;
 
@@ -60,7 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints)
         {
-            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
             dataWorker.MergeInfo();
             ISnapshotDataProxy data = dataWorker.Data;
 
@@ -82,7 +84,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
-            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(snapshot, snapshot.Structure.Readonly, snapshots);
+            TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
             dataWorker.MergeCallData(callSnapshot);
             ISnapshotDataProxy data = dataWorker.Data;
 

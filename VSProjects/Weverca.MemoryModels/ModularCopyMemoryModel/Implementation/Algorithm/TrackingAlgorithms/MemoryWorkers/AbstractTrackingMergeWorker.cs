@@ -56,8 +56,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         */
 
-        public AbstractTrackingMergeWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
+        public AbstractTrackingMergeWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, bool isCallMerge = false)
         {
+            Factories = factories;
+
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
             this.isCallMerge = isCallMerge;
@@ -308,7 +310,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                     // Target does not contain array - create and add new in target snapshot
                     if (isStructureWriteable)
                     {
-                        targetArrayDescriptor = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(writeableTargetStructure, targetArray, targetIndex);
+                        targetArrayDescriptor = Factories.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(writeableTargetStructure, targetArray, targetIndex);
                         writeableTargetStructure.SetDescriptor(targetArray, targetArrayDescriptor);
                         writeableTargetStructure.NewIndex(targetArrayDescriptor.UnknownIndex);
                         writeableTargetStructure.SetArray(targetIndex, targetArray);
@@ -560,5 +562,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             return childDefined;
         }
+
+        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

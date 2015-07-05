@@ -78,7 +78,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 if (!writeableTargetStructure.TryGetDescriptor(targetArray, out targetArrayDescriptor))
                 {
                     // Target does not contain array - create and add new in target snapshot
-                    targetArrayDescriptor = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(writeableTargetStructure, targetArray, targetIndex);
+                    targetArrayDescriptor = worker.Factories.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(writeableTargetStructure, targetArray, targetIndex);
                     writeableTargetStructure.SetDescriptor(targetArray, targetArrayDescriptor);
                     writeableTargetStructure.NewIndex(targetArrayDescriptor.UnknownIndex);
                     writeableTargetStructure.SetArray(targetIndex, targetArray);

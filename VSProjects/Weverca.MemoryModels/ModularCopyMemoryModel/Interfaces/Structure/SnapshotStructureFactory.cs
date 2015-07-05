@@ -19,7 +19,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New object with empty inner structure.</returns>
-        ISnapshotStructureProxy CreateEmptyInstance(Snapshot snapshot);
+        ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot);
 
         /// <summary>
         /// Creates new snapshot structure container as copy of the given one.
@@ -28,14 +28,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         /// <returns>New object with inner scructure as copy of given object.</returns>
-        ISnapshotStructureProxy CopyInstance(Snapshot snapshot, ISnapshotStructureProxy oldData);
+        ISnapshotStructureProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy oldData);
 
         /// <summary>
         /// Creates new snapshot structure container with empty global context.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New object with empty global context.</returns>
-        ISnapshotStructureProxy CreateGlobalContextInstance(Snapshot snapshot);
+        ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories, Snapshot snapshot);
 
         /// <summary>
         /// Creates new snapshot structure container as copy containing data from given inner container.
@@ -44,6 +44,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         /// <returns>New object with inner scructure as copy of given object.</returns>
-        ISnapshotStructureProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotStructure oldData);
+        ISnapshotStructureProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotStructure oldData);
     }
 }

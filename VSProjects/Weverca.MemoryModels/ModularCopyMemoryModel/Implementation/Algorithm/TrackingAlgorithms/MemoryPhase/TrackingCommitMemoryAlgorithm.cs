@@ -10,20 +10,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 {
     class TrackingCommitMemoryAlgorithmFactory : IAlgorithmFactory<ICommitAlgorithm>
     {
-        private TrackingCommitMemoryAlgorithm singletonInstance = new TrackingCommitMemoryAlgorithm();
-
-        public ICommitAlgorithm CreateInstance()
+        public ICommitAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return singletonInstance;
+            return new TrackingCommitMemoryAlgorithm(factories);
         }
     }
 
-    class TrackingCommitMemoryAlgorithm : ICommitAlgorithm
+    class TrackingCommitMemoryAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
+        public TrackingCommitMemoryAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             TrackingCommitWorker worker = new TrackingCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(false);
         }
@@ -31,7 +34,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             TrackingCommitWorker worker = new TrackingCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(true);
         }

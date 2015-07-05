@@ -76,8 +76,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        private SnapshotStructureContainer(Snapshot snapshot, ISnapshotStructureProxy proxy)
-            : base(snapshot, proxy)
+        private SnapshotStructureContainer(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
+            : base(factories, snapshot, proxy)
         {
         }
 
@@ -86,9 +86,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static SnapshotStructureContainer CreateEmpty(Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public static SnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(factories, snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
@@ -105,9 +105,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New structure with memory stack with global level only.</returns>
-        public static SnapshotStructureContainer CreateGlobal(Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public static SnapshotStructureContainer CreateGlobal(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(factories, snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
@@ -126,9 +126,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public SnapshotStructureContainer Copy(Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public SnapshotStructureContainer Copy(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            SnapshotStructureContainer data = new SnapshotStructureContainer(snapshot, proxy);
+            SnapshotStructureContainer data = new SnapshotStructureContainer(factories, snapshot, proxy);
             data.memoryStack = new List<CopyStackContext>();
             foreach (CopyStackContext context in this.memoryStack)
             {

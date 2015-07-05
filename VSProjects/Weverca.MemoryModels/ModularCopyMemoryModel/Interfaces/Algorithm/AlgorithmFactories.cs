@@ -23,10 +23,26 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
 {
+    /// <summary>
+    /// Generec factory interface for algorithm type.
+    /// 
+    /// Algorithm factory always creates new instance of algorithm. Algorithm is used only for
+    /// single job. Parameters for run of algorithm will be cpecified within algorithm public
+    /// interface.
+    /// </summary>
+    /// <typeparam name="T">Type of algorithm to create.</typeparam>
+    public interface IAlgorithmFactory<T>
+    {
+        /// <summary>
+        /// Creates new instance of algorithm.
+        /// </summary>
+        /// <returns>New instance of algorithm.</returns>
+        T CreateInstance(ModularMemoryModelFactories factories);
+    }
+
     /// <summary>
     /// Contains factories for creating all algorithms for memory model.
     /// 
@@ -86,80 +102,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation
         /// Initializes a new instance of the <see cref="AlgorithmFactories"/> class.
         /// </summary>
         /// <param name="builder">The builder.</param>
-        public AlgorithmFactories(AlgorithmFactoriesBuilder builder)
+        public AlgorithmFactories(
+            IAlgorithmFactory<IAssignAlgorithm> assignAlgorithmFactory,
+            IAlgorithmFactory<IReadAlgorithm> readAlgorithmFactory,
+            IAlgorithmFactory<ICommitAlgorithm> commitAlgorithmFactory,
+            IAlgorithmFactory<IMemoryAlgorithm> memoryAlgorithmFactory,
+            IAlgorithmFactory<IMergeAlgorithm> mergeAlgorithmFactory,
+            IAlgorithmFactory<IPrintAlgorithm> printAlgorithmFactory
+            )
         {
-            this.AssignAlgorithmFactory = builder.AssignAlgorithmFactory;
-            this.ReadAlgorithmFactory = builder.ReadAlgorithmFactory;
-            this.CommitAlgorithmFactory = builder.CommitAlgorithmFactory;
-            this.MemoryAlgorithmFactory = builder.MemoryAlgorithmFactory;
-            this.MergeAlgorithmFactory = builder.MergeAlgorithmFactory;
-            this.PrintAlgorithmFactory = builder.PrintAlgorithmFactory;
+            this.AssignAlgorithmFactory = assignAlgorithmFactory;
+            this.ReadAlgorithmFactory = readAlgorithmFactory;
+            this.CommitAlgorithmFactory = commitAlgorithmFactory;
+            this.MemoryAlgorithmFactory = memoryAlgorithmFactory;
+            this.MergeAlgorithmFactory = mergeAlgorithmFactory;
+            this.PrintAlgorithmFactory = printAlgorithmFactory;
         }
-    }
 
-
-    /// <summary>
-    /// Mutable version of AlgorithmFactories class.
-    /// 
-    /// Allows programmer to set factories within this builder class.
-    /// </summary>
-    public class AlgorithmFactoriesBuilder 
-    {
-        /// <summary>
-        /// Gets or sets the assign algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The assign algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<IAssignAlgorithm> AssignAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the read algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The read algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<IReadAlgorithm> ReadAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the commit algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The commit algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<ICommitAlgorithm> CommitAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the memory algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The memory algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<IMemoryAlgorithm> MemoryAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the merge algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The merge algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<IMergeAlgorithm> MergeAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the print algorithm factory.
-        /// </summary>
-        /// <value>
-        /// The print algorithm factory.
-        /// </value>
-        public IAlgorithmFactory<IPrintAlgorithm> PrintAlgorithmFactory { get; set; }
-
-        /// <summary>
-        /// Creates new AlgorithmFactories collection.
-        /// </summary>
-        /// <returns>New AlgorithmFactories collection.</returns>
-        public AlgorithmFactories Build()
+        public AlgorithmInstances CreateInstances(ModularMemoryModelFactories factories)
         {
-            return new AlgorithmFactories(this);
+            return new AlgorithmInstances(
+                AssignAlgorithmFactory.CreateInstance(factories),
+                ReadAlgorithmFactory.CreateInstance(factories),
+                CommitAlgorithmFactory.CreateInstance(factories),
+                MemoryAlgorithmFactory.CreateInstance(factories),
+                MergeAlgorithmFactory.CreateInstance(factories),
+                PrintAlgorithmFactory.CreateInstance(factories)
+                );
         }
     }
 }

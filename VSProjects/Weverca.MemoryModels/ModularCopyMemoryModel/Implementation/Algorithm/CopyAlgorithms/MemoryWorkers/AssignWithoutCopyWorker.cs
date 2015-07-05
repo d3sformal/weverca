@@ -53,8 +53,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         /// Initializes a new instance of the <see cref="AssignWithoutCopyWorker"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public AssignWithoutCopyWorker(Snapshot snapshot)
+        public AssignWithoutCopyWorker(ModularMemoryModelFactories factories, Snapshot snapshot)
         {
+            Factories = factories;
             this.snapshot = snapshot;
         }
 
@@ -114,7 +115,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 if (composedValues.Objects.Count > 0)
                 {
-                    IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
+                    IObjectValueContainer objects = Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
                     snapshot.Structure.Writeable.SetObjects(mustIndex, objects);
                     if (data.Objects != null) CollectionMemoryUtils.AddAll(values, data.Objects);
                 }
@@ -137,7 +138,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 HashSet<ObjectValue> objectsSet = new HashSet<ObjectValue>(data.Objects);
                 CollectionMemoryUtils.AddAll(objectsSet, composedValues.Objects);
-                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
+                IObjectValueContainer objects = Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
                 snapshot.Structure.Writeable.SetObjects(mayIndex, objects);
 
                 //if (data.Objects != null) 
@@ -266,5 +267,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 snapshot.CurrentData.Writeable.SetMemoryEntry(index, snapshot.CreateMemoryEntry(newValues));
             }
         }
+
+        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

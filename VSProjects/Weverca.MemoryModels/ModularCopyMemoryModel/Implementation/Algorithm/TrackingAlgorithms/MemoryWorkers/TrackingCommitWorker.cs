@@ -25,7 +25,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private int simplifyLimit;
         private MemoryAssistantBase assistant;
 
-        public TrackingCommitWorker(Snapshot snapshot, int simplifyLimit, 
+        public ModularMemoryModelFactories Factories { get; set; }
+
+        public TrackingCommitWorker(ModularMemoryModelFactories factories, Snapshot snapshot, int simplifyLimit, 
             ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
             ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
         {
@@ -37,6 +39,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             this.oldStructure = oldStructure;
             this.newData = newData;
             this.oldData = oldData;
+
+            Factories = factories;
         }
 
         public bool CompareStructureAndSimplify(bool widen)
@@ -362,7 +366,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             if (modifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
             {
-                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(newStructure.Writeable, currentVisitor.Objects);
+                IObjectValueContainer objects = Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(newStructure.Writeable, currentVisitor.Objects);
                 snapshot.Structure.Writeable.SetObjects(index, objects);
             }
 

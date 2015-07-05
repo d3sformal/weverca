@@ -15,6 +15,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     class TrackingMergeDataWorker : AbstractValueVisitor
     {
         public ISnapshotDataProxy Data { get; set; }
+        public ModularMemoryModelFactories Factories { get; set; }
 
         private Snapshot targetSnapshot;
         private IReadOnlySnapshotStructure targetStructure;
@@ -25,11 +26,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private HashSet<MemoryIndex> indexChanges = new HashSet<MemoryIndex>();
         private HashSet<Value> values = new HashSet<Value>();
 
-        public TrackingMergeDataWorker(Snapshot targetSnapshot, IReadOnlySnapshotStructure targetStructure, List<Snapshot> sourceSnapshots)
+        public TrackingMergeDataWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, IReadOnlySnapshotStructure targetStructure, List<Snapshot> sourceSnapshots)
         {
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
             this.targetStructure = targetStructure;
+
+            Factories = factories;
 
             if (targetSnapshot.MergeInfo == null)
             {
@@ -108,7 +111,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor)
         {
-            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Data = Factories.SnapshotDataFactory.CreateNewInstanceWithData(Factories, targetSnapshot, commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
@@ -116,7 +119,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCallSnapshot(Snapshot callSnapshot)
         {
-            Data = targetSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(targetSnapshot, callSnapshot.CurrentData);
+            Data = Factories.SnapshotDataFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.CurrentData);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(callSnapshot.CurrentData.Readonly);

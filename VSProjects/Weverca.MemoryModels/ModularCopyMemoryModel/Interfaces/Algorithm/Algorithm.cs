@@ -34,29 +34,21 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
 {
     /// <summary>
-    /// Generec factory interface for algorithm type.
-    /// 
-    /// Algorithm factory always creates new instance of algorithm. Algorithm is used only for
-    /// single job. Parameters for run of algorithm will be cpecified within algorithm public
-    /// interface.
-    /// </summary>
-    /// <typeparam name="T">Type of algorithm to create.</typeparam>
-    public interface IAlgorithmFactory<T>
-    {
-        /// <summary>
-        /// Creates new instance of algorithm.
-        /// </summary>
-        /// <returns>New instance of algorithm.</returns>
-        T CreateInstance();
-    }
-
-
-    /// <summary>
     /// Common ancestor for memory model algorithms.
     /// </summary>
     public interface IAlgorithm
     {
 
+    }
+
+    public abstract class AlgorithmBase : IAlgorithm
+    {
+        public ModularMemoryModelFactories Factories { get; set; }
+
+        protected AlgorithmBase(ModularMemoryModelFactories factories)
+        {
+            this.Factories = factories;
+        }
     }
 
     /// <summary>

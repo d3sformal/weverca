@@ -83,8 +83,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        private TrackingSnapshotStructureContainer(Snapshot snapshot, ISnapshotStructureProxy proxy)
-            : base(snapshot, proxy)
+        private TrackingSnapshotStructureContainer(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
+            : base(factories, snapshot, proxy)
         {
             changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(StructureId, this, null);
         }
@@ -94,9 +94,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static TrackingSnapshotStructureContainer CreateEmpty(Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public static TrackingSnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot, proxy);
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories, snapshot, proxy);
             data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>();
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
@@ -113,9 +113,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public TrackingSnapshotStructureContainer Copy(Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public TrackingSnapshotStructureContainer Copy(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(snapshot, proxy);
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories, snapshot, proxy);
             data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>(this.memoryStack);
             data.localLevel = this.localLevel;
 
@@ -295,7 +295,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// <inheritdoc />
         public override void AddStackLevel(int level)
         {
-            IWriteableStackContext context = Snapshot.MemoryModelFactory.StructuralContainersFactories.StackContextFactory.CreateWriteableStackContext(level);
+            IWriteableStackContext context = Factories.StructuralContainersFactories.StackContextFactory.CreateWriteableStackContext(level);
             context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(level));
             context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(level));
 
@@ -364,7 +364,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
 			if (indexDefinitions.ContainsKey(index))
 				return;
 
-            IIndexDefinition data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
+            IIndexDefinition data = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             indexDefinitions.Add(index, data);
             changeTracker.InsertedIndex(index);
         }
@@ -432,7 +432,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
                 }
             }
 
-            return Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(this);
+            return Factories.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(this);
         }
 
         /// <inheritdoc />
@@ -447,7 +447,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
+                data = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -577,7 +577,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
+                data = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -605,7 +605,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
+                data = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -744,7 +744,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
+                data = Factories.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);

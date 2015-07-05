@@ -26,11 +26,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
     public class ModularMemoryModelVariants
     {
-        public static readonly ModularMemoryModelFactory CopyImplementation = new ModularMemoryModelFactoryBuilder()
-        {
-            SnapshotStructureFactory = new CopySnapshotStructureFactory(),
+        public static readonly ModularMemoryModelFactories CopyImplementation = new ModularMemoryModelFactories(
+       
+            new CopySnapshotStructureFactory(),
 
-            StructuralContainersFactories = new StructuralContainersFactories(
+            new StructuralContainersFactories(
                 new CopyArrayDescriptorFactory(),
                 new CopyIndexContainerFactory(),
                 new CopyIndexDefinitionFactory(),
@@ -40,35 +40,31 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 new CopyObjectValueContainerFactory()
                 ),
 
-            SnapshotDataFactory = new CopySnapshotDataFactory(),
+            new CopySnapshotDataFactory(),
 
-            MemoryAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new CopyAssignMemoryAlgorithmFactory(),
-                CommitAlgorithmFactory = new CopyCommitMemoryAlgorithmFactory(),
-                MemoryAlgorithmFactory = new CopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new CopyMergeMemoryAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build(),
+            new AlgorithmFactories(
+                new CopyAssignMemoryAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new CopyCommitMemoryAlgorithmFactory(),
+                new CopyMemoryAlgorithmFactory(),
+                new CopyMergeMemoryAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            ),
 
-            InfoAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new CopyAssignInfoAlgorithmFactory(),
-                CommitAlgorithmFactory = new CopyCommitInfoAlgorithmFactory(),
-                MemoryAlgorithmFactory = new CopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new CopyMergeInfoAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build()
+            new AlgorithmFactories(
+                new CopyAssignInfoAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new CopyCommitInfoAlgorithmFactory(),
+                new CopyMemoryAlgorithmFactory(),
+                new CopyMergeInfoAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            )
+        );
 
-        }.Build();
+        public static readonly ModularMemoryModelFactories LazyImplementation = new ModularMemoryModelFactories(
+           new LazyCopySnapshotStructureFactory(),
 
-        public static readonly ModularMemoryModelFactory LazyImplementation = new ModularMemoryModelFactoryBuilder()
-        {
-            SnapshotStructureFactory = new LazyCopySnapshotStructureFactory(),
-
-            StructuralContainersFactories = new StructuralContainersFactories(
+            new StructuralContainersFactories(
                 new CopyArrayDescriptorFactory(),
                 new CopyIndexContainerFactory(),
                 new CopyIndexDefinitionFactory(),
@@ -78,35 +74,31 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 new CopyObjectValueContainerFactory()
                 ),
 
-            SnapshotDataFactory = new LazyCopySnapshotDataFactory(),
+            new LazyCopySnapshotDataFactory(),
 
-            MemoryAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new CopyAssignMemoryAlgorithmFactory(),
-                CommitAlgorithmFactory = new LazyCommitMemoryAlgorithmFactory(),
-                MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new CopyMergeMemoryAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build(),
+            new AlgorithmFactories(
+                new CopyAssignMemoryAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new LazyCommitMemoryAlgorithmFactory(),
+                new SimplifyingCopyMemoryAlgorithmFactory(),
+                new CopyMergeMemoryAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            ),
 
-            InfoAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new CopyAssignInfoAlgorithmFactory(),
-                CommitAlgorithmFactory = new LazyCommitInfoAlgorithmFactory(),
-                MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new CopyMergeInfoAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build()
+            new AlgorithmFactories(
+                new CopyAssignInfoAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new LazyCommitInfoAlgorithmFactory(),
+                new SimplifyingCopyMemoryAlgorithmFactory(),
+                new CopyMergeInfoAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            )
+        );
 
-        }.Build();
+        public static readonly ModularMemoryModelFactories TrackingImplementation = new ModularMemoryModelFactories(
+            new TrackingSnapshotStructureFactory(),
 
-        public static readonly ModularMemoryModelFactory TrackingImplementation = new ModularMemoryModelFactoryBuilder()
-        {
-            SnapshotStructureFactory = new TrackingSnapshotStructureFactory(),
-
-            StructuralContainersFactories = new StructuralContainersFactories(
+            new StructuralContainersFactories(
                 new LazyCopyArrayDescriptorFactory(),
                 new LazyCopyIndexContainerFactory(),
                 new LazyCopyIndexDefinitionFactory(),
@@ -116,28 +108,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 new LazyCopyObjectValueContainerFactory()
                 ),
 
-            SnapshotDataFactory = new TrackingSnapshotDataFactory(),
+            new TrackingSnapshotDataFactory(),
 
-            MemoryAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new LazyAssignMemoryAlgorithmFactory(),
-                CommitAlgorithmFactory = new TrackingCommitMemoryAlgorithmFactory(),
-                MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new TrackingMergeMemoryAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build(),
+            new AlgorithmFactories(
+                new LazyAssignMemoryAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new TrackingCommitMemoryAlgorithmFactory(),
+                new SimplifyingCopyMemoryAlgorithmFactory(),
+                new TrackingMergeMemoryAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            ),
 
-            InfoAlgorithmFactories = new AlgorithmFactoriesBuilder()
-            {
-                AssignAlgorithmFactory = new LazyAssignInfoAlgorithmFactory(),
-                CommitAlgorithmFactory = new TrackingCommitInfoAlgorithmFactory(),
-                MemoryAlgorithmFactory = new SimplifyingCopyMemoryAlgorithmFactory(),
-                MergeAlgorithmFactory = new TrackingMergeInfoAlgorithmFactory(),
-                ReadAlgorithmFactory = new CopyReadAlgorithmFactory(),
-                PrintAlgorithmFactory = new PrintAlgorithmFactory()
-            }.Build()
+            new AlgorithmFactories(
+                new LazyAssignInfoAlgorithmFactory(),
+                new CopyReadAlgorithmFactory(),
+                new TrackingCommitInfoAlgorithmFactory(),
+                new SimplifyingCopyMemoryAlgorithmFactory(),
+                new TrackingMergeInfoAlgorithmFactory(),
+                new PrintAlgorithmFactory()
+            )
 
-        }.Build();
+        );
     }
 }

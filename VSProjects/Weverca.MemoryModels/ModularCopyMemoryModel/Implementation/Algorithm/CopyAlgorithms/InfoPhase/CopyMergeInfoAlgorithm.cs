@@ -14,20 +14,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 {
     class CopyMergeInfoAlgorithmFactory : IAlgorithmFactory<IMergeAlgorithm>
     {
-        CopyMergeInfoAlgorithm instance = new CopyMergeInfoAlgorithm();
-
-        public IMergeAlgorithm CreateInstance()
+        public IMergeAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new CopyMergeInfoAlgorithm(factories);
         }
     }
 
-    class CopyMergeInfoAlgorithm : IMergeAlgorithm
+    class CopyMergeInfoAlgorithm : AlgorithmBase, IMergeAlgorithm
     {
+        public CopyMergeInfoAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
 
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)
         {
-            ISnapshotDataProxy data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Infos);
             extendedSnapshot.AssignCreatedAliases(extendedSnapshot, data);
 
             extendedSnapshot.SetInfoMergeResult(data);
@@ -35,7 +38,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
-            ISnapshotDataProxy data = extendedSnapshot.MemoryModelFactory.SnapshotDataFactory.CopyInstance(extendedSnapshot, sourceSnapshot.Infos);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Infos);
 
             extendedSnapshot.SetInfoMergeResult(data);
         }
@@ -43,7 +46,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public void Merge(Snapshot snapshot, List<Snapshot> snapshots)
         {
             int localLevel = findMaxCallLevel(snapshots);
-            MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, localLevel);
+            MergeInfoWorker worker = new MergeInfoWorker(Factories, snapshot, snapshots, localLevel);
             worker.Merge();
 
             ISnapshotDataProxy data = worker.Infos;
@@ -59,7 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             int localLevel = callSnapshot.CallLevel;
-            MergeInfoWorker worker = new MergeInfoWorker(snapshot, snapshots, localLevel, true);
+            MergeInfoWorker worker = new MergeInfoWorker(Factories, snapshot, snapshots, localLevel, true);
             worker.Merge();
 
             ISnapshotDataProxy data = worker.Infos;

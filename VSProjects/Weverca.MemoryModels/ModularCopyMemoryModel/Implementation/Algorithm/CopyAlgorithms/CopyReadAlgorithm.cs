@@ -40,18 +40,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 {
     class CopyReadAlgorithmFactory : IAlgorithmFactory<IReadAlgorithm>
     {
-        private CopyReadAlgorithm instance = new CopyReadAlgorithm();
-
-        public IReadAlgorithm CreateInstance()
+        public IReadAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new CopyReadAlgorithm(factories);
         }
     }
 
 
-    class CopyReadAlgorithm : IReadAlgorithm
+    class CopyReadAlgorithm : AlgorithmBase, IReadAlgorithm
     {
+        public CopyReadAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
 
+        }
         public MemoryEntry Read(Snapshot snapshot, MemoryPath path)
         {
             ReadCollector collector = new ReadCollector(snapshot);

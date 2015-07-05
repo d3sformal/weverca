@@ -37,18 +37,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 {
     class CopyMemoryAlgorithmFactory : IAlgorithmFactory<IMemoryAlgorithm>
     {
-        private CopyMemoryAlgorithm instance = new CopyMemoryAlgorithm();
-
-        public IMemoryAlgorithm CreateInstance()
+        public IMemoryAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return instance;
+            return new CopyMemoryAlgorithm(factories);
         }
     }
 
 
-    class CopyMemoryAlgorithm : IMemoryAlgorithm
+    class CopyMemoryAlgorithm : AlgorithmBase, IMemoryAlgorithm
     {
+        public CopyMemoryAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
 
+        }
         /// <inheritdoc />
         public void CopyMemory(Snapshot snapshot, MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
         {

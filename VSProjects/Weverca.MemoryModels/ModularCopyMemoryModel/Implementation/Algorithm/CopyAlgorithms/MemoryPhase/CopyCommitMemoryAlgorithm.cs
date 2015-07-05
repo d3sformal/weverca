@@ -10,20 +10,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 {
     class CopyCommitMemoryAlgorithmFactory : IAlgorithmFactory<ICommitAlgorithm>
     {
-        private CopyCommitMemoryAlgorithm singletonInstance = new CopyCommitMemoryAlgorithm();
-
-        public ICommitAlgorithm CreateInstance()
+        public ICommitAlgorithm CreateInstance(ModularMemoryModelFactories factories)
         {
-            return singletonInstance;
+            return new CopyCommitMemoryAlgorithm(factories);
         }
     }
 
-    class CopyCommitMemoryAlgorithm : ICommitAlgorithm
+    class CopyCommitMemoryAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
+        public CopyCommitMemoryAlgorithm(ModularMemoryModelFactories factories)
+            : base(factories)
+        {
+
+        }
+
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(false);
         }
@@ -31,7 +35,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(
-                snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
+                Factories, snapshot, simplifyLimit, snapshot.Structure, snapshot.OldStructure, snapshot.Data, snapshot.OldData);
 
             return worker.CompareStructureAndSimplify(true);
         }

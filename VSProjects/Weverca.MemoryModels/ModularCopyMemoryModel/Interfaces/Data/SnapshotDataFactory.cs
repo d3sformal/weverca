@@ -19,7 +19,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New object with empty inner structure.</returns>
-        ISnapshotDataProxy CreateEmptyInstance(Snapshot snapshot);
+        ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot);
 
         /// <summary>
         /// Creates new snapshot data container as copy of the given one.
@@ -28,7 +28,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         /// <returns>New object with inner scructure as copy of given object.</returns>
-        ISnapshotDataProxy CopyInstance(Snapshot snapshot, ISnapshotDataProxy oldData);
+        ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData);
 
         /// <summary>
         /// Creates new snapshot structure container as copy containing data from given inner container.
@@ -37,6 +37,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         /// <returns>New snapshot structure container as copy containing data from given inner container.</returns>
-        ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData);
+        ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData);
     }
 }

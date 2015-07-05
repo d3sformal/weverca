@@ -19,6 +19,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
     {
 
         public ISnapshotStructureProxy Structure { get; set; }
+        public ModularMemoryModelFactories Factories { get; set; }
+
         public Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
         public Snapshot Snapshot { get { return targetSnapshot; } }
 
@@ -40,9 +42,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private MergeAliasStructureWorker aliasWorker;
         private MergeArrayStructureWorker arrayWorker;
 
-        public TrackingMergeStructureWorker(Snapshot targetSnapshot, List<Snapshot> sourceSnapshots)
+        public TrackingMergeStructureWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots)
         {
             MemoryAliases = new Dictionary<MemoryIndex, MemoryAliasInfo>();
+            Factories = factories;
 
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
@@ -130,7 +133,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructureFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor)
         {
-            Structure = targetSnapshot.MemoryModelFactory.SnapshotStructureFactory.CreateNewInstanceWithData(targetSnapshot, commonAncestor.Container);
+            Structure = Factories.SnapshotStructureFactory.CreateNewInstanceWithData(Factories, targetSnapshot, commonAncestor.Container);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
@@ -202,7 +205,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructureFromCallSnapshot(Snapshot callSnapshot)
         {
-            Structure = targetSnapshot.MemoryModelFactory.SnapshotStructureFactory.CopyInstance(targetSnapshot, callSnapshot.Structure);
+            Structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
@@ -804,7 +807,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             MemoryAliasInfo aliasInfo;
             if (!MemoryAliases.TryGetValue(index, out aliasInfo))
             {
-                IMemoryAliasBuilder alias = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableTargetStructure, index).Builder(writeableTargetStructure);
+                IMemoryAliasBuilder alias = Factories.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableTargetStructure, index).Builder(writeableTargetStructure);
                 aliasInfo = new MemoryAliasInfo(alias, false);
 
                 MemoryAliases[index] = aliasInfo;

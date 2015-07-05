@@ -38,20 +38,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     public class TrackingSnapshotDataFactory : ISnapshotDataFactory
     {
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateEmptyInstance(Snapshot snapshot)
+        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
         {
             return new TrackingSnapshotDataProxy(snapshot);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CopyInstance(Snapshot snapshot, ISnapshotDataProxy oldData)
+        public ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData)
         {
             TrackingSnapshotDataProxy proxy = TrackingSnapshotDataProxy.Convert(oldData);
             return new TrackingSnapshotDataProxy(snapshot, proxy);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateNewInstanceWithData(Snapshot snapshot, IReadOnlySnapshotData oldData)
+        public ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData)
         {
             TrackingSnapshotDataAssociativeContainer data = oldData as TrackingSnapshotDataAssociativeContainer;
             if (data != null)

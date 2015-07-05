@@ -18,8 +18,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         private HashSet<MemoryIndex> mayAliases = new HashSet<MemoryIndex>();
         private HashSet<Value> values = new HashSet<Value>();
 
-        public AliasWorker(Snapshot snapshot, TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
-            : base(snapshot, treeCollector, pathModifications)
+        public AliasWorker(ModularMemoryModelFactories factories, Snapshot snapshot, TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
+            : base(factories, snapshot, treeCollector, pathModifications)
         {
             EntryCollector = new MemoryEntryCollector(snapshot);
         }
