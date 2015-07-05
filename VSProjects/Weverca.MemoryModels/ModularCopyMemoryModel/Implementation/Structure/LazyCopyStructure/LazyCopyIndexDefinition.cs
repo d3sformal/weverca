@@ -8,6 +8,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyIndexDefinitionFactory : IIndexDefinitionFactory
+    {
+
+        public IIndexDefinition CreateIndexDefinition(IWriteableSnapshotStructure targetStructure)
+        {
+            return new LazyCopyIndexDefinition(targetStructure);
+        }
+    }
+
     class LazyCopyIndexDefinition : IIndexDefinition, IIndexDefinitionBuilder
     {
         private IMemoryAlias aliases;

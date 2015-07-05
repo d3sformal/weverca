@@ -20,6 +20,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// </value>
         public ISnapshotStructureFactory SnapshotStructureFactory { get; private set; }
 
+        public StructuralContainersFactories StructuralContainersFactories { get; private set; }
+
         /// <summary>
         /// Gets the snapshot data factory.
         /// </summary>
@@ -60,6 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         internal ModularMemoryModelFactory(ModularMemoryModelFactoryBuilder builder)
         {
             SnapshotStructureFactory = builder.SnapshotStructureFactory;
+            StructuralContainersFactories = builder.StructuralContainersFactories;
             SnapshotDataFactory = builder.SnapshotDataFactory;
             MemoryAlgorithmFactories = builder.MemoryAlgorithmFactories;
             InfoAlgorithmFactories = builder.InfoAlgorithmFactories;
@@ -115,6 +118,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot structure factory.
         /// </value>
         public ISnapshotStructureFactory SnapshotStructureFactory { get; set; }
+
+        public StructuralContainersFactories StructuralContainersFactories { get; set; }
 
         /// <summary>
         /// Gets or sets the snapshot data factory.

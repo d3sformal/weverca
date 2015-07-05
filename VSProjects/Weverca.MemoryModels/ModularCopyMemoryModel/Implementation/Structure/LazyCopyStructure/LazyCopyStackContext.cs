@@ -30,6 +30,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyStackContextFactory : IStackContextFactory
+    {
+
+        public IWriteableStackContext CreateWriteableStackContext(int level)
+        {
+            return new LazyCopyStackContext(level);
+        }
+    }
+
     class LazyCopyStackContext : IReadonlyStackContext, IWriteableStackContext
     {
         private LazyCopyIndexContainer variables;

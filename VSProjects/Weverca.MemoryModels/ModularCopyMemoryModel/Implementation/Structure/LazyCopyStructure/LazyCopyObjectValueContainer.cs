@@ -8,6 +8,23 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyObjectValueContainerFactory : IObjectValueContainerFactory
+    {
+        public IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure, IEnumerable<ObjectValue> objects)
+        {
+            LazyCopyObjectValueContainer container = new LazyCopyObjectValueContainer(targetStructure);
+            container.AddAll(objects);
+            return container;
+        }
+
+
+        public IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure)
+        {
+            return new LazyCopyObjectValueContainer(targetStructure);
+        }
+    }
+
+
     class LazyCopyObjectValueContainer : LazyCopySet<ObjectValue>, IObjectValueContainer, IObjectValueContainerBuilder
     {
         private IWriteableSnapshotStructure associatedStructure;

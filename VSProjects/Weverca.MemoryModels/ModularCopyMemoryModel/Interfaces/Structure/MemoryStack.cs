@@ -29,6 +29,16 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    public interface IStackContextFactory
+    {
+        /// <summary>
+        /// Creates the writeable stack context.
+        /// </summary>
+        /// <param name="level">The level.</param>
+        /// <returns></returns>
+        IWriteableStackContext CreateWriteableStackContext(int level);
+    }
+
     /// <summary>
     /// Represents single level of memory stack with collections of variables and defined arrays.
     /// This level is part of memory stack an allows to separate global and local memory contexts.

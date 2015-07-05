@@ -27,6 +27,15 @@ using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    public interface IIndexDefinitionFactory
+    {
+        /// <summary>
+        /// Creates the new instance of object container to store alias, array and object data for memory indexes.
+        /// </summary>
+        /// <returns>New instance of index definition object.</returns>
+        IIndexDefinition CreateIndexDefinition(IWriteableSnapshotStructure targetStructure);
+    }
+
     /// <summary>
     /// Contains structural data about memory indexes. Every memory index used in snapshot is mapped
     /// to one instance of IIndexDefinition interface. This interface allows to set structural data like aliases,

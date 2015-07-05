@@ -30,7 +30,16 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
-{    
+{
+    class CopyIndexContainerFactory : IIndexContainerFactory
+    {
+
+        public IWriteableIndexContainer CreateWriteableIndexContainer()
+        {
+            return new CopyIndexContainer();
+        }
+    }
+
     /// <summary>
     /// Typycal implementation of index container which can be used to store variable names and their mapping
     /// to memory indexes.

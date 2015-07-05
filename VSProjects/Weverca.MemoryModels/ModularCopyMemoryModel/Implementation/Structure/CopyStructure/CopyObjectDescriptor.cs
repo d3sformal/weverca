@@ -29,6 +29,19 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopyObjectDescriptorFactory : IObjectDescriptorFactory
+    {
+
+        public IObjectDescriptor CreateObjectDescriptor(IWriteableSnapshotStructure targetStructure, ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex)
+        {
+            CopyObjectDescriptor descriptor = new CopyObjectDescriptor();
+            descriptor.SetObjectValue(createdObject);
+            descriptor.SetType(type);
+            descriptor.SetUnknownIndex(memoryIndex);
+            return descriptor;
+        }
+    }
+
     class CopyObjectDescriptor : CopyIndexContainer, IObjectDescriptor, IObjectDescriptorBuilder
     {
         private TypeValue type;

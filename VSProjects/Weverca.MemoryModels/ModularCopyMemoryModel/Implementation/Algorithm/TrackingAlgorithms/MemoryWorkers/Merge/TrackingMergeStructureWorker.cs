@@ -20,6 +20,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public ISnapshotStructureProxy Structure { get; set; }
         public Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
+        public Snapshot Snapshot { get { return targetSnapshot; } }
 
         private Snapshot targetSnapshot;
         private List<Snapshot> sourceSnapshots;
@@ -803,7 +804,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             MemoryAliasInfo aliasInfo;
             if (!MemoryAliases.TryGetValue(index, out aliasInfo))
             {
-                IMemoryAliasBuilder alias = Structure.CreateMemoryAlias(index).Builder(writeableTargetStructure);
+                IMemoryAliasBuilder alias = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableTargetStructure, index).Builder(writeableTargetStructure);
                 aliasInfo = new MemoryAliasInfo(alias, false);
 
                 MemoryAliases[index] = aliasInfo;

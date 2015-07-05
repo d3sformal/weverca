@@ -24,9 +24,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    public interface IObjectDescriptorFactory
+    {
+        /// <summary>
+        /// Creates the new instance of object descriptor to store object definition in structure.
+        /// </summary>
+        /// <param name="createdObject">The created object.</param>
+        /// <param name="type">The type of object.</param>
+        /// <param name="memoryIndex">The memory location of object.</param>
+        /// <returns>Created object descriptor instance.</returns>
+        IObjectDescriptor CreateObjectDescriptor(IWriteableSnapshotStructure targetStructure, ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex);
+    }
+
     /// <summary>    
     /// Stores type and list of fields of PHP object. Every objects is determined by special value object
     /// with no content. This object is just pointer which is used to receive this descriptor instance when is need.

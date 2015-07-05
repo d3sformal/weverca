@@ -114,7 +114,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 if (composedValues.Objects.Count > 0)
                 {
-                    IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
+                    IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
                     snapshot.Structure.Writeable.SetObjects(mustIndex, objects);
                     if (data.Objects != null) CollectionMemoryUtils.AddAll(values, data.Objects);
                 }
@@ -137,7 +137,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 HashSet<ObjectValue> objectsSet = new HashSet<ObjectValue>(data.Objects);
                 CollectionMemoryUtils.AddAll(objectsSet, composedValues.Objects);
-                IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(composedValues.Objects);
+                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, composedValues.Objects);
                 snapshot.Structure.Writeable.SetObjects(mayIndex, objects);
 
                 //if (data.Objects != null) 

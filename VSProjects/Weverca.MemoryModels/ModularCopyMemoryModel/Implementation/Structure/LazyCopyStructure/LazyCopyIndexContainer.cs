@@ -30,6 +30,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyIndexContainerFactory : IIndexContainerFactory
+    {
+        public IWriteableIndexContainer CreateWriteableIndexContainer()
+        {
+            return new LazyCopyIndexContainer();
+        }
+    }
+
+
     class LazyCopyIndexContainer: IReadonlyIndexContainer, IWriteableIndexContainer, IGenericCloneable<LazyCopyIndexContainer>
     {
         private Dictionary<string, MemoryIndex> indexes;

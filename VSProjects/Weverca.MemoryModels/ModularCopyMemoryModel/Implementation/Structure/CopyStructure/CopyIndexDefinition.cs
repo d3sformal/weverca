@@ -29,6 +29,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopyIndexDefinitionFactory : IIndexDefinitionFactory
+    {
+
+        public IIndexDefinition CreateIndexDefinition(IWriteableSnapshotStructure targetStructure)
+        {
+            return new CopyIndexDefinition();
+        }
+    }
+
     class CopyIndexDefinition : IIndexDefinition, IIndexDefinitionBuilder
     {
         private IMemoryAlias aliases;

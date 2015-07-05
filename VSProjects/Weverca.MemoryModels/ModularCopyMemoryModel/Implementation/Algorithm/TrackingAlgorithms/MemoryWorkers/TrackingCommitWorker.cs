@@ -362,7 +362,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             if (modifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
             {
-                IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(currentVisitor.Objects);
+                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(newStructure.Writeable, currentVisitor.Objects);
                 snapshot.Structure.Writeable.SetObjects(index, objects);
             }
 

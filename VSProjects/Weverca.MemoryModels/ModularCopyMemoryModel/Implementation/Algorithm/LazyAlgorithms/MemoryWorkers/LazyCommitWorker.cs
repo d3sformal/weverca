@@ -54,7 +54,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             CollectionMemoryUtils.AddAll(usedIndexes, newStructure.Readonly.Indexes);
             CollectionMemoryUtils.AddAll(usedIndexes, oldStructure.Readonly.Indexes);
 
-            IIndexDefinition emptyDefinition = newStructure.CreateIndexDefinition();
+            IIndexDefinition emptyDefinition = snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(newStructure.Writeable);
 
             bool areEqual = true;
 
@@ -204,7 +204,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (mdifiedVisitor.Objects.Count != currentVisitor.Objects.Count)
             {
-                IObjectValueContainer objects = snapshot.Structure.CreateObjectValueContainer(currentVisitor.Objects);
+                IObjectValueContainer objects = snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(snapshot.Structure.Writeable, currentVisitor.Objects);
                 snapshot.Structure.Writeable.SetObjects(index, objects);
             }
 

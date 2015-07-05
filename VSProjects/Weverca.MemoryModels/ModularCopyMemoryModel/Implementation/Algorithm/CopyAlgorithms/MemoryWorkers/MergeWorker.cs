@@ -248,7 +248,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             }
 
             Data.Writeable.SetMemoryEntry(operation.TargetIndex, targetSnapshot.CreateMemoryEntry(values));
-            writeableStrucure.SetObjects(operation.TargetIndex, Structure.CreateObjectValueContainer(visitor.Objects));
+            writeableStrucure.SetObjects(operation.TargetIndex, targetSnapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(writeableStrucure, visitor.Objects));
         }
 
         /// <summary>
@@ -285,7 +285,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private Value mergeArrays(MergeOperation operation)
         {
             var structure = writeableStrucure;
-            IArrayDescriptorBuilder builder = Structure.CreateArrayDescriptor(null, operation.TargetIndex).Builder(structure);
+            IArrayDescriptorBuilder builder = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(writeableStrucure, null, operation.TargetIndex).Builder(structure);
             builder.SetUnknownIndex(operation.TargetIndex.CreateUnknownIndex());
 
             ContainerOperations collectVariables = new ContainerOperations(this, builder, operation.TargetIndex, builder.UnknownIndex);
@@ -416,7 +416,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private void mergeObject(ObjectValue objectValue)
         {
             IObjectDescriptorBuilder builder =
-                Structure.CreateObjectDescriptor(objectValue, null, ObjectIndex.CreateUnknown(objectValue))
+                targetSnapshot.MemoryModelFactory.StructuralContainersFactories.ObjectDescriptorFactory.CreateObjectDescriptor(writeableStrucure, objectValue, null, ObjectIndex.CreateUnknown(objectValue))
                 .Builder(writeableStrucure);
 
             ContainerOperations collectVariables = new ContainerOperations(this, builder, builder.UnknownIndex, builder.UnknownIndex);
@@ -474,7 +474,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             IMemoryAliasBuilder alias;
             if (!memoryAliases.TryGetValue(index, out alias))
             {
-                alias = Structure.CreateMemoryAlias(index).Builder(writeableStrucure);
+                alias = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStrucure, index).Builder(writeableStrucure);
             }
 
             if (mustAliases != null)
@@ -509,7 +509,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             IMemoryAliasBuilder alias;
             if (!memoryAliases.TryGetValue(index, out alias))
             {
-                alias = Structure.CreateMemoryAlias(index).Builder(writeableStrucure);
+                alias = targetSnapshot.MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStrucure, index).Builder(writeableStrucure);
             }
 
             if (mustAlias != null)

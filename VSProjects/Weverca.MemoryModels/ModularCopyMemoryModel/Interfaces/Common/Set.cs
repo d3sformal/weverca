@@ -27,6 +27,11 @@ using Weverca.MemoryModels.CopyMemoryModel;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 {
+    public interface ISetFactory<T>
+    {
+        IWriteableSet<T> CreateWriteableSet();
+    }
+
     /// <summary>
     /// Represents readonly version of set to store collection ofdistinct values.
     /// </summary>

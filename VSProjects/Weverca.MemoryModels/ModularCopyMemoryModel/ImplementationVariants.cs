@@ -16,8 +16,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.Track
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryPhase;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
@@ -26,6 +29,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public static readonly ModularMemoryModelFactory CopyImplementation = new ModularMemoryModelFactoryBuilder()
         {
             SnapshotStructureFactory = new CopySnapshotStructureFactory(),
+
+            StructuralContainersFactories = new StructuralContainersFactories(
+                new CopyArrayDescriptorFactory(),
+                new CopyIndexContainerFactory(),
+                new CopyIndexDefinitionFactory(),
+                new CopyMemoryAliasFactory(),
+                new CopyStackContextFactory(),
+                new CopyObjectDescriptorFactory(),
+                new CopyObjectValueContainerFactory()
+                ),
 
             SnapshotDataFactory = new CopySnapshotDataFactory(),
 
@@ -55,6 +68,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             SnapshotStructureFactory = new LazyCopySnapshotStructureFactory(),
 
+            StructuralContainersFactories = new StructuralContainersFactories(
+                new CopyArrayDescriptorFactory(),
+                new CopyIndexContainerFactory(),
+                new CopyIndexDefinitionFactory(),
+                new CopyMemoryAliasFactory(),
+                new CopyStackContextFactory(),
+                new CopyObjectDescriptorFactory(),
+                new CopyObjectValueContainerFactory()
+                ),
+
             SnapshotDataFactory = new LazyCopySnapshotDataFactory(),
 
             MemoryAlgorithmFactories = new AlgorithmFactoriesBuilder()
@@ -82,6 +105,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public static readonly ModularMemoryModelFactory TrackingImplementation = new ModularMemoryModelFactoryBuilder()
         {
             SnapshotStructureFactory = new TrackingSnapshotStructureFactory(),
+
+            StructuralContainersFactories = new StructuralContainersFactories(
+                new LazyCopyArrayDescriptorFactory(),
+                new LazyCopyIndexContainerFactory(),
+                new LazyCopyIndexDefinitionFactory(),
+                new LazyCopyMemoryAliasFactory(),
+                new LazyCopyStackContextFactory(),
+                new LazyCopyObjectDescriptorFactory(),
+                new LazyCopyObjectValueContainerFactory()
+                ),
 
             SnapshotDataFactory = new TrackingSnapshotDataFactory(),
 

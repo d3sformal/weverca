@@ -30,6 +30,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopySetFactory<T> : ISetFactory<T>
+    {
+        public IWriteableSet<T> CreateWriteableSet()
+        {
+            return new CopySet<T>();
+        }
+    }
+
+
     /// <summary>
     /// Represents cloneable and enumerable set of values which can be used in memory collections.
     /// 

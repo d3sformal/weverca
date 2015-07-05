@@ -28,6 +28,17 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    public interface IArrayDescriptorFactory
+    {
+        /// <summary>
+        /// Creates the new instance of array descriptor to store array definition in structure.
+        /// </summary>
+        /// <param name="createdArray">The created array.</param>
+        /// <param name="memoryIndex">The memory location of array.</param>
+        /// <returns>Created array descriptor instance.</returns>
+        IArrayDescriptor CreateArrayDescriptor(IWriteableSnapshotStructure targetStructure, AssociativeArray createdArray, MemoryIndex memoryIndex);
+    }
+
     /// <summary>
     /// Stores list of indexes of associative array. Every associative array is determined by special value object
     /// with no content. This object is just pointer which is used to receive this descriptor instance when is need.

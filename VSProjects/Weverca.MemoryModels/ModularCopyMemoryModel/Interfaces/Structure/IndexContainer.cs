@@ -27,6 +27,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    public interface IIndexContainerFactory
+    {
+        IWriteableIndexContainer CreateWriteableIndexContainer();
+    }
+
     /// <summary>
     /// Represents special object which has semantics as imutable index container. This container contains
     /// imutable collection of memory indexes and their names and unknown index.

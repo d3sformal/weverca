@@ -28,6 +28,19 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+
+    public interface IObjectValueContainerFactory
+    {
+        /// <summary>
+        /// Creates the new instance of object container to store object values for memory location in this structure.
+        /// </summary>
+        /// <param name="objects">The objects to store in collection.</param>
+        /// <returns>Created object container.</returns>
+        IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure, IEnumerable<ObjectValue> objects);
+
+        IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure);
+    }
+
     /// <summary>
     /// Contains all PHP objects which can be stored in some memory location. This class is used as part
     /// of IndexData objects to provide shortcut in order to not to access memory entry for the list

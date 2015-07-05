@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.TrackingStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
@@ -249,7 +250,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
 
         public IWriteableStackContext CreateWriteableStackContext(int level)
         {
-            return new CopyStackContext(level);
+            return new LazyCopyStackContext(level);
         }
 
         public IObjectValueContainer CreateObjectValueContainer()

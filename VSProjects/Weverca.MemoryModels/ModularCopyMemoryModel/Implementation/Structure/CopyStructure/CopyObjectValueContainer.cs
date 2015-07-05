@@ -29,6 +29,23 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopyObjectValueContainerFactory : IObjectValueContainerFactory
+    {
+        public IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure, IEnumerable<ObjectValue> objects)
+        {
+            CopyObjectValueContainer container = new CopyObjectValueContainer();
+            container.AddAll(objects);
+            return container;
+        }
+
+
+        public IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure)
+        {
+            return new CopyObjectValueContainer();
+        }
+    }
+
+
     class CopyObjectValueContainer : CopySet<ObjectValue>, IObjectValueContainer, IObjectValueContainerBuilder
     {
         /// <summary>

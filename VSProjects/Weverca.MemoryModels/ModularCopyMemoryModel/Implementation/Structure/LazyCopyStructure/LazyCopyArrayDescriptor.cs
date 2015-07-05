@@ -9,6 +9,19 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyArrayDescriptorFactory : IArrayDescriptorFactory
+    {
+        public IArrayDescriptor CreateArrayDescriptor(IWriteableSnapshotStructure targetStructure, AssociativeArray createdArray, MemoryIndex memoryIndex)
+        {
+            LazyCopyArrayDescriptor descriptor = new LazyCopyArrayDescriptor(targetStructure);
+            descriptor.SetArrayValue(createdArray);
+            descriptor.SetParentIndex(memoryIndex);
+            descriptor.SetUnknownIndex(memoryIndex.CreateUnknownIndex());
+            return descriptor;
+        }
+    }
+
+
     class LazyCopyArrayDescriptor : LazyCopyIndexContainer, IArrayDescriptor, IArrayDescriptorBuilder
     {
         private MemoryIndex parentIndex;

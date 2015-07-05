@@ -30,8 +30,9 @@ using PHP.Core;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
 using Weverca.AnalysisFramework.GraphVisualizer;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.TrackingStructure
 {
     /// <summary>
     /// Contains structural data of current memory snapshot - defined variables, arrays, objects and structural
@@ -294,7 +295,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override void AddStackLevel(int level)
         {
-            IWriteableStackContext context = StructureProxy.CreateWriteableStackContext(level);
+            IWriteableStackContext context = Snapshot.MemoryModelFactory.StructuralContainersFactories.StackContextFactory.CreateWriteableStackContext(level);
             context.WriteableVariables.SetUnknownIndex(VariableIndex.CreateUnknown(level));
             context.WriteableControllVariables.SetUnknownIndex(ControlIndex.CreateUnknown(level));
 
@@ -363,7 +364,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 			if (indexDefinitions.ContainsKey(index))
 				return;
 
-            IIndexDefinition data = StructureProxy.CreateIndexDefinition();
+            IIndexDefinition data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             indexDefinitions.Add(index, data);
             changeTracker.InsertedIndex(index);
         }
@@ -431,7 +432,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 }
             }
 
-            return StructureProxy.CreateObjectValueContainer();
+            return Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(this);
         }
 
         /// <inheritdoc />
@@ -446,7 +447,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = StructureProxy.CreateIndexDefinition();
+                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -576,7 +577,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = StructureProxy.CreateIndexDefinition();
+                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -604,7 +605,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = StructureProxy.CreateIndexDefinition();
+                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);
@@ -743,7 +744,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
             IIndexDefinition data;
             if (!indexDefinitions.TryGetValue(index, out data))
             {
-                data = StructureProxy.CreateIndexDefinition();
+                data = Snapshot.MemoryModelFactory.StructuralContainersFactories.IndexDefinitionFactory.CreateIndexDefinition(this);
             }
 
             IIndexDefinitionBuilder builder = data.Builder(this);

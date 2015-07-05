@@ -30,6 +30,17 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopyMemoryAliasFactory : IMemoryAliasFactory
+    {
+
+        public IMemoryAlias CreateMemoryAlias(IWriteableSnapshotStructure targetStructure, MemoryIndex index)
+        {
+            CopyMemoryAlias aliases = new CopyMemoryAlias();
+            aliases.SetSourceIndex(index);
+            return aliases;
+        }
+    }
+
     class CopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
     {
         private MemoryIndex sourceIndex;

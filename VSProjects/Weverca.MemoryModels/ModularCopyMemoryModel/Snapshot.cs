@@ -512,7 +512,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		protected override void initializeObject(ObjectValue createdObject, TypeValue type)
 		{
 			Logger.Log(this, "Init object " + createdObject + " " + type);
-			IObjectDescriptor descriptor = Structure.CreateObjectDescriptor(createdObject, type, ObjectIndex.CreateUnknown(createdObject));
+			IObjectDescriptor descriptor = MemoryModelFactory.StructuralContainersFactories.ObjectDescriptorFactory.CreateObjectDescriptor(Structure.Writeable, createdObject, type, ObjectIndex.CreateUnknown(createdObject));
 			Structure.Writeable.NewIndex(descriptor.UnknownIndex);
 			Structure.Writeable.SetDescriptor(createdObject, descriptor);
 		}
@@ -644,7 +644,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				Logger.Log(this, "This array has been already initialised: " + createdArray);
 			}
 
-			IArrayDescriptor descriptor = Structure.CreateArrayDescriptor(createdArray, arrayIndex);
+            IArrayDescriptor descriptor = MemoryModelFactory.StructuralContainersFactories.ArrayDescriptorFactory.CreateArrayDescriptor(Structure.Writeable, createdArray, arrayIndex);
 			Structure.Writeable.NewIndex(descriptor.UnknownIndex);
 			Structure.Writeable.SetArray(arrayIndex, createdArray);
 			Structure.Writeable.SetDescriptor(createdArray, descriptor);
@@ -1794,7 +1794,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			}
 			else
 			{
-				alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+                alias = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, index).Builder(writeableStructure);
 			}
 
 			if (mustAliases != null)
@@ -1836,7 +1836,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			}
 			else
 			{
-				alias = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+                alias = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, index).Builder(writeableStructure);
 			}
 
 			if (mustAlias != null && !mustAlias.Equals(index))
@@ -1870,7 +1870,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			var writeableStructure = Structure.Writeable;
 			DestroyAliases(index);
 
-			IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+            IMemoryAliasBuilder builder = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, index).Builder(writeableStructure);
 			addAllAliases(index, mustAliases, builder.MustAliases);
 			addAllAliases(index, mayAliases, builder.MayAliases);
 
@@ -1888,7 +1888,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		{
 			var writeableStructure = Structure.Writeable;
 
-			IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+            IMemoryAliasBuilder builder = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, index).Builder(writeableStructure);
 			addAllAliases(index, mustAliases, builder.MustAliases);
 			addAllAliases(index, mayAliases, builder.MayAliases);
 
@@ -1913,7 +1913,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			}
 			else
 			{
-				builder = Structure.CreateMemoryAlias(index).Builder(writeableStructure);
+                builder = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, index).Builder(writeableStructure);
 			}
 
 			builder.MayAliases.AddAll(mayAliases);
@@ -1955,7 +1955,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			{
 				var writeableStructure = Structure.Writeable;
 
-				IMemoryAliasBuilder builder = Structure.CreateMemoryAlias(targetIndex).Builder(writeableStructure);
+                IMemoryAliasBuilder builder = MemoryModelFactory.StructuralContainersFactories.MemoryAliasFactory.CreateMemoryAlias(writeableStructure, targetIndex).Builder(writeableStructure);
 				foreach (MemoryIndex mustAlias in aliases.MustAliases)
 				{
 					if (mustAlias.Equals(targetIndex))

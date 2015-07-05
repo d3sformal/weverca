@@ -10,6 +10,17 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
 {
+    class LazyCopyMemoryAliasFactory : IMemoryAliasFactory
+    {
+        public IMemoryAlias CreateMemoryAlias(IWriteableSnapshotStructure targetStructure, MemoryIndex index)
+        {
+            LazyCopyMemoryAlias aliases = new LazyCopyMemoryAlias(targetStructure);
+            aliases.SetSourceIndex(index);
+            return aliases;
+        }
+    }
+
+
     class LazyCopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
     {
         private MemoryIndex sourceIndex;

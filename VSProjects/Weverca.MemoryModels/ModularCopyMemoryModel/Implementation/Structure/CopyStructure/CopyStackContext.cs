@@ -30,6 +30,15 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+
+    class CopyStackContextFactory : IStackContextFactory
+    {
+        public IWriteableStackContext CreateWriteableStackContext(int level)
+        {
+            return new CopyStackContext(level);
+        }
+    }
+
     class CopyStackContext : IReadonlyStackContext, IWriteableStackContext
     {
         private CopyIndexContainer variables;

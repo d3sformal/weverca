@@ -346,7 +346,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (objects != null && objects.Count > 0)
             {
-                IObjectValueContainer targetObjects = Snapshot.Structure.CreateObjectValueContainer(objects);
+                IObjectValueContainer targetObjects = Snapshot.MemoryModelFactory.StructuralContainersFactories.ObjectValueContainerFactory.CreateObjectValueContainer(Structure, objects);
                 Structure.SetObjects(node.TargetIndex, targetObjects);
             }
         }
