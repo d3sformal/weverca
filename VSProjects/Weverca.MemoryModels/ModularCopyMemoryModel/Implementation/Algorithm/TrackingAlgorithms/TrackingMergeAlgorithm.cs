@@ -17,17 +17,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms
 {
-    class TrackingMergeAlgorithm : IMergeAlgorithm, IAlgorithmFactory<IMergeAlgorithm>
+    class TrackingMergeAlgorithm
     {
         private ISnapshotStructureProxy structure;
         private ISnapshotDataProxy data;
         private int localLevel;
-
-        /// <inheritdoc />
-        public IMergeAlgorithm CreateInstance()
-        {
-            return new TrackingMergeAlgorithm();
-        }
 
         /// <inheritdoc />
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)

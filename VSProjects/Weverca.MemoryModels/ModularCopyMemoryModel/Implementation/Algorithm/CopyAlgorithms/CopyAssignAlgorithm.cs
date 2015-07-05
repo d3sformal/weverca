@@ -35,13 +35,8 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class CopyAssignAlgorithm : IAssignAlgorithm, IAlgorithmFactory<IAssignAlgorithm>
+    class CopyAssignAlgorithm
     {
-        /// <inheritdoc />
-        public IAssignAlgorithm CreateInstance()
-        {
-            return new CopyAssignAlgorithm();
-        }
 
         /// <inheritdoc />
         public void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite)

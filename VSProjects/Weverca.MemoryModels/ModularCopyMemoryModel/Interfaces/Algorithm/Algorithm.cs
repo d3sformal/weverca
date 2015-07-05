@@ -111,53 +111,34 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="path">The path.</param>
-        void Read(Snapshot snapshot, MemoryPath path);
+        MemoryEntry Read(Snapshot snapshot, MemoryPath path);
 
-        /// <summary>
-        /// Reads the given values within the specified snapshot.
-        /// 
-        /// This method has to be called once before get methods.
-        /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <param name="values">The values.</param>
-        void Read(Snapshot snapshot, MemoryEntry values);
-
-        /// <summary>
-        /// Determines whether read locations are defined.
-        /// </summary>
-        /// <returns>True whether read locations are defined.</returns>
-        bool IsDefined();
-
-        /// <summary>
-        /// Gets the list of read values.
-        /// </summary>
-        /// <returns>List of read values.</returns>
-        MemoryEntry GetValue();
+        bool IsDefined(Snapshot snapshot, MemoryPath path);
 
         /// <summary>
         /// Gets the collection of fields from objects on read locations.
         /// </summary>
         /// <returns>The collection of fields from objects on read locations.</returns>
-        IEnumerable<VariableIdentifier> GetFields();
+        IEnumerable<VariableIdentifier> GetFields(Snapshot snapshot, MemoryEntry values);
 
         /// <summary>
         /// Gets the collection of indexes from arrays on read locations.
         /// </summary>
         /// <returns>The collection of indexes from arrays on read locations.</returns>
-        IEnumerable<MemberIdentifier> GetIndexes();
+        IEnumerable<MemberIdentifier> GetIndexes(Snapshot snapshot, MemoryEntry values);
 
         /// <summary>
         /// Gets the collection of methods from objects on read locations.
         /// </summary>
         /// <param name="methodName">Name of the method.</param>
         /// <returns>The collection of methods from objects on read locations.</returns>
-        IEnumerable<FunctionValue> GetMethod(QualifiedName methodName);
+        IEnumerable<FunctionValue> GetMethod(Snapshot snapshot, MemoryEntry values, QualifiedName methodName);
 
         /// <summary>
         /// Gets the collection of types from objects on read locations.
         /// </summary>
         /// <returns>The collection of types from objects on read locations.</returns>
-        IEnumerable<TypeValue> GetObjectType();
+        IEnumerable<TypeValue> GetObjectType(Snapshot snapshot, MemoryEntry values);
     }
 
     /// <summary>
@@ -175,27 +156,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     public interface ICommitAlgorithm : IAlgorithm
     {
         /// <summary>
-        /// Sets the structures to compare.
-        /// </summary>
-        /// <param name="newStructure">The new structure.</param>
-        /// <param name="oldStructure">The old structure.</param>
-        void SetStructure(ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure);
-
-        /// <summary>
-        /// Sets the data to compare.
-        /// </summary>
-        /// <param name="newData">The new data.</param>
-        /// <param name="oldData">The old data.</param>
-        void SetData(ISnapshotDataProxy newData, ISnapshotDataProxy oldData);
-
-        /// <summary>
         /// Commits the snapshot. Compares structure and sets of data for modifications.
         /// Also searchs for memory entries which contains more values than specified simplifyLimit
         /// and simplifies these entries.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="simplifyLimit">The simplify limit.</param>
-        void CommitAndSimplify(Snapshot snapshot, int simplifyLimit);
+        /// <returns>True whether this new structure or data differs.</returns>
+        bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit);
 
         /// <summary>
         /// Commits the snapshot. Compares structure and sets of data for modifications.
@@ -203,13 +171,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="simplifyLimit">The simplify limit.</param>
-        void CommitAndWiden(Snapshot snapshot, int simplifyLimit);
-
-        /// <summary>
-        /// Determines whether this new structure or data differs or not.
-        /// </summary>
         /// <returns>True whether this new structure or data differs.</returns>
-        bool IsDifferent();
+        bool CommitAndWiden(Snapshot snapshot, int simplifyLimit);
     }
 
     /// <summary>
@@ -272,24 +235,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <param name="temporaryIndex">Index of the temporary.</param>
         /// <param name="dataEntry">The data entry.</param>
         void MergeMemoryEntry(Snapshot snapshot, TemporaryIndex temporaryIndex, MemoryEntry dataEntry);
-
-        /// <summary>
-        /// Gets the merged structure.
-        /// </summary>
-        /// <returns>The merged structure.</returns>
-        ISnapshotStructureProxy GetMergedStructure();
-
-        /// <summary>
-        /// Gets the merged data.
-        /// </summary>
-        /// <returns>The merged data.</returns>
-        ISnapshotDataProxy GetMergedData();
-
-        /// <summary>
-        /// Gets the number of merged local level
-        /// </summary>
-        /// <returns>Number of merged local level</returns>
-        int GetMergedLocalLevelNumber();
     }
 
     /// <summary>

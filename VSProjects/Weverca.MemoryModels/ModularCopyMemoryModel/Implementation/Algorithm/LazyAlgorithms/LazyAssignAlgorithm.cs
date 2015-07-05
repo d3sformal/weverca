@@ -35,14 +35,14 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyA
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.IndexCollectors;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.DEPRECATED
 {
     class LazyAssignAlgorithm : IAssignAlgorithm, IAlgorithmFactory<IAssignAlgorithm>
     {
         /// <inheritdoc />
         public IAssignAlgorithm CreateInstance()
         {
-            return new LazyAssignAlgorithm();
+            return this;
         }
 
         /// <inheritdoc />

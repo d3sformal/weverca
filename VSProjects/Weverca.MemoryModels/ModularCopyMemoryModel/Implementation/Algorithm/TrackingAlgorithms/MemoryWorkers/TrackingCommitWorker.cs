@@ -1,24 +1,4 @@
-/*
-Copyright (c) 2012-2014 Pavel Bastecky.
-
-This file is part of WeVerca.
-
-WeVerca is free software: you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License as published by
-the Free Software Foundation, either version 3 of the License, or 
-(at your option) any later version.
-
-WeVerca is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Lesser General Public License for more details.
-
-You should have received a copy of the GNU Lesser General Public License
-along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-
-using PHP.Core;
+﻿using PHP.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,106 +7,50 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.DEPRECATED
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers
 {
-    class TrackingCommitAlgorithm
+    class TrackingCommitWorker
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
-        private bool areSame;
+
         private Snapshot snapshot;
         private IIndexDefinition emptyDefinition;
+        private int simplifyLimit;
+        private MemoryAssistantBase assistant;
 
-
-
-        /// <inheritdoc />
-        public void SetStructure(ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure)
+        public TrackingCommitWorker(Snapshot snapshot, int simplifyLimit, 
+            ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
+            ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
         {
-            emptyDefinition = newStructure.CreateIndexDefinition();
+            this.snapshot = snapshot;
+            this.simplifyLimit = simplifyLimit;
+            this.assistant = snapshot.MemoryAssistant;
 
             this.newStructure = newStructure;
             this.oldStructure = oldStructure;
-        }
-
-        /// <inheritdoc />
-        public void SetData(ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
-        {
             this.newData = newData;
             this.oldData = oldData;
         }
 
-        /// <inheritdoc />
-        public void CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
-        {
-            this.snapshot = snapshot;
-
-            /*if (snapshot.NumberOfTransactions > 1)
-            {*/
-                switch (snapshot.CurrentMode)
-                {
-                    case SnapshotMode.MemoryLevel:
-                        areSame = compareStructureAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                        break;
-
-                    case SnapshotMode.InfoLevel:
-                        areSame = compareDataAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                        break;
-
-                    default:
-                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-                }
-            /*}
-            else
-            {
-                areSame = false;
-            }*/
-        }
-
-        /// <inheritdoc />
-        public void CommitAndWiden(Snapshot snapshot, int simplifyLimit)
-        {
-            this.snapshot = snapshot;
-
-            switch (snapshot.CurrentMode)
-            {
-                case SnapshotMode.MemoryLevel:
-                    areSame = compareStructureAndSimplify(simplifyLimit, true, snapshot.MemoryAssistant);
-                    break;
-
-                case SnapshotMode.InfoLevel:
-                    areSame = compareDataAndSimplify(simplifyLimit, true, snapshot.MemoryAssistant);
-                    break;
-
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
-            }
-        }
-
-        /// <inheritdoc />
-        public bool IsDifferent()
-        {
-            return !areSame;
-        }
-
-        private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
+        public bool CompareStructureAndSimplify(bool widen)
         {
             if (newStructure.IsReadonly && newData.IsReadonly)
             {
                 if (snapshot.NumberOfTransactions > 1)
                 {
                     bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
-                    return !differs;
+                    return differs;
                 }
                 else
                 {
-                    return false;
+                    return true;
                 }
             }
             else
@@ -136,11 +60,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 {
                     if (widen)
                     {
-                        widenAndSimplifyData(simplifyLimit, assistant);
+                        widenAndSimplifyData();
                     }
                     else
                     {
-                        simplifyData(simplifyLimit, assistant);
+                        simplifyData();
                     }
 
                     if (areSame)
@@ -162,16 +86,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                     newStructure.Writeable.SetDiffersOnCommit(!areSame);
                 }
-                return areSame;
+                return !areSame;
             }
         }
 
-        private bool compareDataAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
+        public bool CompareDataAndSimplify(bool widen)
         {
             if (newData.IsReadonly)
             {
                 bool differs = newData.Readonly.DiffersOnCommit;
-                return !differs;
+                return differs;
             }
             else
             {
@@ -180,11 +104,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 {
                     if (widen)
                     {
-                        widenAndSimplifyData(simplifyLimit, assistant);
+                        widenAndSimplifyData();
                     }
                     else
                     {
-                        simplifyData(simplifyLimit, assistant);
+                        simplifyData();
                     }
 
                     if (areSame)
@@ -194,11 +118,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
                     newData.Writeable.SetDiffersOnCommit(!areSame);
                 }
-                return areSame;
+                return !areSame;
             }
         }
 
-        private void widenAndSimplifyData(int simplifyLimit, MemoryAssistantBase assistant)
+
+
+        private void widenAndSimplifyData()
         {
             List<MemoryIndex> indexes = new List<MemoryIndex>();
             CollectionMemoryUtils.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
@@ -240,11 +166,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
-        private void simplifyData(int simplifyLimit, MemoryAssistantBase assistant)
+        private void simplifyData()
         {
             List<MemoryIndex> indexes = new List<MemoryIndex>();
             CollectionMemoryUtils.AddAll(indexes, newData.Readonly.ReadonlyChangeTracker.IndexChanges);
-            
+
             var previousTracker = newData.Readonly.ReadonlyChangeTracker.PreviousTracker;
             var currentTracker = newData.Writeable.WriteableChangeTracker;
 
@@ -606,7 +532,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 CollectionMemoryUtils.AddAll(indexChanges, trackerA.IndexChanges);
                 CollectionMemoryUtils.AddAllIfNotNull(functionChanges, trackerA.FunctionChanges);
                 CollectionMemoryUtils.AddAllIfNotNull(classChanges, trackerA.ClassChanges);
-                
+
                 trackerA = trackerA.PreviousTracker;
             }
         }

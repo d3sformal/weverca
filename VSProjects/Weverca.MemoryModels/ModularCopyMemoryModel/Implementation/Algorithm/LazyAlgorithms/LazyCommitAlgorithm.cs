@@ -23,20 +23,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
-using Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.ValueVisitors;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms
 {
-    class CopyCommitAlgorithm
+    class LazyCommitAlgorithm
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
@@ -64,18 +62,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             this.snapshot = snapshot;
 
-            switch (snapshot.CurrentMode)
+            if (snapshot.NumberOfTransactions > 1)
             {
-                case SnapshotMode.MemoryLevel:
-                    areSame = compareStructureAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                    break;
+                switch (snapshot.CurrentMode)
+                {
+                    case SnapshotMode.MemoryLevel:
+                        areSame = compareStructureAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
+                        break;
 
-                case SnapshotMode.InfoLevel:
-                    areSame = compareDataAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
-                    break;
+                    case SnapshotMode.InfoLevel:
+                        areSame = compareDataAndSimplify(simplifyLimit, false, snapshot.MemoryAssistant);
+                        break;
 
-                default:
-                    throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                    default:
+                        throw new NotSupportedException("Current mode: " + snapshot.CurrentMode);
+                }
+            }
+            else
+            {
+                areSame = false;
             }
         }
 
@@ -107,10 +112,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         private bool compareStructureAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
-            /*if (newStructure.IsReadonly && newData.IsReadonly)
+            if (snapshot.NumberOfTransactions == 1)
             {
-                return true;
-            }*/
+                return false;
+            }
+
+            if (newStructure.IsReadonly && newData.IsReadonly)
+            {
+                bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
+                return !differs;
+            }
 
             HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
             CollectionMemoryUtils.AddAll(usedIndexes, newStructure.Readonly.Indexes);
@@ -149,17 +160,31 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 }
             }
 
+            if (!newStructure.IsReadonly)
+            {
+                newStructure.Writeable.SetDiffersOnCommit(!areEqual);
+            }
+            if (!newData.IsReadonly)
+            {
+                newData.Writeable.SetDiffersOnCommit(!areEqual);
+            }
             return areEqual;
         }
 
         private bool compareDataAndSimplify(int simplifyLimit, bool widen, MemoryAssistantBase assistant)
         {
-            /*if (newData.IsReadonly)
+            if (snapshot.NumberOfTransactions == 1)
             {
-                return true;
-            }*/
+                return false;
+            }
 
-            bool areEquals = true;
+            if (newData.IsReadonly)
+            {
+                bool differs = newData.Readonly.DiffersOnCommit;
+                return !differs;
+            }
+
+            bool areEqual = true;
 
             HashSet<MemoryIndex> indexes = new HashSet<MemoryIndex>();
             CollectionMemoryUtils.AddAll(indexes, newData.Readonly.Indexes);
@@ -177,11 +202,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 if (!compareData(index, simplifyLimit, assistant))
                 {
-                    areEquals = false;
+                    areEqual = false;
                 }
             }
 
-            return areEquals;
+            if (!newData.IsReadonly)
+            {
+                newData.Writeable.SetDiffersOnCommit(!areEqual);
+            }
+            return areEqual;
         }
 
         private void widenData(MemoryIndex index, int simplifyLimit, MemoryAssistantBase assistant)

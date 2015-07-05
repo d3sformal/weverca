@@ -43,7 +43,7 @@ namespace Weverca.MemoryModels
         /// Modular copy memory model (Weverca.MemoryModels.ModularCopyMemoryModel)
         /// </summary>
         public static readonly MemoryModelFactory ModularCopyMM 
-            = Weverca.MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.TrackingImplementation;
+            = Weverca.MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.CopyImplementation;
 
         /// <summary>
         /// Creates a snapshot of given memory model.

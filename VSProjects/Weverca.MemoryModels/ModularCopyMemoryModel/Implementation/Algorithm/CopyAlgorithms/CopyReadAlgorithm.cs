@@ -38,96 +38,60 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class CopyReadAlgorithm : IReadAlgorithm, IAlgorithmFactory<IReadAlgorithm>
+    class CopyReadAlgorithmFactory : IAlgorithmFactory<IReadAlgorithm>
     {
-        private MemoryEntry values;
-        private IIndexCollector collector;
-        Snapshot snapshot;
+        private CopyReadAlgorithm instance = new CopyReadAlgorithm();
 
-        /// <inheritdoc />
         public IReadAlgorithm CreateInstance()
         {
-            return new CopyReadAlgorithm();
+            return instance;
         }
+    }
 
-        /// <inheritdoc />
-        public void Read(Snapshot snapshot, MemoryPath path)
+
+    class CopyReadAlgorithm : IReadAlgorithm
+    {
+
+        public MemoryEntry Read(Snapshot snapshot, MemoryPath path)
         {
-            this.snapshot = snapshot;
-
             ReadCollector collector = new ReadCollector(snapshot);
             collector.ProcessPath(path);
-            this.collector = collector;
+
+            ReadWorker worker = new ReadWorker(snapshot);
+            return worker.ReadValue(collector);
         }
 
-        /// <inheritdoc />
-        public void Read(Snapshot snapshot, MemoryEntry values)
+        public bool IsDefined(Snapshot snapshot, MemoryPath path)
         {
-            this.snapshot = snapshot;
-            this.values = values;
+            ReadCollector collector = new ReadCollector(snapshot);
+            collector.ProcessPath(path);
+
+            return collector.IsDefined;
         }
 
-        /// <inheritdoc />
-        public bool IsDefined()
+        public IEnumerable<VariableIdentifier> GetFields(Snapshot snapshot, MemoryEntry values)
         {
-            if (values != null)
-            {
-                return true;
-            }
-            else if (collector != null)
-            {
-                return collector.IsDefined;
-            }
-
-            return false;
-        }
-
-        /// <inheritdoc />
-        public MemoryEntry GetValue()
-        {
-            if (values == null)
-            {
-                ReadWorker worker = new ReadWorker(snapshot);
-                values = worker.ReadValue(collector);
-            }
-
-            return values;
-        }
-
-        /// <inheritdoc />
-        public IEnumerable<VariableIdentifier> GetFields()
-        {
-            MemoryEntry values = GetValue();
-
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
             visitor.VisitMemoryEntry(values);
 
             return visitor.CollectFields(snapshot);
         }
 
-        /// <inheritdoc />
-        public IEnumerable<MemberIdentifier> GetIndexes()
+        public IEnumerable<MemberIdentifier> GetIndexes(Snapshot snapshot, MemoryEntry values)
         {
-            MemoryEntry values = GetValue();
-
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
             visitor.VisitMemoryEntry(values);
 
             return visitor.CollectIndexes(snapshot);
         }
 
-        /// <inheritdoc />
-        public IEnumerable<FunctionValue> GetMethod(QualifiedName methodName)
+        public IEnumerable<FunctionValue> GetMethod(Snapshot snapshot, MemoryEntry values, QualifiedName methodName)
         {
-            MemoryEntry values = GetValue();
             return snapshot.resolveMethod(values, methodName);
         }
 
-        /// <inheritdoc />
-        public IEnumerable<TypeValue> GetObjectType()
+        public IEnumerable<TypeValue> GetObjectType(Snapshot snapshot, MemoryEntry values)
         {
-            MemoryEntry values = GetValue();
-
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
             visitor.VisitMemoryEntry(values);
 

@@ -30,11 +30,19 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
 {
-    class PrintAlgorithm : IPrintAlgorithm, IAlgorithmFactory<IPrintAlgorithm>
+    
+    class PrintAlgorithmFactory : IAlgorithmFactory<IPrintAlgorithm>
     {
-        private Snapshot snapshot;
-        private StringBuilder result;
+        PrintAlgorithm instance = new PrintAlgorithm();
 
+        public IPrintAlgorithm CreateInstance()
+        {
+            return instance;
+        }
+    }
+
+    class PrintAlgorithm : IPrintAlgorithm
+    {
         public IPrintAlgorithm CreateInstance()
         {
             return new PrintAlgorithm();
@@ -42,39 +50,38 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
 
         public string SnapshotToString(Snapshot snapshot)
         {
-            this.snapshot = snapshot;
-            this.result = new StringBuilder();
+            StringBuilder result = new StringBuilder();
 
             if (snapshot.CallLevel > Snapshot.GLOBAL_CALL_LEVEL)
             {
-                appendLine("===LOCALS===");
-                createRepresentation(snapshot.Structure.Readonly.ReadonlyLocalContext.ReadonlyVariables);
+                appendLine(result, "===LOCALS===");
+                createRepresentation(snapshot, result, snapshot.Structure.Readonly.ReadonlyLocalContext.ReadonlyVariables);
             }
-            appendLine("===GLOBALS===");
-            createRepresentation(snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyVariables);
+            appendLine(result, "===GLOBALS===");
+            createRepresentation(snapshot, result, snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyVariables);
 
             if (snapshot.CallLevel > Snapshot.GLOBAL_CALL_LEVEL)
             {
-                appendLine("===LOCAL CONTROLS===");
-                createRepresentation(snapshot.Structure.Readonly.ReadonlyLocalContext.ReadonlyControllVariables);
+                appendLine(result, "===LOCAL CONTROLS===");
+                createRepresentation(snapshot, result, snapshot.Structure.Readonly.ReadonlyLocalContext.ReadonlyControllVariables);
             }
 
-            appendLine("===GLOBAL CONTROLS===");
-            createRepresentation(snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyControllVariables);
+            appendLine(result, "===GLOBAL CONTROLS===");
+            createRepresentation(snapshot, result, snapshot.Structure.Readonly.ReadonlyGlobalContext.ReadonlyControllVariables);
 
-            appendLine("\n===ARRAYS===");
-            createArraysRepresentation();
+            appendLine(result, "\n===ARRAYS===");
+            createArraysRepresentation(snapshot, result);
 
-            appendLine("\n===FIELDS===");
-            createFieldsRepresentation();
+            appendLine(result, "\n===FIELDS===");
+            createFieldsRepresentation(snapshot, result);
 
-            appendLine("\n===ALIASES===");
-            createAliasesRepresentation();
+            appendLine(result, "\n===ALIASES===");
+            createAliasesRepresentation(snapshot, result);
 
             return result.ToString();
         }
 
-        private void createAliasesRepresentation()
+        private void createAliasesRepresentation(Snapshot snapshot, StringBuilder result)
         {
             foreach (var item in snapshot.Structure.Readonly.IndexDefinitions)
             {
@@ -104,52 +111,52 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
             }
         }
 
-        private void createFieldsRepresentation()
+        private void createFieldsRepresentation(Snapshot snapshot, StringBuilder result)
         {
             foreach (var item in snapshot.Structure.Readonly.ObjectDescriptors)
             {
-                createRepresentation(item.Value);
-                appendLine("");
+                createRepresentation(snapshot, result, item.Value);
+                appendLine(result, "");
             }
         }
 
-        private void createArraysRepresentation()
+        private void createArraysRepresentation(Snapshot snapshot, StringBuilder result)
         {
             foreach (var item in snapshot.Structure.Readonly.ArrayDescriptors)
             {
                 IArrayDescriptor descriptor = item.Value;
                 AssociativeArray associativeArray = item.Key;
 
-                createIndexRepresentation(descriptor.UnknownIndex, String.Format("{0}[?]", associativeArray.UID));
+                createIndexRepresentation(snapshot, result, descriptor.UnknownIndex, String.Format("{0}[?]", associativeArray.UID));
 
                 foreach (var indexItem in descriptor.Indexes)
                 {
                     MemoryIndex index = indexItem.Value;
                     string indexName = indexItem.Key;
-                    createIndexRepresentation(index, String.Format("{0}[{1}]", associativeArray.UID, indexName));
+                    createIndexRepresentation(snapshot, result, index, String.Format("{0}[{1}]", associativeArray.UID, indexName));
                 }
 
-                appendLine("");
+                appendLine(result, "");
             }
         }
 
-        private void appendLine(string line)
+        private void appendLine(StringBuilder result, string line)
         {
             result.AppendLine(line);
         }
 
-        private void createRepresentation(IReadonlyIndexContainer indexContainer)
+        private void createRepresentation(Snapshot snapshot, StringBuilder result, IReadonlyIndexContainer indexContainer)
         {
-            createIndexRepresentation(indexContainer.UnknownIndex, indexContainer.UnknownIndex.ToString());
+            createIndexRepresentation(snapshot, result, indexContainer.UnknownIndex, indexContainer.UnknownIndex.ToString());
 
             foreach (var item in indexContainer.Indexes)
             {
                 MemoryIndex index = item.Value;
-                createIndexRepresentation(index, index.ToString());
+                createIndexRepresentation(snapshot, result, index, index.ToString());
             }
         }
 
-        private void createIndexRepresentation(MemoryIndex index, string name)
+        private void createIndexRepresentation(Snapshot snapshot, StringBuilder result, MemoryIndex index, string name)
         {
             result.AppendFormat("{0}: {{ ", name);
 

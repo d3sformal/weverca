@@ -35,17 +35,12 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class CopyMergeAlgorithm : IMergeAlgorithm, IAlgorithmFactory<IMergeAlgorithm>
+    class CopyMergeAlgorithm
     {
         private ISnapshotStructureProxy structure;
         private ISnapshotDataProxy data;
         private int localLevel;
 
-        /// <inheritdoc />
-        public IMergeAlgorithm CreateInstance()
-        {
-            return new CopyMergeAlgorithm();
-        }
 
         /// <inheritdoc />
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)

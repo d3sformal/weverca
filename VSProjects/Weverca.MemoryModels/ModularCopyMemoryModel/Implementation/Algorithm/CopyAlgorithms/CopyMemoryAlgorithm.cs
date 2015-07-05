@@ -35,13 +35,19 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms
 {
-    class CopyMemoryAlgorithm : IMemoryAlgorithm, IAlgorithmFactory<IMemoryAlgorithm>
+    class CopyMemoryAlgorithmFactory : IAlgorithmFactory<IMemoryAlgorithm>
     {
-        /// <inheritdoc />
+        private CopyMemoryAlgorithm instance = new CopyMemoryAlgorithm();
+
         public IMemoryAlgorithm CreateInstance()
         {
-            return new CopyMemoryAlgorithm();
+            return instance;
         }
+    }
+
+
+    class CopyMemoryAlgorithm : IMemoryAlgorithm
+    {
 
         /// <inheritdoc />
         public void CopyMemory(Snapshot snapshot, MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
