@@ -111,7 +111,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor)
         {
-            Data = Factories.SnapshotDataFactory.CreateNewInstanceWithData(Factories, targetSnapshot, commonAncestor.Container);
+            Data = Factories.SnapshotDataFactory.CreateNewInstanceWithData(commonAncestor.Container);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
@@ -119,7 +119,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewDataFromCallSnapshot(Snapshot callSnapshot)
         {
-            Data = Factories.SnapshotDataFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.CurrentData);
+            Data = Factories.SnapshotDataFactory.CopyInstance(callSnapshot.CurrentData);
             writeableTargetData = Data.Writeable;
 
             writeableTargetData.ReinitializeTracker(callSnapshot.CurrentData.Readonly);

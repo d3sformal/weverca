@@ -227,7 +227,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             mustHaveArray = true;
             foreach (SourceIndex source in SourceIndexes)
             {
-                MemoryEntry entry = source.Snapshot.Data.Readonly.GetMemoryEntry(source.Index);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(source.Snapshot, source.Snapshot.Data.Readonly, source.Index);
 
                 hasArray = false;
                 this.VisitMemoryEntry(entry);

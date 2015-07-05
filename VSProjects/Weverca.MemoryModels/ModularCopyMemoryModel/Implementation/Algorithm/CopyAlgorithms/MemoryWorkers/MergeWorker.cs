@@ -30,6 +30,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
@@ -81,8 +82,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
             Factories = factories;
 
-            Data = Factories.SnapshotDataFactory.CreateEmptyInstance(Factories, targetSnapshot);
-            Structure = Factories.SnapshotStructureFactory.CreateEmptyInstance(Factories, targetSnapshot);
+            Data = Factories.SnapshotDataFactory.CreateEmptyInstance(Factories);
+            Structure = Factories.SnapshotStructureFactory.CreateEmptyInstance(Factories);
 
             this.targetSnapshot = targetSnapshot;
             this.sourceSnapshots = sourceSnapshots;
@@ -223,7 +224,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 MemoryIndex index = operationData.Item1;
                 Snapshot snapshot = operationData.Item2;
 
-                MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, index);
                 visitor.VisitMemoryEntry(entry);
 
                 IMemoryAlias aliases;

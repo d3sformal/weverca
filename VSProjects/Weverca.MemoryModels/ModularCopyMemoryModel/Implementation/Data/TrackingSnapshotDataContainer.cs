@@ -48,8 +48,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public TrackingSnapshotDataAssociativeContainer(Snapshot snapshot)
-            : base(snapshot)
+        public TrackingSnapshotDataAssociativeContainer()
+            : base()
         {
             IndexData = new Dictionary<MemoryIndex, MemoryEntry>();
             tracker = new ChangeTracker<IReadOnlySnapshotData>(DataId, this, null);
@@ -60,9 +60,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New data instance and copies data from this collection to the new one.</returns>
-        public TrackingSnapshotDataAssociativeContainer Copy(Snapshot snapshot)
+        public TrackingSnapshotDataAssociativeContainer Copy()
         {
-            TrackingSnapshotDataAssociativeContainer data = new TrackingSnapshotDataAssociativeContainer(snapshot);
+            TrackingSnapshotDataAssociativeContainer data = new TrackingSnapshotDataAssociativeContainer();
 
             data.IndexData = new Dictionary<MemoryIndex, MemoryEntry>(IndexData);
             data.tracker = new ChangeTracker<IReadOnlySnapshotData>(data.DataId, data, this.tracker);
@@ -80,20 +80,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         public override IEnumerable<KeyValuePair<MemoryIndex, MemoryEntry>> Data
         {
             get { return IndexData; }
-        }
-
-        /// <inheritdoc />
-        public override MemoryEntry GetMemoryEntry(MemoryIndex index)
-        {
-            MemoryEntry memoryEntry;
-            if (TryGetMemoryEntry(index, out memoryEntry))
-            {
-                return memoryEntry;
-            }
-            else
-            {
-                return Snapshot.EmptyEntry;
-            }
         }
 
         /// <inheritdoc />

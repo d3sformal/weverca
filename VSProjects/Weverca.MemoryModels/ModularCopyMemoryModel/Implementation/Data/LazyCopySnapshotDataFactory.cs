@@ -38,25 +38,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     public class LazyCopySnapshotDataFactory : ISnapshotDataFactory
     {
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return new LazyCopySnapshotDataProxy(snapshot);
+            return new LazyCopySnapshotDataProxy();
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData)
+        public ISnapshotDataProxy CopyInstance(ISnapshotDataProxy oldData)
         {
             LazyCopySnapshotDataProxy proxy = LazyCopySnapshotDataProxy.Convert(oldData);
-            return new LazyCopySnapshotDataProxy(snapshot, proxy);
+            return new LazyCopySnapshotDataProxy(proxy);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData)
+        public ISnapshotDataProxy CreateNewInstanceWithData(IReadOnlySnapshotData oldData)
         {
             SnapshotDataAssociativeContainer data = oldData as SnapshotDataAssociativeContainer;
             if (data != null)
             {
-                return new LazyCopySnapshotDataProxy(snapshot, data);
+                return new LazyCopySnapshotDataProxy(data);
             }
             else
             {
@@ -74,7 +74,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         private SnapshotDataAssociativeContainer snapshotData;
         private SnapshotDataAssociativeContainer readonlyInstance;
         private bool isReadonly = true;
-        private Snapshot snapshot;
 
         /// <summary>
         /// Converts the specified proxy to LazyCopySnapshotDataProxy type.
@@ -99,12 +98,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="LazyCopySnapshotDataProxy"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public LazyCopySnapshotDataProxy(Snapshot snapshot)
+        public LazyCopySnapshotDataProxy()
         {
-            snapshotData = new SnapshotDataAssociativeContainer(snapshot);
-            this.snapshot = snapshot;
+            snapshotData = new SnapshotDataAssociativeContainer();
             isReadonly = false;
-            readonlyInstance = snapshotData;
         }
 
         /// <summary>
@@ -113,10 +110,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
-        public LazyCopySnapshotDataProxy(Snapshot snapshot, SnapshotDataAssociativeContainer oldData)
+        public LazyCopySnapshotDataProxy(SnapshotDataAssociativeContainer oldData)
         {
             readonlyInstance = oldData;
-            this.snapshot = snapshot;
         }
 
         /// <summary>
@@ -125,10 +121,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="proxy">The proxy.</param>
-        public LazyCopySnapshotDataProxy(Snapshot snapshot, LazyCopySnapshotDataProxy proxy)
+        public LazyCopySnapshotDataProxy(LazyCopySnapshotDataProxy proxy)
         {
             readonlyInstance = proxy.readonlyInstance;
-            this.snapshot = snapshot;
         }
 
         /// <inheritdoc />
@@ -144,7 +139,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             {
                 if (isReadonly)
                 {
-                    snapshotData = readonlyInstance.Copy(snapshot);
+                    snapshotData = readonlyInstance.Copy();
                     readonlyInstance = snapshotData;
                     isReadonly = false;
                 }

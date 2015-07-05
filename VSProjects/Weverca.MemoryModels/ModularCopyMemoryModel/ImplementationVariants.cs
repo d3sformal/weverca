@@ -26,108 +26,126 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
     public class ModularMemoryModelVariants
     {
-        public static readonly ModularMemoryModelFactories CopyImplementation = new ModularMemoryModelFactories(
-       
-            new CopySnapshotStructureFactory(),
+        public static ModularMemoryModelFactories DefaultVariant { get { return TrackingImplementation; } }
 
-            new StructuralContainersFactories(
-                new CopyArrayDescriptorFactory(),
-                new CopyIndexContainerFactory(),
-                new CopyIndexDefinitionFactory(),
-                new CopyMemoryAliasFactory(),
-                new CopyStackContextFactory(),
-                new CopyObjectDescriptorFactory(),
-                new CopyObjectValueContainerFactory()
+
+        public static readonly ModularMemoryModelFactories CopyImplementation = createCopyImplementation();
+
+        public static readonly ModularMemoryModelFactories LazyImplementation = createLazyImplementation();
+
+        public static readonly ModularMemoryModelFactories TrackingImplementation = createTrackingImplementation();
+
+        
+        private static ModularMemoryModelFactories createCopyImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new CopySnapshotStructureFactory(),
+
+                new StructuralContainersFactories(
+                    new CopyArrayDescriptorFactory(),
+                    new CopyIndexContainerFactory(),
+                    new CopyIndexDefinitionFactory(),
+                    new CopyMemoryAliasFactory(),
+                    new CopyStackContextFactory(),
+                    new CopyObjectDescriptorFactory(),
+                    new CopyObjectValueContainerFactory()
+                    ),
+
+                new CopySnapshotDataFactory(),
+
+                new AlgorithmFactories(
+                    new CopyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new CopyCommitMemoryAlgorithmFactory(),
+                    new CopyMemoryAlgorithmFactory(),
+                    new CopyMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
                 ),
 
-            new CopySnapshotDataFactory(),
+                new AlgorithmFactories(
+                    new CopyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new CopyCommitInfoAlgorithmFactory(),
+                    new CopyMemoryAlgorithmFactory(),
+                    new CopyMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                )
+            );
+        }
 
-            new AlgorithmFactories(
-                new CopyAssignMemoryAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new CopyCommitMemoryAlgorithmFactory(),
-                new CopyMemoryAlgorithmFactory(),
-                new CopyMergeMemoryAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            ),
+        private static ModularMemoryModelFactories createLazyImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new LazyCopySnapshotStructureFactory(),
 
-            new AlgorithmFactories(
-                new CopyAssignInfoAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new CopyCommitInfoAlgorithmFactory(),
-                new CopyMemoryAlgorithmFactory(),
-                new CopyMergeInfoAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            )
-        );
+                new StructuralContainersFactories(
+                    new CopyArrayDescriptorFactory(),
+                    new CopyIndexContainerFactory(),
+                    new CopyIndexDefinitionFactory(),
+                    new CopyMemoryAliasFactory(),
+                    new CopyStackContextFactory(),
+                    new CopyObjectDescriptorFactory(),
+                    new CopyObjectValueContainerFactory()
+                    ),
 
-        public static readonly ModularMemoryModelFactories LazyImplementation = new ModularMemoryModelFactories(
-           new LazyCopySnapshotStructureFactory(),
+                new LazyCopySnapshotDataFactory(),
 
-            new StructuralContainersFactories(
-                new CopyArrayDescriptorFactory(),
-                new CopyIndexContainerFactory(),
-                new CopyIndexDefinitionFactory(),
-                new CopyMemoryAliasFactory(),
-                new CopyStackContextFactory(),
-                new CopyObjectDescriptorFactory(),
-                new CopyObjectValueContainerFactory()
+                new AlgorithmFactories(
+                    new CopyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitMemoryAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
                 ),
 
-            new LazyCopySnapshotDataFactory(),
+                new AlgorithmFactories(
+                    new CopyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitInfoAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                )
+            );
+        }
 
-            new AlgorithmFactories(
-                new CopyAssignMemoryAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new LazyCommitMemoryAlgorithmFactory(),
-                new SimplifyingCopyMemoryAlgorithmFactory(),
-                new CopyMergeMemoryAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            ),
+        private static ModularMemoryModelFactories createTrackingImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new TrackingSnapshotStructureFactory(),
 
-            new AlgorithmFactories(
-                new CopyAssignInfoAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new LazyCommitInfoAlgorithmFactory(),
-                new SimplifyingCopyMemoryAlgorithmFactory(),
-                new CopyMergeInfoAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            )
-        );
+                new StructuralContainersFactories(
+                    new LazyCopyArrayDescriptorFactory(),
+                    new LazyCopyIndexContainerFactory(),
+                    new LazyCopyIndexDefinitionFactory(),
+                    new LazyCopyMemoryAliasFactory(),
+                    new LazyCopyStackContextFactory(),
+                    new LazyCopyObjectDescriptorFactory(),
+                    new LazyCopyObjectValueContainerFactory()
+                    ),
 
-        public static readonly ModularMemoryModelFactories TrackingImplementation = new ModularMemoryModelFactories(
-            new TrackingSnapshotStructureFactory(),
+                new TrackingSnapshotDataFactory(),
 
-            new StructuralContainersFactories(
-                new LazyCopyArrayDescriptorFactory(),
-                new LazyCopyIndexContainerFactory(),
-                new LazyCopyIndexDefinitionFactory(),
-                new LazyCopyMemoryAliasFactory(),
-                new LazyCopyStackContextFactory(),
-                new LazyCopyObjectDescriptorFactory(),
-                new LazyCopyObjectValueContainerFactory()
+                new AlgorithmFactories(
+                    new LazyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new TrackingCommitMemoryAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new TrackingMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
                 ),
 
-            new TrackingSnapshotDataFactory(),
+                new AlgorithmFactories(
+                    new LazyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new TrackingCommitInfoAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new TrackingMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                )
 
-            new AlgorithmFactories(
-                new LazyAssignMemoryAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new TrackingCommitMemoryAlgorithmFactory(),
-                new SimplifyingCopyMemoryAlgorithmFactory(),
-                new TrackingMergeMemoryAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            ),
-
-            new AlgorithmFactories(
-                new LazyAssignInfoAlgorithmFactory(),
-                new CopyReadAlgorithmFactory(),
-                new TrackingCommitInfoAlgorithmFactory(),
-                new SimplifyingCopyMemoryAlgorithmFactory(),
-                new TrackingMergeInfoAlgorithmFactory(),
-                new PrintAlgorithmFactory()
-            )
-
-        );
+            );
+        }
     }
 }

@@ -133,7 +133,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructureFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor)
         {
-            Structure = Factories.SnapshotStructureFactory.CreateNewInstanceWithData(Factories, targetSnapshot, commonAncestor.Container);
+            Structure = Factories.SnapshotStructureFactory.CreateNewInstanceWithData(commonAncestor.Container);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;
@@ -205,7 +205,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructureFromCallSnapshot(Snapshot callSnapshot)
         {
-            Structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Structure);
+            Structure = Factories.SnapshotStructureFactory.CopyInstance(callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;

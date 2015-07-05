@@ -310,7 +310,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 CollectionMemoryUtils.AddAll(Values, Node.ScalarValues);
             }
 
-            MemoryEntry oldEntry = Worker.Data.GetMemoryEntry(TargetIndex);
+            MemoryEntry oldEntry = SnapshotDataUtils.GetMemoryEntry(Worker.Snapshot, Worker.Data, TargetIndex);
             CollectionMemoryUtils.AddAll(Values, oldEntry.PossibleValues);
 
             processArrays(definition.Array);
@@ -547,7 +547,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         private void processSourceValues()
         {
-            MemoryEntry oldEntry = Worker.Data.GetMemoryEntry(SourceIndex);
+            MemoryEntry oldEntry = SnapshotDataUtils.GetMemoryEntry(Worker.Snapshot, Worker.Data, SourceIndex);
 
             if (oldEntry.ContainsAssociativeArray)
             {

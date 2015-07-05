@@ -49,12 +49,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
         public MemoryModelFactory MemoryModelSnapshotFactory { get; private set; }
 
-
-        private Snapshot initialSnapshot;
-
+        
         internal ISnapshotStructureProxy InitialSnapshotStructureInstance { get; private set; }
-
         internal ISnapshotDataProxy InitialSnapshotDataInstance { get; private set; }
+        internal ISnapshotDataProxy InitialSnapshotInfoInstance { get; private set; }
 
 
 
@@ -73,13 +71,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             SnapshotStructureFactory = snapshotStructureFactory;
             StructuralContainersFactories = structuralContainersFactories;
             SnapshotDataFactory = snapshotDataFactory;
+
             MemoryAlgorithms = memoryAlgorithmFactories.CreateInstances(this);
             InfoAlgorithms = infoAlgorithmFactories.CreateInstances(this);
+
             MemoryModelSnapshotFactory = new ModularMemoryModelSnapshotFactory(this);
 
-            initialSnapshot = new Snapshot(this);
-            InitialSnapshotStructureInstance = SnapshotStructureFactory.CreateGlobalContextInstance(this, initialSnapshot);
-            InitialSnapshotDataInstance = SnapshotDataFactory.CreateEmptyInstance(this, initialSnapshot);
+            InitialSnapshotStructureInstance = SnapshotStructureFactory.CreateGlobalContextInstance(this);
+            InitialSnapshotDataInstance = SnapshotDataFactory.CreateEmptyInstance(this);
+            InitialSnapshotInfoInstance = SnapshotDataFactory.CreateEmptyInstance(this);
         }
 
         /// <inheritdoc />
@@ -121,10 +121,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             /// <inheritdoc />
             public SnapshotBase CreateSnapshot()
             {
-                Snapshot snapshot = new Snapshot(factories);
-                snapshot.InitializeMemoryModel();
-
-                return snapshot;
+                return new Snapshot(factories);
             }
         }
 

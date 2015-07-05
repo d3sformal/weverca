@@ -76,7 +76,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewStructure()
         {
-            Structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Structure);
+            Structure = Factories.SnapshotStructureFactory.CopyInstance(callSnapshot.Structure);
 
             writeableTargetStructure = Structure.Writeable;
             targetStructure = writeableTargetStructure;

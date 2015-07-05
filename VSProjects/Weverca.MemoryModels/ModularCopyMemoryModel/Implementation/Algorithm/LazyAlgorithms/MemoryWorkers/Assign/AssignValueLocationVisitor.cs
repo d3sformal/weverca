@@ -78,7 +78,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         /// <param name="location">The location.</param>
         public void VisitArrayStringValueLocation(ArrayStringValueLocation location)
         {
-            MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(location.ContainingIndex);
+            MemoryEntry oldEntry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, location.ContainingIndex);
             HashSet<Value> newValues = new HashSet<Value>();
             CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);
 
@@ -118,7 +118,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         /// <param name="location">The location.</param>
         public void VisitInfoValueLocation(InfoValueLocation location)
         {
-            MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(location.ContainingIndex);
+            MemoryEntry oldEntry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, location.ContainingIndex);
 
             HashSet<Value> newValues = new HashSet<Value>();
             CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);

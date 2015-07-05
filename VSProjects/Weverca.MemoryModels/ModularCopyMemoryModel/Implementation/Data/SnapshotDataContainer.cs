@@ -45,8 +45,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public SnapshotDataAssociativeContainer(Snapshot snapshot)
-            : base(snapshot)
+        public SnapshotDataAssociativeContainer()
+            : base()
         {
             IndexData = new Dictionary<MemoryIndex, MemoryEntry>();
         }
@@ -56,9 +56,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New data instance and copies data from this collection to the new one.</returns>
-        public SnapshotDataAssociativeContainer Copy(Snapshot snapshot)
+        public SnapshotDataAssociativeContainer Copy()
         {
-            SnapshotDataAssociativeContainer data = new SnapshotDataAssociativeContainer(snapshot);
+            SnapshotDataAssociativeContainer data = new SnapshotDataAssociativeContainer();
 
             data.IndexData = new Dictionary<MemoryIndex, MemoryEntry>(IndexData);
 
@@ -75,20 +75,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         public override IEnumerable<KeyValuePair<MemoryIndex, MemoryEntry>> Data
         {
             get { return IndexData; }
-        }
-
-        /// <inheritdoc />
-        public override MemoryEntry GetMemoryEntry(MemoryIndex index)
-        {
-            MemoryEntry memoryEntry;
-            if (TryGetMemoryEntry(index, out memoryEntry))
-            {
-                return memoryEntry;
-            }
-            else
-            {
-                return Snapshot.EmptyEntry;
-            }
         }
 
         /// <inheritdoc />

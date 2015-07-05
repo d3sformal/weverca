@@ -33,8 +33,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)
         {
-            ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Structure);
-            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Data);
+            ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(sourceSnapshot.Structure);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(sourceSnapshot.Data);
             int localLevel = sourceSnapshot.CallLevel;
 
             extendedSnapshot.SetMemoryMergeResult(localLevel, structure, data);
@@ -43,7 +43,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
             int localLevel = calleeProgramPoint.ProgramPointGraphID;
-            ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Structure);
+            ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(sourceSnapshot.Structure);
 
             if (!structure.Writeable.ContainsStackWithLevel(localLevel))
             {
@@ -53,7 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             structure.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
             structure.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
 
-            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(Factories, extendedSnapshot, sourceSnapshot.Data);
+            ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(sourceSnapshot.Data);
             data.Writeable.WriteableChangeTracker.SetCallLevel(localLevel);
             data.Writeable.WriteableChangeTracker.SetConnectionType(TrackerConnectionType.CALL_EXTEND);
 

@@ -61,7 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             if (collector.MustIndexesCount == 1 && collector.IsDefined)
             {
                 MemoryIndex index = collector.MustIndexes.First();
-                return snapshot.CurrentData.Readonly.GetMemoryEntry(index);
+                return SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, index);
             }
             else
             {
@@ -73,7 +73,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 foreach (MemoryIndex index in collector.MustIndexes)
                 {
-                    MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
+                    MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, index);
                     CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
                 }
 

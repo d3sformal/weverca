@@ -75,13 +75,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         IEnumerable<KeyValuePair<MemoryIndex, MemoryEntry>> Data { get; }
 
         /// <summary>
-        /// Gets the memory entry.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns>Memory entry for the given index.</returns>
-        MemoryEntry GetMemoryEntry(MemoryIndex index);
-
-        /// <summary>
         /// Tries to get memory entry.
         /// </summary>
         /// <param name="index">The index.</param>
@@ -147,16 +140,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// <value>
         /// The snapshot.
         /// </value>
-        protected Snapshot Snapshot { get; private set; }
+        //protected Snapshot Snapshot { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractSnapshotData" /> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public AbstractSnapshotData(Snapshot snapshot)
+        public AbstractSnapshotData()
         {
             DataId = DATA_ID++;
-            Snapshot = snapshot;
         }
 
         /// <inheritdoc />
@@ -190,9 +182,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         {
             get;
         }
-
-        /// <inheritdoc />
-        public abstract MemoryEntry GetMemoryEntry(MemoryIndex index);
 
         /// <inheritdoc />
         public abstract bool TryGetMemoryEntry(MemoryIndex index, out MemoryEntry entry);

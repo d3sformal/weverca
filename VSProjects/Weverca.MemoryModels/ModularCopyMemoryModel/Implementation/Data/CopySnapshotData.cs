@@ -38,25 +38,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     public class CopySnapshotDataFactory : ISnapshotDataFactory
     {
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return new CopySnapshotDataProxy(snapshot);
+            return new CopySnapshotDataProxy();
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData)
+        public ISnapshotDataProxy CopyInstance(ISnapshotDataProxy oldData)
         {
             CopySnapshotDataProxy proxy = CopySnapshotDataProxy.Convert(oldData);
-            return new CopySnapshotDataProxy(snapshot, proxy);
+            return new CopySnapshotDataProxy(proxy);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData)
+        public ISnapshotDataProxy CreateNewInstanceWithData(IReadOnlySnapshotData oldData)
         {
             SnapshotDataAssociativeContainer data = oldData as SnapshotDataAssociativeContainer;
             if (data != null)
             {
-                return new CopySnapshotDataProxy(snapshot, data);
+                return new CopySnapshotDataProxy(data);
             }
             else
             {
@@ -96,9 +96,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public CopySnapshotDataProxy(Snapshot snapshot)
+        public CopySnapshotDataProxy()
         {
-            snapshotData = new SnapshotDataAssociativeContainer(snapshot);
+            snapshotData = new SnapshotDataAssociativeContainer();
         }
 
         /// <summary>
@@ -107,9 +107,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
-        public CopySnapshotDataProxy(Snapshot snapshot, SnapshotDataAssociativeContainer oldData)
+        public CopySnapshotDataProxy(SnapshotDataAssociativeContainer oldData)
         {
-            snapshotData = oldData.Copy(snapshot);
+            snapshotData = oldData.Copy();
         }
 
         /// <summary>
@@ -118,9 +118,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="proxy">The proxy.</param>
-        public CopySnapshotDataProxy(Snapshot snapshot, CopySnapshotDataProxy proxy)
+        public CopySnapshotDataProxy(CopySnapshotDataProxy proxy)
         {
-            snapshotData = proxy.snapshotData.Copy(snapshot);
+            snapshotData = proxy.snapshotData.Copy();
         }
 
         /// <inheritdoc />

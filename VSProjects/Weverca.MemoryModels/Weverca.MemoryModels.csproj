@@ -281,6 +281,7 @@
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\ModularMemoryModelFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Utils\CollectionMemoryUtils.cs" />
+    <Compile Include="ModularCopyMemoryModel\Utils\SnapshotDataUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MemoryModelFactory.cs" />
     <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />

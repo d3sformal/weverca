@@ -67,7 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void createNewData()
         {
-            Data = Factories.SnapshotDataFactory.CopyInstance(Factories, targetSnapshot, callSnapshot.Data);
+            Data = Factories.SnapshotDataFactory.CopyInstance(callSnapshot.Data);
             writeableTargetData = Data.Writeable;
         }
 

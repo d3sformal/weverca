@@ -39,18 +39,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     public class LazyCopySnapshotStructureFactory : ISnapshotStructureFactory
     {
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return LazyCopySnapshotStructure.CreateEmpty(factories, snapshot);
+            return LazyCopySnapshotStructure.CreateEmpty(factories);
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy oldData)
+        public ISnapshotStructureProxy CopyInstance(ISnapshotStructureProxy oldData)
         {
             LazyCopySnapshotStructure proxy = oldData as LazyCopySnapshotStructure;
             if (proxy != null)
             {
-                return proxy.Copy(factories, snapshot);
+                return proxy.Copy();
             }
             else
             {
@@ -59,12 +59,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotStructure oldData)
+        public ISnapshotStructureProxy CreateNewInstanceWithData(IReadOnlySnapshotStructure oldData)
         {
             SnapshotStructureContainer data = oldData as SnapshotStructureContainer;
             if (data != null)
             {
-                return LazyCopySnapshotStructure.CreateWithData(factories, snapshot, data);
+                return LazyCopySnapshotStructure.CreateWithData(data);
             }
             else
             {
@@ -73,9 +73,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories)
         {
-            return LazyCopySnapshotStructure.CreateGlobal(factories, snapshot);
+            return LazyCopySnapshotStructure.CreateGlobal(factories);
         }
     }
 
@@ -85,24 +85,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     /// </summary>
     public class LazyCopySnapshotStructure : ISnapshotStructureProxy
     {
+        private ModularMemoryModelFactories factories;
+
         private SnapshotStructureContainer readonlyInstance;
         private SnapshotStructureContainer snapshotStructure;
         private bool isReadonly = true;
-        private Snapshot snapshot;
-        private ModularMemoryModelFactories factories;
 
         /// <summary>
         /// Creates the structure with memory stack with global level only.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New structure with memory stack with global level only.</returns>
-        public static LazyCopySnapshotStructure CreateGlobal(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public static LazyCopySnapshotStructure CreateGlobal(ModularMemoryModelFactories factories)
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure(factories);
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(factories, snapshot, proxy);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateGlobal(factories);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -111,13 +110,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static LazyCopySnapshotStructure CreateEmpty(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public static LazyCopySnapshotStructure CreateEmpty(ModularMemoryModelFactories factories)
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure(factories);
-            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(factories, snapshot, proxy);
+            proxy.snapshotStructure = SnapshotStructureContainer.CreateEmpty(factories);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -126,11 +124,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public LazyCopySnapshotStructure Copy(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public LazyCopySnapshotStructure Copy()
         {
             LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure(factories);
             proxy.readonlyInstance = this.readonlyInstance;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -140,11 +137,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="data">The old data.</param>
         /// <returns>New structure object with copy of diven data object.</returns>
-        public static ISnapshotStructureProxy CreateWithData(ModularMemoryModelFactories factories, Snapshot snapshot, SnapshotStructureContainer data)
+        public static ISnapshotStructureProxy CreateWithData(SnapshotStructureContainer data)
         {
-            LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure(factories);
+            LazyCopySnapshotStructure proxy = new LazyCopySnapshotStructure(data.Factories);
             proxy.readonlyInstance = data;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -174,7 +170,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
                 {
                     if (isReadonly)
                     {
-                        snapshotStructure = readonlyInstance.Copy(factories, snapshot, this);
+                        snapshotStructure = readonlyInstance.Copy();
                         readonlyInstance = snapshotStructure;
                         isReadonly = false;
                     }

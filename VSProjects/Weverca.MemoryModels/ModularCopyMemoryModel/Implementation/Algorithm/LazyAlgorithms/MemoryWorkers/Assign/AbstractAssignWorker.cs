@@ -178,7 +178,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             bool removeUndefined = node.IsMust && node.ContainsUndefinedValue;
             if (removeUndefined || values.Count > 0)
             {
-                MemoryEntry entry = Data.GetMemoryEntry(node.TargetIndex);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(Snapshot, Data, node.TargetIndex);
                 copyEntryValues(entry, values, removeUndefined, false);
                 Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
             }
@@ -199,7 +199,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             testAndCreateImplicitObject(node, values);
             testAndCreateUndefinedChildren(node);
 
-            MemoryEntry entry = Data.GetMemoryEntry(node.SourceIndex);
+            MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(Snapshot, Data, node.SourceIndex);
             copyEntryValues(entry, values, node.IsMust, true);
             Data.SetMemoryEntry(node.TargetIndex, Snapshot.CreateMemoryEntry(values));
 

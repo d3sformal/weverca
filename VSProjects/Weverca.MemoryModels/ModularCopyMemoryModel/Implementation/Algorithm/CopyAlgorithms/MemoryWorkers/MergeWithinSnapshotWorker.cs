@@ -28,6 +28,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyA
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
@@ -92,7 +93,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 Snapshot snapshot = item.Item2;
                 MemoryIndex index = item.Item1;
-                MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, index);
                 visitor.VisitMemoryEntry(entry);
 
                 IMemoryAlias aliases;

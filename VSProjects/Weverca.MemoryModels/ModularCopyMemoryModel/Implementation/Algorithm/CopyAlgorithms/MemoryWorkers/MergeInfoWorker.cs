@@ -74,7 +74,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public MergeInfoWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, int targetCallLevel, bool isCallMerge = false)
         {
             Factories = factories;
-            Infos = Factories.SnapshotDataFactory.CreateEmptyInstance(Factories, targetSnapshot);
+            Infos = Factories.SnapshotDataFactory.CreateEmptyInstance(Factories);
             Structure = targetSnapshot.Structure;
             Structure.Locked = true;
 
@@ -169,7 +169,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 MemoryIndex index = operationData.Item1;
                 Snapshot snapshot = operationData.Item2;
 
-                MemoryEntry entry = snapshot.Infos.Readonly.GetMemoryEntry(index);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.Infos.Readonly, index);
                 CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
             }
 

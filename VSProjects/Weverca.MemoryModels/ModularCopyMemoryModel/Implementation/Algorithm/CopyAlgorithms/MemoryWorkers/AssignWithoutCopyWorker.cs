@@ -145,7 +145,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 CollectionMemoryUtils.AddAll(values, data.Objects);
             }
 
-            CollectionMemoryUtils.AddAll(values, snapshot.CurrentData.Readonly.GetMemoryEntry(mayIndex).PossibleValues);
+            MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, mayIndex);
+            CollectionMemoryUtils.AddAll(values, entry.PossibleValues);
             snapshot.CurrentData.Writeable.SetMemoryEntry(mayIndex, snapshot.CreateMemoryEntry(values));
         }
 
@@ -258,7 +259,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 HashSet<Value> newValues = new HashSet<Value>();
                 if (!isMust)
                 {
-                    MemoryEntry oldEntry = snapshot.CurrentData.Readonly.GetMemoryEntry(index);
+                    MemoryEntry oldEntry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, index);
                     CollectionMemoryUtils.AddAll(newValues, oldEntry.PossibleValues);
                 }
 

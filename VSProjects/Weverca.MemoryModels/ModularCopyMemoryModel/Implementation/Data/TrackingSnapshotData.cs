@@ -38,25 +38,25 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     public class TrackingSnapshotDataFactory : ISnapshotDataFactory
     {
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return new TrackingSnapshotDataProxy(snapshot);
+            return new TrackingSnapshotDataProxy();
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotDataProxy oldData)
+        public ISnapshotDataProxy CopyInstance(ISnapshotDataProxy oldData)
         {
             TrackingSnapshotDataProxy proxy = TrackingSnapshotDataProxy.Convert(oldData);
-            return new TrackingSnapshotDataProxy(snapshot, proxy);
+            return new TrackingSnapshotDataProxy(proxy);
         }
 
         /// <inheritdoc />
-        public ISnapshotDataProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotData oldData)
+        public ISnapshotDataProxy CreateNewInstanceWithData(IReadOnlySnapshotData oldData)
         {
             TrackingSnapshotDataAssociativeContainer data = oldData as TrackingSnapshotDataAssociativeContainer;
             if (data != null)
             {
-                return new TrackingSnapshotDataProxy(snapshot, data);
+                return new TrackingSnapshotDataProxy(data);
             }
             else
             {
@@ -74,7 +74,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         private TrackingSnapshotDataAssociativeContainer snapshotData;
         private TrackingSnapshotDataAssociativeContainer readonlyInstance;
         private bool isReadonly = true;
-        private Snapshot snapshot;
 
         /// <summary>
         /// Converts the specified proxy to CopySnapshotDataProxy type.
@@ -99,10 +98,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public TrackingSnapshotDataProxy(Snapshot snapshot)
+        public TrackingSnapshotDataProxy()
         {
-            snapshotData = new TrackingSnapshotDataAssociativeContainer(snapshot);
-            this.snapshot = snapshot;
+            snapshotData = new TrackingSnapshotDataAssociativeContainer();
             isReadonly = false;
             readonlyInstance = snapshotData;
         }
@@ -113,10 +111,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
-        public TrackingSnapshotDataProxy(Snapshot snapshot, TrackingSnapshotDataAssociativeContainer oldData)
+        public TrackingSnapshotDataProxy(TrackingSnapshotDataAssociativeContainer oldData)
         {
             readonlyInstance = oldData;
-            this.snapshot = snapshot;
         }
 
         /// <summary>
@@ -125,10 +122,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="proxy">The proxy.</param>
-        public TrackingSnapshotDataProxy(Snapshot snapshot, TrackingSnapshotDataProxy proxy)
+        public TrackingSnapshotDataProxy(TrackingSnapshotDataProxy proxy)
         {
             readonlyInstance = proxy.readonlyInstance;
-            this.snapshot = snapshot;
         }
 
         /// <inheritdoc />
@@ -144,7 +140,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
             {
                 if (isReadonly)
                 {
-                    snapshotData = readonlyInstance.Copy(snapshot);
+                    snapshotData = readonlyInstance.Copy();
                     readonlyInstance = snapshotData;
                     isReadonly = false;
                 }

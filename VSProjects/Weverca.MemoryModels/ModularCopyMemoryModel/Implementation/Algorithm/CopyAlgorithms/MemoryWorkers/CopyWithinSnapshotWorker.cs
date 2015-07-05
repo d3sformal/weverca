@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
@@ -94,7 +95,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
                 var writeablestrucutre = snapshot.Structure.Writeable;
 
-                MemoryEntry entry = snapshot.CurrentData.Readonly.GetMemoryEntry(sourceIndex);
+                MemoryEntry entry = SnapshotDataUtils.GetMemoryEntry(snapshot, snapshot.CurrentData.Readonly, sourceIndex);
 
                 CopyWithinSnapshotVisitor visitor = new CopyWithinSnapshotVisitor(snapshot, this, targetIndex);
                 visitor.VisitMemoryEntry(entry);

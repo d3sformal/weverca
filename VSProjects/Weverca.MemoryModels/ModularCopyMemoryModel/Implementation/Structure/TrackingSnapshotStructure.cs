@@ -41,18 +41,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     public class TrackingSnapshotStructureFactory : ISnapshotStructureFactory
     {
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return TrackingSnapshotStructureProxy.CreateEmpty(factories, snapshot);
+            return TrackingSnapshotStructureProxy.CreateEmpty(factories);
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CopyInstance(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy oldData)
+        public ISnapshotStructureProxy CopyInstance(ISnapshotStructureProxy oldData)
         {
             TrackingSnapshotStructureProxy proxy = oldData as TrackingSnapshotStructureProxy;
             if (proxy != null)
             {
-                return proxy.Copy(factories, snapshot);
+                return proxy.Copy();
             }
             else
             {
@@ -61,18 +61,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories)
         {
-            return TrackingSnapshotStructureProxy.CreateGlobal(factories, snapshot);
+            return TrackingSnapshotStructureProxy.CreateGlobal(factories);
         }
 
         /// <inheritdoc />
-        public ISnapshotStructureProxy CreateNewInstanceWithData(ModularMemoryModelFactories factories, Snapshot snapshot, IReadOnlySnapshotStructure oldData)
+        public ISnapshotStructureProxy CreateNewInstanceWithData(IReadOnlySnapshotStructure oldData)
         {
             TrackingSnapshotStructureContainer data = oldData as TrackingSnapshotStructureContainer;
             if (data != null)
             {
-                return TrackingSnapshotStructureProxy.CreateWithData(factories, snapshot, data);
+                return TrackingSnapshotStructureProxy.CreateWithData(data);
             }
             else
             {
@@ -87,23 +87,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     /// </summary>
     public class TrackingSnapshotStructureProxy : ISnapshotStructureProxy
     {
+        private ModularMemoryModelFactories factories;
+
         private TrackingSnapshotStructureContainer readonlyInstance;
         private TrackingSnapshotStructureContainer snapshotStructure;
         private bool isReadonly = true;
-        private Snapshot snapshot;
-        private ModularMemoryModelFactories factories;
 
         /// <summary>
         /// Creates the structure with memory stack with global level only.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New structure with memory stack with global level only.</returns>
-        public static TrackingSnapshotStructureProxy CreateGlobal(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public static TrackingSnapshotStructureProxy CreateGlobal(ModularMemoryModelFactories factories)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
-            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(factories, snapshot, proxy);
+            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(factories);
             proxy.isReadonly = false;
-            proxy.snapshot = snapshot;
 
             proxy.snapshotStructure.AddStackLevel(Snapshot.GLOBAL_CALL_LEVEL);
             proxy.snapshotStructure.SetLocalStackLevelNumber(Snapshot.GLOBAL_CALL_LEVEL);
@@ -117,13 +116,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static TrackingSnapshotStructureProxy CreateEmpty(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public static TrackingSnapshotStructureProxy CreateEmpty(ModularMemoryModelFactories factories)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
-            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(factories, snapshot, proxy);
+            proxy.snapshotStructure = TrackingSnapshotStructureContainer.CreateEmpty(factories);
             proxy.readonlyInstance = proxy.snapshotStructure;
             proxy.isReadonly = false;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -132,11 +130,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public TrackingSnapshotStructureProxy Copy(ModularMemoryModelFactories factories, Snapshot snapshot)
+        public TrackingSnapshotStructureProxy Copy()
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
             proxy.readonlyInstance = this.readonlyInstance;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -146,11 +143,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="data">The old data.</param>
         /// <returns>New structure object with copy of diven data object.</returns>
-        public static ISnapshotStructureProxy CreateWithData(ModularMemoryModelFactories factories, Snapshot snapshot, TrackingSnapshotStructureContainer data)
+        public static ISnapshotStructureProxy CreateWithData(TrackingSnapshotStructureContainer data)
         {
-            TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
+            TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(data.Factories);
             proxy.readonlyInstance = data;
-            proxy.snapshot = snapshot;
             return proxy;
         }
 
@@ -180,7 +176,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
                 {
                     if (isReadonly)
                     {
-                        snapshotStructure = readonlyInstance.Copy(factories, snapshot, this);
+                        snapshotStructure = readonlyInstance.Copy();
                         readonlyInstance = snapshotStructure;
                         isReadonly = false;
                     }

@@ -83,8 +83,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        private TrackingSnapshotStructureContainer(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
-            : base(factories, snapshot, proxy)
+        private TrackingSnapshotStructureContainer(ModularMemoryModelFactories factories)
+            : base(factories)
         {
             changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(StructureId, this, null);
         }
@@ -94,9 +94,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New empty structure which contains no data in containers.</returns>
-        public static TrackingSnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public static TrackingSnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories)
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories, snapshot, proxy);
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories);
             data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>();
             data.arrayDescriptors = new LazyCopyDictionary<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = new LazyCopyDictionary<ObjectValue, IObjectDescriptor>();
@@ -113,9 +113,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <returns>New copy of this structure which contains the same data as this instace.</returns>
-        public TrackingSnapshotStructureContainer Copy(ModularMemoryModelFactories factories, Snapshot snapshot, ISnapshotStructureProxy proxy)
+        public TrackingSnapshotStructureContainer Copy()
         {
-            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories, snapshot, proxy);
+            TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(Factories);
             data.memoryStack = new LazyDeepCopyDictionary<int, IWriteableStackContext>(this.memoryStack);
             data.localLevel = this.localLevel;
 
