@@ -174,12 +174,16 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\TrackingMergeStructureWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\ImplementationVariants.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\TrackingCommitWorker.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\DifferentialDictionaryAssociativeContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyDictionaryAssociativeContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\CopyStructure\DictionaryAssociativeContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyArrayDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyIndexDefinition.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyMemoryAlias.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectDescriptor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopyStructure\LazyCopyObjectValueContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmInstances.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Common\AssociativeContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataProxy.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureFactory.cs" />
@@ -279,7 +283,7 @@
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\ICopyModelSnapshotEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotDataEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\SnapshotEntries\SnapshotEntry.cs" />
-    <Compile Include="ModularCopyMemoryModel\ModularMemoryModelFactories.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\ModularMemoryModelFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Utils\CollectionMemoryUtils.cs" />
     <Compile Include="ModularCopyMemoryModel\Utils\SnapshotDataUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

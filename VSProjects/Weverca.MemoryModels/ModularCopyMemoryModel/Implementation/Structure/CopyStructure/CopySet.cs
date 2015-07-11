@@ -30,9 +30,9 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
-    class CopySetFactory<T> : ISetFactory<T>
+    class CopySetFactory : ISetFactory
     {
-        public IWriteableSet<T> CreateWriteableSet()
+        public IWriteableSet<T> CreateWriteableSet<T>()
         {
             return new CopySet<T>();
         }

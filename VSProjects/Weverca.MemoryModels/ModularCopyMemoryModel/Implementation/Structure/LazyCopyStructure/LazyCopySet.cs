@@ -27,12 +27,12 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
-    class LazyCopySetFactory<T> : ISetFactory<T>
+    class LazyCopySetFactory : ISetFactory
     {
 
-        public IWriteableSet<T> CreateWriteableSet()
+        public IWriteableSet<T> CreateWriteableSet<T>()
         {
             return new LazyCopySet<T>();
         }

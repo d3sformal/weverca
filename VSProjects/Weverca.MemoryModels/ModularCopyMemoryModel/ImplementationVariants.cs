@@ -17,7 +17,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.Track
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
@@ -48,7 +48,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new CopyMemoryAliasFactory(),
                     new CopyStackContextFactory(),
                     new CopyObjectDescriptorFactory(),
-                    new CopyObjectValueContainerFactory()
+                    new CopyObjectValueContainerFactory(),
+                    new CopyDictionaryAssociativeContainerFactory()
                     ),
 
                 new CopySnapshotDataFactory(),
@@ -85,7 +86,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new CopyMemoryAliasFactory(),
                     new CopyStackContextFactory(),
                     new CopyObjectDescriptorFactory(),
-                    new CopyObjectValueContainerFactory()
+                    new CopyObjectValueContainerFactory(),
+                    new CopyDictionaryAssociativeContainerFactory()
                     ),
 
                 new LazyCopySnapshotDataFactory(),
@@ -122,7 +124,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new LazyCopyMemoryAliasFactory(),
                     new LazyCopyStackContextFactory(),
                     new LazyCopyObjectDescriptorFactory(),
-                    new LazyCopyObjectValueContainerFactory()
+                    new LazyCopyObjectValueContainerFactory(),
+                    new DifferentialDictionaryAssociativeContainerFactory()
                     ),
 
                 new TrackingSnapshotDataFactory(),

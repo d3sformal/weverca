@@ -64,7 +64,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         public void MergeInfo()
         {
-            IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectDataChangesAndFindAncestor();
+            IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectInfoChangesAndFindAncestor();
             createNewDataFromCommonAncestor(commonAncestor);
 
             foreach (MemoryIndex memoryIndex in indexChanges)
@@ -94,6 +94,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             {
                 Snapshot sourceSnapshot = sourceSnapshots[x];
                 ancestor = getFirstCommonAncestor(sourceSnapshot.CurrentData.Readonly.ReadonlyChangeTracker, ancestor);
+            }
+            return ancestor;
+        }
+
+        private IReadonlyChangeTracker<IReadOnlySnapshotData> collectInfoChangesAndFindAncestor()
+        {
+            CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
+
+            IReadonlyChangeTracker<IReadOnlySnapshotData> ancestor = sourceSnapshots[0].Infos.Readonly.ReadonlyChangeTracker;
+            for (int x = 1; x < sourceSnapshots.Count; x++)
+            {
+                Snapshot sourceSnapshot = sourceSnapshots[x];
+                ancestor = getFirstCommonAncestor(sourceSnapshot.Infos.Readonly.ReadonlyChangeTracker, ancestor);
             }
             return ancestor;
         }

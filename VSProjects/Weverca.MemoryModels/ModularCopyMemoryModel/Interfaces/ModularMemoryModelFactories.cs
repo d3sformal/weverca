@@ -13,6 +13,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
     public class ModularMemoryModelFactories
     {
+        public MemoryModelFactory MemoryModelSnapshotFactory { get; private set; }
+
         /// <summary>
         /// Gets the snapshot structure factory.
         /// </summary>
@@ -47,7 +49,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// </value>
         public AlgorithmInstances InfoAlgorithms { get; private set; }
 
-        public MemoryModelFactory MemoryModelSnapshotFactory { get; private set; }
 
         
         internal ISnapshotStructureProxy InitialSnapshotStructureInstance { get; private set; }

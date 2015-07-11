@@ -26,7 +26,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyDeclarationContainer<T>
     {

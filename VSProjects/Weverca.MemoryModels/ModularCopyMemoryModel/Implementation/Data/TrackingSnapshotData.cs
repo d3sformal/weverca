@@ -40,7 +40,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// <inheritdoc />
         public ISnapshotDataProxy CreateEmptyInstance(ModularMemoryModelFactories factories)
         {
-            return new TrackingSnapshotDataProxy();
+            return new TrackingSnapshotDataProxy(factories);
         }
 
         /// <inheritdoc />
@@ -98,9 +98,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public TrackingSnapshotDataProxy()
+        public TrackingSnapshotDataProxy(ModularMemoryModelFactories factories)
         {
-            snapshotData = new TrackingSnapshotDataAssociativeContainer();
+            snapshotData = new TrackingSnapshotDataAssociativeContainer(factories);
             isReadonly = false;
             readonlyInstance = snapshotData;
         }

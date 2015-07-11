@@ -26,7 +26,7 @@ using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyList<T> : IEnumerable<T> where T : IGenericCloneable<T>
     {

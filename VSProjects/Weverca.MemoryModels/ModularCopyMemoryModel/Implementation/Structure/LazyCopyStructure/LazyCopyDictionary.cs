@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyDictionary<K, V> : IEnumerable<KeyValuePair<K, V>>
     {

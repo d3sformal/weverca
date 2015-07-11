@@ -27,9 +27,9 @@ using Weverca.MemoryModels.CopyMemoryModel;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 {
-    public interface ISetFactory<T>
+    public interface ISetFactory
     {
-        IWriteableSet<T> CreateWriteableSet();
+        IWriteableSet<T> CreateWriteableSet<T>();
     }
 
     /// <summary>

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyObjectDescriptorFactory : IObjectDescriptorFactory
     {

@@ -28,7 +28,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyIndexContainerFactory : IIndexContainerFactory
     {

@@ -25,6 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
@@ -40,18 +41,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// <summary>
         /// Associative container with memory entries for all memory locations.
         /// </summary>
-        private Dictionary<MemoryIndex, MemoryEntry> IndexData;
+        private IWriteableAssociativeContainer<MemoryIndex, MemoryEntry> IndexData;
 
         private ChangeTracker<IReadOnlySnapshotData> tracker;
+
+        private TrackingSnapshotDataAssociativeContainer()
+            : base()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
-        public TrackingSnapshotDataAssociativeContainer()
+        public TrackingSnapshotDataAssociativeContainer(ModularMemoryModelFactories factories)
             : base()
         {
-            IndexData = new Dictionary<MemoryIndex, MemoryEntry>();
+            IndexData = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<MemoryIndex, MemoryEntry>();
             tracker = new ChangeTracker<IReadOnlySnapshotData>(DataId, this, null);
         }
 
@@ -64,7 +70,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         {
             TrackingSnapshotDataAssociativeContainer data = new TrackingSnapshotDataAssociativeContainer();
 
-            data.IndexData = new Dictionary<MemoryIndex, MemoryEntry>(IndexData);
+            data.IndexData = IndexData.Copy();
             data.tracker = new ChangeTracker<IReadOnlySnapshotData>(data.DataId, data, this.tracker);
 
             return data;

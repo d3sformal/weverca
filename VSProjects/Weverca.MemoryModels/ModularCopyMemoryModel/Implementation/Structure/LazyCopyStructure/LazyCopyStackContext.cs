@@ -28,7 +28,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyCopyStackContextFactory : IStackContextFactory
     {

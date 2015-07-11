@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
@@ -16,6 +17,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public IStackContextFactory StackContextFactory { get; private set; }
         public IObjectDescriptorFactory ObjectDescriptorFactory { get; private set; }
         public IObjectValueContainerFactory ObjectValueContainerFactory { get; private set; }
+        public IAssociativeContainerFactory AssociativeContainerFactory { get; private set; }
 
         public StructuralContainersFactories(
             IArrayDescriptorFactory arrayDescriptorFactory,
@@ -24,7 +26,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             IMemoryAliasFactory memoryAliasFactory,
             IStackContextFactory stackContextFactory,
             IObjectDescriptorFactory objectDescriptorFactory,
-            IObjectValueContainerFactory objectValueContainerFactory
+            IObjectValueContainerFactory objectValueContainerFactory,
+            IAssociativeContainerFactory associativeContainerFactory
             )
         {
             this.ArrayDescriptorFactory = arrayDescriptorFactory;
@@ -34,6 +37,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             this.StackContextFactory = stackContextFactory;
             this.ObjectDescriptorFactory = objectDescriptorFactory;
             this.ObjectValueContainerFactory = objectValueContainerFactory;
+            this.AssociativeContainerFactory = associativeContainerFactory;
         }
     }
 }

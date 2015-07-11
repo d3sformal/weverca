@@ -25,7 +25,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
-using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.TrackingStructure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
@@ -151,7 +151,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="LazyCopySnapshotStructure"/> class from being created.
+        /// Prevents a default instance of the <see cref="LazyCopySnapshotStructureProxy"/> class from being created.
         /// </summary>
         private TrackingSnapshotStructureProxy(ModularMemoryModelFactories factories)
         {

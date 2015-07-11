@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyCopyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
     class LazyDeepCopyDictionary<K, V> : IEnumerable<KeyValuePair<K, V>> where V : IGenericCloneable<V>
     {
