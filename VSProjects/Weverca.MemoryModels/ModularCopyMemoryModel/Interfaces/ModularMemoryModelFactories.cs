@@ -8,6 +8,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
@@ -32,7 +33,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The snapshot data factory.
         /// </value>
         public ISnapshotDataFactory SnapshotDataFactory { get; private set; }
-
+        
         /// <summary>
         /// Gets the algorithm factories for memory phase.
         /// </summary>
@@ -48,6 +49,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The algorithm factories for info phase.
         /// </value>
         public AlgorithmInstances InfoAlgorithms { get; private set; }
+
+
+        public AlgorithmFactories MemoryAlgorithmFactories { get; private set; }
+
+        public AlgorithmFactories InfoAlgorithmFactories { get; private set; }
+
+        public IBenchmark Benchmark { get; private set; }
 
 
         
@@ -66,12 +74,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             StructuralContainersFactories structuralContainersFactories,
             ISnapshotDataFactory snapshotDataFactory,
             AlgorithmFactories memoryAlgorithmFactories,
-            AlgorithmFactories infoAlgorithmFactories
+            AlgorithmFactories infoAlgorithmFactories,
+            IBenchmark benchmark
             )
         {
             SnapshotStructureFactory = snapshotStructureFactory;
             StructuralContainersFactories = structuralContainersFactories;
             SnapshotDataFactory = snapshotDataFactory;
+            MemoryAlgorithmFactories = memoryAlgorithmFactories;
+            InfoAlgorithmFactories = infoAlgorithmFactories;
+            Benchmark = benchmark;
 
             MemoryAlgorithms = memoryAlgorithmFactories.CreateInstances(this);
             InfoAlgorithms = infoAlgorithmFactories.CreateInstances(this);
@@ -110,6 +122,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             }
         }
 
+        public ModularMemoryModelFactoriesBuilder Builder()
+        {
+            return new ModularMemoryModelFactoriesBuilder(this);
+        }
+
         public class ModularMemoryModelSnapshotFactory : MemoryModelFactory
         {
             private ModularMemoryModelFactories factories;
@@ -126,5 +143,42 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             }
         }
 
+    }
+
+    public class ModularMemoryModelFactoriesBuilder
+    {
+        public ISnapshotStructureFactory SnapshotStructureFactory { get; set; }
+
+        public StructuralContainersFactories StructuralContainersFactories { get; set; }
+
+        public ISnapshotDataFactory SnapshotDataFactory { get; set; }
+
+        public AlgorithmFactories MemoryAlgorithmFactories { get; set; }
+
+        public AlgorithmFactories InfoAlgorithmFactories { get; set; }
+
+        public IBenchmark Benchmark { get; set; }
+
+        public ModularMemoryModelFactoriesBuilder(ModularMemoryModelFactories factories)
+        {
+            SnapshotStructureFactory = factories.SnapshotStructureFactory;
+            StructuralContainersFactories = factories.StructuralContainersFactories;
+            SnapshotDataFactory = factories.SnapshotDataFactory;
+            MemoryAlgorithmFactories = factories.MemoryAlgorithmFactories;
+            InfoAlgorithmFactories = factories.InfoAlgorithmFactories;
+            Benchmark = factories.Benchmark;
+        }
+
+        public ModularMemoryModelFactories Build()
+        {
+            return new ModularMemoryModelFactories(
+                SnapshotStructureFactory,
+                StructuralContainersFactories,
+                SnapshotDataFactory,
+                MemoryAlgorithmFactories,
+                InfoAlgorithmFactories,
+                Benchmark
+                );
+        }
     }
 }

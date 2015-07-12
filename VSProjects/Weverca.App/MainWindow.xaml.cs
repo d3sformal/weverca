@@ -38,8 +38,8 @@ namespace Weverca.App
         private string fileName;
         private SecondPhaseType secondPhaseType = SecondPhaseType.TaintAnalysis;
         private MemoryModelType memoryModelType = MemoryModelType.TrackingCopyAlgorithms;
-        private LoggingOutputType loggingOutputType = LoggingOutputType.GuiOnly;
-        private LoggingStrategyType loggingStrategyType = LoggingStrategyType.Deactivated;
+        private bool isBenchmarkEnabled = false;
+        private int numberOfRepetions = 10;
         private long memoryLimit;
 
         Stopwatch watch;
@@ -85,9 +85,7 @@ namespace Weverca.App
 
             abortButton.IsEnabled = true;
 
-            currentAnalyser = new Analyser();
-            currentAnalyser.FileName = fileName;
-            currentAnalyser.SecondPhaseType = secondPhaseType;
+            currentAnalyser = new Analyser(fileName, secondPhaseType, memoryModelType);
             
             watch = Stopwatch.StartNew();
             timer.IsEnabled = true;
@@ -100,7 +98,15 @@ namespace Weverca.App
         private void startAnalyserMainMethod(object sender)
         {
             currentAnalysisThred = System.Threading.Thread.CurrentThread;
-            currentAnalyser.StartAnalysis();
+
+            if (isBenchmarkEnabled)
+            {
+                currentAnalyser.StartBenchmark(numberOfRepetions);
+            }
+            else
+            {
+                currentAnalyser.StartAnalysis();
+            }
         }
 
         private void analysisFinished()
@@ -143,11 +149,45 @@ namespace Weverca.App
         {
             timeText.Content = watch.Elapsed.ToString(@"hh\:mm\:ss");
 
+            if (isBenchmarkEnabled)
+            {
+                actualizeBenchmarkMonitoring();
+            }
+            else
+            {
+                actualizeAnalysisMonitoring();
+            }
+            
+            if (currentAnalyser.IsFinished)
+            {
+                switch (currentAnalyser.EndState)
+                {
+                    case AnalysisEndState.Success:
+                        reportAnalysisEnd();
+                        break;
+                    case AnalysisEndState.Crash:
+                        reportAnalysisCrash();
+                        break;
+                    case AnalysisEndState.Abort:
+                        reportAnalysisAbort();
+                        break;
+                    case AnalysisEndState.AbortMemory:
+                        reportAnalysisAbortMemory();
+                        break;
+                }
+
+                actualizeMemory();
+                actualizeWarnings();
+
+                analysisFinished();
+            }
+        }
+
+        private void actualizeAnalysisMonitoring()
+        {
             actualizeState();
             actualizeMemory();
             actualizeWarnings();
-            actualizeProgramPoints();
-            actualizeProgress();
 
             if (isFirstPhaseStartNotReported && currentAnalyser.IsFirstPhaseStarted)
             {
@@ -172,27 +212,12 @@ namespace Weverca.App
                 isSecondPhaseEndNotReported = false;
                 reportSecondPhaseEnd();
             }
-            
-            if (currentAnalyser.IsFinished)
-            {
-                switch (currentAnalyser.EndState)
-                {
-                    case AnalysisEndState.Success:
-                        reportAnalysisEnd();
-                        break;
-                    case AnalysisEndState.Crash:
-                        reportAnalysisCrash();
-                        break;
-                    case AnalysisEndState.Abort:
-                        reportAnalysisAbort();
-                        break;
-                    case AnalysisEndState.AbortMemory:
-                        reportAnalysisAbortMemory();
-                        break;
-                }
+        }
 
-                analysisFinished();
-            }
+        private void actualizeBenchmarkMonitoring()
+        {
+            actualizeMemory();
+            actualizeRepetitions();
         }
 
         private void actualizeState()
@@ -252,12 +277,19 @@ namespace Weverca.App
             numOfWarningsText.Content = currentAnalyser.GetNumberOfWarnings();
         }
 
-        private void actualizeProgramPoints()
+        private void actualizeRepetitions()
         {
-        }
-
-        private void actualizeProgress()
-        {
+            if (!currentAnalyser.IsFinished)
+            {
+                if (currentAnalyser.RepetitionCounter <= numberOfRepetions)
+                {
+                    repetitionText.Content = currentAnalyser.RepetitionCounter.ToString();
+                }
+            }
+            else
+            {
+                repetitionText.Content = numberOfRepetions.ToString();
+            }
         }
 
         private void reportAnalysisStart()
@@ -343,8 +375,8 @@ namespace Weverca.App
                 FileName = fileName,
                 MemoryModelType = memoryModelType,
                 SecondPhaseType = secondPhaseType,
-                LoggingOutputType = loggingOutputType,
-                LoggingStrategyType = loggingStrategyType
+                NumberOfRepetitions = numberOfRepetions,
+                IsBenchmarkEnabled = isBenchmarkEnabled
             };
 
             if (startAnalysisWindow.ShowStartAnalysisDialog() == true)
@@ -352,9 +384,28 @@ namespace Weverca.App
                 fileName = startAnalysisWindow.FileName;
                 memoryModelType = startAnalysisWindow.MemoryModelType;
                 secondPhaseType = startAnalysisWindow.SecondPhaseType;
-                loggingOutputType = startAnalysisWindow.LoggingOutputType;
-                loggingStrategyType = startAnalysisWindow.LoggingStrategyType;
+                numberOfRepetions = startAnalysisWindow.NumberOfRepetitions;
+                isBenchmarkEnabled = startAnalysisWindow.IsBenchmarkEnabled;
                 memoryLimit = startAnalysisWindow.MemoryLimit;
+
+                if (isBenchmarkEnabled)
+                {
+                    phaseHead.Visibility = System.Windows.Visibility.Collapsed;
+                    phaseText.Visibility = System.Windows.Visibility.Collapsed;
+                    repetitionHead.Visibility = System.Windows.Visibility.Visible;
+                    repetitionText.Visibility = System.Windows.Visibility.Visible;
+                    numOfWarningsHead.Visibility = System.Windows.Visibility.Collapsed;
+                    numOfWarningsText.Visibility = System.Windows.Visibility.Collapsed;
+                }
+                else
+                {
+                    phaseHead.Visibility = System.Windows.Visibility.Visible;
+                    phaseText.Visibility = System.Windows.Visibility.Visible;
+                    repetitionHead.Visibility = System.Windows.Visibility.Collapsed;
+                    repetitionText.Visibility = System.Windows.Visibility.Collapsed;
+                    numOfWarningsHead.Visibility = System.Windows.Visibility.Visible;
+                    numOfWarningsText.Visibility = System.Windows.Visibility.Visible;
+                }
 
                 Title = string.Format("Weverca PHP analyzer - [{0}]", fileName);
                 StartAnalysis();

@@ -19,7 +19,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 
 //#define MEMORY_BENCHMARK
-//#define BENCHMARK
+
 
 using System;
 using System.Collections.Generic;
@@ -31,11 +31,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
-    class MemoryModelBenchmark : IBenchmark
+    public class MemoryModelBenchmark : IBenchmark
     {
         Measuring currentTransaction;
         Snapshot currentSnapshot;
-        //Dictionary<Snapshot, Measuring> transactions = new Dictionary<Snapshot, Measuring>();
+
         Dictionary<AlgorithmKey, Measuring> runningAlgorithms = new Dictionary<AlgorithmKey, Measuring>();
         Dictionary<AlgorithmType, AlgorithmEntry> algorithms = new Dictionary<AlgorithmType, AlgorithmEntry>();
 
@@ -69,17 +69,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         public double AlgorithmMemory { get { return algorithmMemory; } }
 
+        public void ClearResults()
+        {
+            currentTransaction = null;
+            currentSnapshot = null;
+
+            runningAlgorithms = new Dictionary<AlgorithmKey, Measuring>();
+            algorithms = new Dictionary<AlgorithmType, AlgorithmEntry>();
+
+            transactionStarts = 0;
+            transactionStops = 0;
+            transactionTime = 0;
+            algorithmStarts = 0;
+            algorithmStops = 0;
+            algorithmTime = 0;
+            initializations = 0;
+            transactionMemory = 0;
+            algorithmMemory = 0;
+        }
+
         public void InitializeSnapshot(Snapshot snapshot)
         {
-#if BENCHMARK
             initializations++;
-#endif
         }
 
         public void StartTransaction(Snapshot snapshot)
         {
-#if BENCHMARK
-
             if (currentSnapshot == null)
             {
                 Measuring transaction = new Measuring();
@@ -93,15 +108,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             else
             {
                 FinishTransaction(snapshot);
-                //throw new Exception("");
             }
-
-#endif
         }
 
         public void FinishTransaction(Snapshot snapshot)
         {
-#if BENCHMARK
             double usedMemory = getMemoryUssage();
 
             if (this.currentSnapshot == snapshot)
@@ -114,20 +125,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             }
             else
             {
-                //throw new Exception("Snapshot transactions does not match");
             }
 
             this.currentSnapshot = null;
             currentTransaction = null;
-#endif
         }
 
         public void StartAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
         {
-#if BENCHMARK
             AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
-            Measuring algorithm = new Measuring();
-            runningAlgorithms.Add(key, algorithm);
+            Measuring algorithm;
+            if (!runningAlgorithms.TryGetValue(key, out algorithm))
+            {
+                algorithm = new Measuring();
+                runningAlgorithms.Add(key, algorithm);
+            }
 
             AlgorithmEntry entry;
             if (!algorithms.TryGetValue(algorithmType, out entry))
@@ -141,12 +153,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
             algorithm.MemoryStart = getMemoryUssage();
             algorithm.Stopwatch.Start();
-#endif
         }
 
         public void FinishAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
         {
-#if BENCHMARK
             double usedMemory = getMemoryUssage();
 
             AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
@@ -171,13 +181,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                 entry.Time = entry.Time + algorithm.Stopwatch.Elapsed.TotalMilliseconds;
                 entry.Memory = entry.Memory + (usedMemory - algorithm.MemoryStart);
             }
-#endif
         }
 
 
         public void WriteResultsToFile(string benchmarkFile)
         {
-#if BENCHMARK
             System.IO.File.Delete(benchmarkFile);
             using (System.IO.StreamWriter w = System.IO.File.AppendText(benchmarkFile))
             {
@@ -213,7 +221,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                     w.WriteLine(line);
                 }
             }
-#endif
         }
 
         private double getMemoryUssage()

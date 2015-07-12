@@ -34,21 +34,12 @@
                 <Slider HorizontalAlignment="Right" Width="353" Margin="0,0,5,0" Minimum="6.24" Maximum="11.090354" Name="memoryLimitSlider" ValueChanged="memoryLimitSlider_ValueChanged" />
             </StackPanel>
         </GroupBox>
-        <GroupBox Header="Memory model logging" Margin="5" Padding="2">
+        <GroupBox Header="Memory model benchmark" Margin="5" Padding="2">
             <StackPanel>
-                <Label Content="Logging strategy"/>
-                <ComboBox Margin="5,0,5,5" x:Name="loggingStrategyCombo">
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.Deactivated}" IsSelected="True" Content="Deactivated"/>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationsLog}" Content="Operations log"/>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingStrategyType.OperationLogWithValues}" Content="Operations log with snapshot values"/>
-                </ComboBox>
+                <CheckBox Margin="5,10,5,0" x:Name="benchmarkCheck" Click="benchmarkCheck_Click" >Enable memory model benchmark</CheckBox>
+                <Label Content="The number of repetitions of analysis"/>
+                <TextBox Margin="5,0,5,5" x:Name="repetitionsText" IsEnabled="False" >10</TextBox>
 
-                <Label Content="File output"/>
-                <ComboBox Margin="5,0,5,5" x:Name="fileOutputCombo">
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.GuiOnly}" IsSelected="True" Content="Only to GUI"/>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.AfterAnalysis}" Content="After each phase of analysis"/>
-                    <ComboBoxItem Tag="{x:Static settings:LoggingOutputType.DuringAnalysis}" Content="During the analysis"/>
-                </ComboBox>
             </StackPanel>
         </GroupBox>
         <Button Margin="6,2,6,10" Padding="5" FontSize="14" x:Name="startAnalysisButton" Click="startAnalysisButton_Click" Content="Start analysis"/>

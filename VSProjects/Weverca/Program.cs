@@ -138,7 +138,7 @@ namespace Weverca
 		{
 			if (memoryModel == MemoryModels.MemoryModels.ModularCopyMM)
 			{
-				MemoryModels.ModularCopyMemoryModel.Snapshot.Benchmark.WriteResultsToFile(benchmarkFile);
+				MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.DefaultVariant.Benchmark.WriteResultsToFile(benchmarkFile);
 			}
 		}
 

@@ -70,12 +70,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Gets the logger object which should be used to log snapshot operations.
 		/// </summary>
 		public static ILogger Logger = new MemoryModelLogger();
-
-		/// <summary>
-		/// Gets the benchmark object to mesure snapshot operations.
-		/// </summary>
-		public static IBenchmark Benchmark = new MemoryModelBenchmark();
-
+        
 		/// <summary>
 		///  Gets the visualizer object to print out snashot graph
 		/// </summary>
@@ -279,7 +274,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             isInitialized = true;
 
-            Benchmark.InitializeSnapshot(this);
+            Factories.Benchmark.InitializeSnapshot(this);
             Logger.Log(this, "Constructed snapshot");
         }
 
@@ -315,7 +310,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		protected override void startTransaction()
 		{
 			Visualizer.StartTransaction(this);
-			Benchmark.StartTransaction(this);
+			Factories.Benchmark.StartTransaction(this);
 			Logger.Log(this, "Start mode: {0}", CurrentMode);
 
 			OldCallLevel = CallLevel;
@@ -381,15 +376,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             ICommitAlgorithm algorithm = Algorithms.CommitAlgorithm;
 
-			Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COMMIT);
+			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COMMIT);
             bool differs = algorithm.CommitAndSimplify(this, simplifyLimit);
-			Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COMMIT);
+			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COMMIT);
 
 			Logger.LogToSameLine(" " + differs);
 			Logger.Log(this);
 			Logger.Log("\n---------------------------------\n");
 
-			Benchmark.FinishTransaction(this);
+			Factories.Benchmark.FinishTransaction(this);
 
 			Visualizer.SetCommitDiffers(this, differs);
 			Visualizer.SetNumberOfTransactions(this, NumberOfTransactions);
@@ -428,15 +423,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             ICommitAlgorithm algorithm = Algorithms.CommitAlgorithm;
 
-			Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
+			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
             bool differs = algorithm.CommitAndWiden(this, simplifyLimit);
-			Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
+			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
 
 			Logger.LogToSameLine(" " + differs);
 			Logger.Log(this);
 			Logger.Log("\n---------------------------------\n");
 
-			Benchmark.FinishTransaction(this);
+			Factories.Benchmark.FinishTransaction(this);
 
 			Visualizer.SetCommitDiffers(this, differs);
 			Visualizer.SetNumberOfTransactions(this, NumberOfTransactions);
@@ -662,9 +657,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
             
-            Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
+            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
             algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
-            Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
+            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
 
 			Visualizer.SetParents(this, snapshots.ToArray());
 			Visualizer.SetLabel(this, "merge at subprogram");
@@ -707,9 +702,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
 
-            Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
+            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
             algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
-            Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
+            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
 
 			if (thisObject != null)
 			{
@@ -758,9 +753,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
 
-            Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
+            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
             algorithm.MergeWithCall(this, callSnapshot, snapshots);
-            Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
+            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
             
 			Visualizer.SetParents(this, snapshots.ToArray());
 			Visualizer.SetLabel(this, "merge with call level:" + CallLevel);
@@ -1563,9 +1558,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		{
             IMemoryAlgorithm algorithm = Algorithms.MemoryAlgorithm;
 
-			Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
+			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
 			algorithm.CopyMemory(this, sourceIndex, targetIndex, isMust);
-			Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
+			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
 		}
 
 		/// <summary>
@@ -1576,9 +1571,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         {
             IMemoryAlgorithm algorithm = Algorithms.MemoryAlgorithm;
 
-			Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
+			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
 			algorithm.DestroyMemory(this, index);
-			Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
+			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
 		}
 
 		/// <summary>
@@ -1617,9 +1612,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
 
-            Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND);
+            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND);
             algorithm.Extend(this, snapshot);
-            Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND);
+            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND);
             
 			Visualizer.SetParent(this, snapshot);
 			Visualizer.SetLabel(this, "extend");
@@ -1652,9 +1647,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
             IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
 
-            Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
+            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
             algorithm.Merge(this, snapshots);
-            Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
+            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
 			
 			Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
 		}

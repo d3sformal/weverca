@@ -189,6 +189,7 @@
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureProxy.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\StructuralContainersFactories.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\EmptyMemoryModelBenchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\AssignInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MergeInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Common\ProcessValueAsLocationVisitor.cs" />

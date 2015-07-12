@@ -98,6 +98,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
     public interface IBenchmark
     {
+        void ClearResults();
+
         void InitializeSnapshot(Snapshot snapshot);
 
         void StartTransaction(Snapshot snapshot);

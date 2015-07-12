@@ -21,6 +21,7 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyS
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
@@ -70,7 +71,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new CopyMemoryAlgorithmFactory(),
                     new CopyMergeInfoAlgorithmFactory(),
                     new PrintAlgorithmFactory()
-                )
+                ),
+
+                new EmptyMemoryModelBenchmark()
             );
         }
 
@@ -108,7 +111,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new SimplifyingCopyMemoryAlgorithmFactory(),
                     new CopyMergeInfoAlgorithmFactory(),
                     new PrintAlgorithmFactory()
-                )
+                ),
+
+                new EmptyMemoryModelBenchmark()
             );
         }
 
@@ -146,7 +151,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new SimplifyingCopyMemoryAlgorithmFactory(),
                     new TrackingMergeInfoAlgorithmFactory(),
                     new PrintAlgorithmFactory()
-                )
+                ),
+
+                new EmptyMemoryModelBenchmark()
 
             );
         }

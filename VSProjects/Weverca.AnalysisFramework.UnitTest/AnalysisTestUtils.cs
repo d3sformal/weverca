@@ -351,7 +351,7 @@ namespace Weverca.AnalysisFramework.UnitTest
                 testCase.Assert(ppg);
             }
 
-            Snapshot.Benchmark.WriteResultsToFile("benchmark.csv");
+            ModularMemoryModelVariants.DefaultVariant.Benchmark.WriteResultsToFile("benchmark.csv");
         }
 
         internal static void RunInfoLevelBackwardPropagationCase(TestCase testCase)
