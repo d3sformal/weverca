@@ -13,6 +13,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 
     public interface IReadonlyAssociativeContainer<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>
     {
+        int Count { get; }
+
         IEnumerable<TKey> Keys { get; }
         
         TValue this[TKey key] { get; }
@@ -28,7 +30,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
 
         void Add(TKey key, TValue value);
 
-        bool Remove(TKey key);
+        void Remove(TKey key);
 
         bool TryGetValue(TKey key, out TValue value);
 

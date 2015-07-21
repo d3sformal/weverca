@@ -101,6 +101,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         public LazyCopySnapshotDataProxy()
         {
             snapshotData = new SnapshotDataAssociativeContainer();
+            readonlyInstance = snapshotData;
             isReadonly = false;
         }
 

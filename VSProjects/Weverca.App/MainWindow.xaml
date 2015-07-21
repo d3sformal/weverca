@@ -24,6 +24,7 @@
             <MenuItem Header="Export">
                 <MenuItem Header="Export program point graph image" Name="exportPPGMenu" Click="exportPPGMenu_Click" />
                 <MenuItem Header="Export analysis dump" Name="exportResultsMenu" Click="exportResultsMenu_Click" />
+                <MenuItem Header="Export benchmark statistics" Name="exportBenchmarkMenu" Click="exportBenchmarkMenu_Click" />
             </MenuItem>
 
             <MenuItem Header="About" Name="aboutMenu" Click="aboutMenu_Click" />

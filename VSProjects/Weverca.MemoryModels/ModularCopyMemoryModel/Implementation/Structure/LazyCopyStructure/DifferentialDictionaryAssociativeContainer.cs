@@ -110,19 +110,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             node.AssociativeContainer[key] = new ContainerValue(value);
         }
 
-        public bool Remove(TKey key)
+        public void Remove(TKey key)
         {
-            TValue value;
-            if (TryGetValue(key, out value))
-            {
-                copy();
-                node.AssociativeContainer[key] = new ContainerValue();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            copy();
+            node.AssociativeContainer[key] = new ContainerValue();
         }
 
         public bool TryGetValue(TKey key, out TValue value)
@@ -170,12 +161,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
 
         public IEnumerable<TKey> Keys
         {
-            get { throw new NotImplementedException(); }
+            get { return getAllKeys(); }
         }
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return getAllKeys().Count; }
         }
 
         public bool ContainsKey(TKey key)
@@ -221,6 +212,39 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             }
 
             return values.GetEnumerator();
+        }
+
+        private HashSet<TKey> getAllKeys()
+        {
+            HashSet<TKey> alive = new HashSet<TKey>();
+            HashSet<TKey> removed = new HashSet<TKey>();
+            ContainerNode accNode = node;
+            while (accNode != null)
+            {
+                foreach (var item in accNode.AssociativeContainer)
+                {
+                    if (!removed.Contains(item.Key) && !alive.Contains(item.Key))
+                    {
+                        if (item.Value.HasValue)
+                        {
+                            alive.Add(item.Key);
+                        }
+                        removed.Add(item.Key);
+                    }
+                }
+
+                accNode = accNode.PreviousNode;
+            }
+
+            foreach (var item in rootContainer)
+            {
+                if (!removed.Contains(item.Key) && !alive.Contains(item.Key))
+                {
+                    alive.Add(item.Key);
+                }
+            }
+
+            return alive;
         }
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()

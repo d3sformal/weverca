@@ -186,9 +186,11 @@
     <Compile Include="ModularCopyMemoryModel\Interfaces\Common\AssociativeContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataProxy.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\DeclarationContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\SnapshotStructureProxy.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\StructuralContainersFactories.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmAggregationEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\EmptyMemoryModelBenchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\AssignInfo.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\MergeInfo.cs" />
@@ -266,14 +268,12 @@
     <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\AlgorithmKey.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Benchmark.cs" />
-    <Compile Include="ModularCopyMemoryModel\Logging\GraphLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Logger.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Common\IGenericCloneable.cs" />
-    <Compile Include="ModularCopyMemoryModel\Logging\Measuring.cs" />
+    <Compile Include="ModularCopyMemoryModel\Logging\SnapshotMeasuring.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelBenchmark.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\MemoryModelVisualizer.cs" />
-    <Compile Include="ModularCopyMemoryModel\Logging\SnapshotLogger.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\TransactionEntry.cs" />
     <Compile Include="ModularCopyMemoryModel\Logging\Visualizer.cs" />
     <Compile Include="ModularCopyMemoryModel\Memory\IReferenceHolder.cs" />
@@ -287,6 +287,7 @@
     <Compile Include="ModularCopyMemoryModel\Interfaces\ModularMemoryModelFactories.cs" />
     <Compile Include="ModularCopyMemoryModel\Utils\CollectionMemoryUtils.cs" />
     <Compile Include="ModularCopyMemoryModel\Utils\SnapshotDataUtils.cs" />
+    <Compile Include="ModularCopyMemoryModel\Utils\ValueUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MemoryModelFactory.cs" />
     <Compile Include="VirtualReferenceModel\Containers\DataContainer.cs" />

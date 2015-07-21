@@ -73,6 +73,8 @@ namespace Weverca.App
         private IReadOnlyCollection<AnalysisWarning> secondPhaseWarnings;
         private IBenchmark memoryModelBenchmark;
 
+        private List<BenchmarkResult> benchmarkResults = new List<BenchmarkResult>();
+
         public Analyser(string fileName, SecondPhaseType secondPhaseType, MemoryModelType memoryModelType)
         {
             this.FileName = fileName;
@@ -103,6 +105,8 @@ namespace Weverca.App
             programPointGraph = null;
             firstPhaseAnalysis = null;
             secondPhaseAnalysis = null;
+
+            GC.Collect();
         }
 
         public void StartAnalysis()
@@ -115,7 +119,34 @@ namespace Weverca.App
 
             MemoryModel = factories.MemoryModelSnapshotFactory;
 
-            start(1);
+            WatchFirstPhase = new Stopwatch();
+            WatchSecondPhase = new Stopwatch();
+
+            Watch = Stopwatch.StartNew();
+            try
+            {
+                createControlFlowGraph();
+                clearComputation();
+                
+                runFirstPhaseAnalysis();
+                runSecondPhaseAnalysis();
+
+                EndState = AnalysisEndState.Success;
+            }
+            catch (ThreadAbortException e)
+            {
+                EndState = (AnalysisEndState)e.ExceptionState;
+            }
+            /*catch (Exception e)
+            {
+                AnalysisException = e;
+                EndState = AnalysisEndState.Crash;
+            }*/
+            finally
+            {
+                Watch.Stop();
+                IsFinished = true;
+            }
         }
 
         public void StartBenchmark(int numberOfRepetitions)
@@ -146,8 +177,15 @@ namespace Weverca.App
                 {
                     clearComputation();
 
+                    BenchmarkResult result = new BenchmarkResult();
+                    benchmarkResults.Add(result);
+                    result.StartBenchmarking();
+
                     runFirstPhaseAnalysis();
                     runSecondPhaseAnalysis();
+
+                    result.StopBenchmarking(this.memoryModelBenchmark);
+                    this.memoryModelBenchmark.ClearResults();
 
                     RepetitionCounter++;
                 }
@@ -176,14 +214,23 @@ namespace Weverca.App
         {
             switch (MemoryModelType)
             {
-                case Settings.MemoryModelType.CopyAlgorithms:
-                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.CopyImplementation;
+                case Settings.MemoryModelType.Copy:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.Copy;
 
-                case Settings.MemoryModelType.LazyCopyAlgorithms:
-                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyImplementation;
+                case Settings.MemoryModelType.LazyExtendCommit:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyExtendCommit;
 
-                case Settings.MemoryModelType.TrackingCopyAlgorithms:
-                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.TrackingImplementation;
+                case Settings.MemoryModelType.LazyContainers:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyContainers;
+
+                case Settings.MemoryModelType.LazyAndDiffContainers:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyAndDiffContainers;
+
+                case Settings.MemoryModelType.Tracking:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.Tracking;
+
+                case Settings.MemoryModelType.TrackingDiff:
+                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.TrackingDiffContainers;
 
                 default:
                     throw new Exception("Unrecognized type of memory model " + MemoryModelType);
@@ -429,9 +476,15 @@ namespace Weverca.App
             {
                 if (this.memoryModelBenchmark != null)
                 {
-                    output.CommentLine("Total number of memory model transactions: " + memoryModelBenchmark.TransactionStarts);
-                    output.CommentLine("Total number of memory model algorithm runs: " + memoryModelBenchmark.AlgorithmStops);
-                    output.CommentLine("Total time consumed by memory model algorithms: " + new TimeSpan(0, 0, 0, 0, (int)memoryModelBenchmark.AlgorithmTime).ToString());
+                    output.CommentLine("Total number of memory model transactions: " + memoryModelBenchmark.NumberOfTransactions);
+                    output.CommentLine("Total number of memory model operations: " + memoryModelBenchmark.NumberOfOperations);
+                    output.CommentLine("Total number of memory model algorithm runs: " + memoryModelBenchmark.NumberOfAlgorithms);
+
+                    output.EmptyLine();
+
+                    output.CommentLine("Total time consumed by memory model: " + new TimeSpan(0, 0, 0, 0, (int)memoryModelBenchmark.TotalOperationTime).ToString());
+
+                    output.CommentLine("Total time consumed by memory model algorithms: " + new TimeSpan(0, 0, 0, 0, (int)memoryModelBenchmark.TotalAlgorithmTime).ToString());
 
                     generateAlgorithmFamilyResult(output, AlgorithmFamilies.Write, "Write");
                     generateAlgorithmFamilyResult(output, AlgorithmFamilies.Commit, "Commit");
@@ -514,13 +567,13 @@ namespace Weverca.App
 
             foreach (AlgorithmType type in algorithmType)
             {
-                AlgorithmEntry data;
+                AlgorithmAggregationEntry data;
                 if (memoryModelBenchmark.AlgorithmResults.TryGetValue(type, out data))
                 {
                     string name = getAlgorithmName(type);
-                    int runs = data.Stops;
-                    double time = data.Time;
-                    double timePercentil = time / memoryModelBenchmark.AlgorithmTime;
+                    int runs = data.NumberOfRuns;
+                    double time = data.TotalTime;
+                    double timePercentil = time / memoryModelBenchmark.TotalAlgorithmTime;
 
                     output.line();
                     output.variable(name);
@@ -639,5 +692,115 @@ namespace Weverca.App
         }
 
         #endregion
+
+
+        internal void WriteOutBenchmarkStats(StreamWriter writer)
+        {
+            writer.WriteLine("Iteration;Ananlysis time;Operation time;Algorithm time;Transactions;Operations;Algorithms;Memory difference");
+
+            int benchmarkRun = 1;
+            foreach (var result in benchmarkResults)
+            {
+                writer.WriteLine(string.Format("{0};{1};{2};{3};{4};{5};{6};{7}", benchmarkRun, result.TotalAnalysisTime, result.TotalOperationTime, result.TotalAlgorithmTime,
+                    result.NumberOfTransactions, result.NumberOfOperations, result.NumberOfAlgorithms, result.FinalMemory - result.InitialMemory
+                ));
+                benchmarkRun++;
+            }
+        }
+
+        internal void WriteOutTransactionBenchmark(StreamWriter writer)
+        {
+            writer.WriteLine("Iteration;Transaction number;Memory mode;Locations;Time;Start memory;End memory;Memory difference");
+
+            int benchmarkRun = 1;
+            foreach (var result in benchmarkResults)
+            {
+                long initialMemory = result.InitialMemory;
+
+                foreach (TransactionEntry transaction in result.TransactionResults)
+                {
+                    long memDiff = transaction.EndMemory - transaction.StartMemory;
+                    writer.WriteLine(string.Format("{0};{1};{2};{3};{4};{5};{6};{7}", benchmarkRun, transaction.TransactionID, transaction.Mode,
+                        transaction.NumberfLocations, transaction.TransactionTime, transaction.StartMemory - initialMemory,
+                        transaction.EndMemory - initialMemory, memDiff
+                        ));
+                }
+                benchmarkRun++;
+            }
+        }
+
+        internal void WriteOutTransactionMemoryMedians(StreamWriter memoryMediansWriter)
+        {
+
+            List<List<long>> transactionsMemory = new List<List<long>>();
+
+            int benchmarkRun = 1;
+            foreach (var result in benchmarkResults)
+            {
+                long initialMemory = result.InitialMemory;
+
+                int transNumber = 0;
+                foreach (TransactionEntry transaction in result.TransactionResults)
+                {
+                    if (transactionsMemory.Count <= transNumber)
+                    {
+                        transactionsMemory.Add(new List<long>());
+                    }
+                    transactionsMemory[transNumber].Add(transaction.EndMemory - initialMemory);
+                    transNumber++;
+                }
+                benchmarkRun++;
+            }
+
+            memoryMediansWriter.WriteLine("Transaction;End memory medians");
+
+            int transactionRow = 1;
+            foreach (var memoryList in transactionsMemory)
+            {
+                memoryList.Sort();
+                long median = 0;
+
+                int half = memoryList.Count / 2;
+                if (memoryList.Count % 2 == 0)
+                {
+                    median = (memoryList[half] + memoryList[half + 1]) / 2;
+                }
+                else
+                {
+                    median = memoryList[half];
+                }
+
+                memoryMediansWriter.WriteLine(string.Format("{0};{1}", transactionRow, median));
+                transactionRow++;
+            }
+        }
+
+        internal void WriteOutAlgorithmTotalTimes(StreamWriter writer)
+        {
+            StringBuilder lineBuilder = new StringBuilder();
+            List<AlgorithmType> algorithmTypes = new List<AlgorithmType>();
+            foreach (var algorithm in benchmarkResults[0].AlgorithmResults)
+            {
+                algorithmTypes.Add(algorithm.Key);
+                lineBuilder.Append(algorithm.Key.ToString() + ";");
+            }
+
+            lineBuilder.Length = lineBuilder.Length - 1;
+            writer.WriteLine(lineBuilder);
+            lineBuilder.Clear();
+
+            foreach (var result in benchmarkResults)
+            {
+                foreach (var algorithmType in algorithmTypes)
+                {
+                    lineBuilder.Append(result.AlgorithmResults[algorithmType].TotalTime);
+                    lineBuilder.Append(";");
+                }
+
+                lineBuilder.Length = lineBuilder.Length - 1;
+                writer.WriteLine(lineBuilder);
+                lineBuilder.Clear();
+            }
+        }
     }
 }

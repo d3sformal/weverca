@@ -193,7 +193,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
                 callRouting = new Dictionary<Snapshot, IReadonlyChangeTracker<C>>();
             }
 
-            callRouting.Add(callSnapshot, callTracker);
+            if (!callRouting.ContainsKey(callSnapshot))
+            {
+                callRouting.Add(callSnapshot, callTracker);
+            }
+            else
+            {
+                callRouting[callSnapshot] = null;
+            }
         }
 
 
@@ -201,7 +208,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         {
             if (callRouting != null)
             {
-                return callRouting.TryGetValue(callSnapshot, out callTracker);
+                if (callRouting.TryGetValue(callSnapshot, out callTracker))
+                {
+                    return callTracker != null;
+                }
+                else
+                {
+                    return false;
+                }
             }
             else
             {

@@ -20,6 +20,7 @@ along with WeVerca.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,20 +29,36 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
     public class AlgorithmEntry
     {
-        private AlgorithmType algorithmType;
+        public AlgorithmType AlgorithmType { get; private set; }
 
-        public int Starts { get; set; }
-        public int Stops { get; set; }
-        public double Time { get; set; }
-        public double MemoryStart { get; set; }
-        public double MemoryStop { get; set; }
-        public double Memory { get; set; }
+        public TransactionEntry Transaction { get; private set; }
 
-        public AlgorithmEntry(AlgorithmType algorithmType)
+        public double AlgorithmTime { get; private set; }
+
+
+        private Stopwatch stopwatch;
+
+        public static AlgorithmEntry CreateAndStartAlgorithm(AlgorithmType algorithmType, TransactionEntry transaction)
         {
-            this.algorithmType = algorithmType;
+            AlgorithmEntry entry = new AlgorithmEntry(algorithmType, transaction);
+            entry.stopwatch.Start();
+
+            return entry;
+        }
+        
+        private AlgorithmEntry(AlgorithmType algorithmType, TransactionEntry transaction)
+        {
+            this.AlgorithmType = algorithmType;
+            this.Transaction = transaction;
+            stopwatch = new Stopwatch();
         }
 
-
+        public void StopAlgorithm()
+        {
+            if (stopwatch.IsRunning)
+            {
+                AlgorithmTime = stopwatch.Elapsed.TotalMilliseconds;
+            }
+        }
     }
 }

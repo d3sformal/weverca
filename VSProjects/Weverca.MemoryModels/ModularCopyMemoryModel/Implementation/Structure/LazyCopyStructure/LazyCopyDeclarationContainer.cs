@@ -25,10 +25,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
-    class LazyCopyDeclarationContainer<T>
+    class LazyCopyDeclarationContainerFactory : IDeclarationContainerFactory
+    {
+        public IWriteableDeclarationContainer<T> CreateWriteableDeclarationContainer<T>()
+        {
+            return new LazyCopyDeclarationContainer<T>();
+        }
+    }
+
+    class LazyCopyDeclarationContainer<T> : IWriteableDeclarationContainer<T>
     {
         private CopyDeclarationContainer<T> declarations;
 
@@ -41,20 +51,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         /// The count.
         /// </value>
         public int Count { get { return declarations.Count; } }
-
-        /// <summary>
-        /// Gets the list of declarations.
-        /// </summary>
-        /// <value>
-        /// The list of declarations.
-        /// </value>
-        public IEnumerable<KeyValuePair<QualifiedName, HashSet<T>>> Declarations {
-            get
-            {
-                return declarations.Declarations;
-            }
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyDeclarationContainer{T}"/> class.
         /// </summary>
@@ -144,6 +141,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         public IEnumerable<QualifiedName> GetNames()
         {
             return declarations.GetNames();
+        }
+
+        public IWriteableDeclarationContainer<T> Copy()
+        {
+            return new LazyCopyDeclarationContainer<T>(this);
         }
     }
 }

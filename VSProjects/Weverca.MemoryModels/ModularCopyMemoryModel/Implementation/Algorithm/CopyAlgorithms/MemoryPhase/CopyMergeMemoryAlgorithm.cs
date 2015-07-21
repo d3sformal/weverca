@@ -90,15 +90,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             {
                 if (callLevel > 0)
                 {
-                    if (callLevel != snapshot.CallLevel)
+                    if (callLevel < snapshot.CallLevel)
                     {
-                        throw new NotImplementedException("Cannot merge snapshots with different call levels");
+                        callLevel = snapshot.CallLevel;
                     }
                 }
                 else
                 {
                     callLevel = snapshot.CallLevel;
                 }
+            }
+
+            if (callLevel > 500)
+            {
+                throw new Exception("CallLevel level is too big - recursion is not supported");
             }
 
             return callLevel;

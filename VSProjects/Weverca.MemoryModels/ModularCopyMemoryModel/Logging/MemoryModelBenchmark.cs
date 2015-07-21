@@ -33,8 +33,187 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
     public class MemoryModelBenchmark : IBenchmark
     {
-        Measuring currentTransaction;
+        private List<TransactionEntry> transactionResults = new List<TransactionEntry>();
+        private Dictionary<AlgorithmType, AlgorithmAggregationEntry> algorithmResults = new Dictionary<AlgorithmType, AlgorithmAggregationEntry>();
+
+        private Dictionary<Snapshot, TransactionEntry> transactions = new Dictionary<Snapshot, TransactionEntry>();
+        private Dictionary<AlgorithmKey, AlgorithmEntry> algorithms = new Dictionary<AlgorithmKey, AlgorithmEntry>();
+
+        private Stopwatch algorithmStopwatch = new Stopwatch();
+        private int numberOfActiveAlgorithms;
+
+        private Stopwatch operationStopwatch = new Stopwatch();
+        private int numberOfActiveOperations;
+
+        private int transactionCounter;
+
+
+        public IEnumerable<TransactionEntry> TransactionResults
+        {
+            get { return transactionResults.ToArray(); }
+        }
+
+        public IReadOnlyDictionary<AlgorithmType, AlgorithmAggregationEntry> AlgorithmResults
+        {
+            get { return new Dictionary<AlgorithmType, AlgorithmAggregationEntry>(algorithmResults); }
+        }
+
+        public double TotalOperationTime { get; private set; }
+
+        public double TotalAlgorithmTime { get; private set; }
+
+        public int NumberOfOperations { get; private set; }
+
+        public int NumberOfAlgorithms { get; private set; }
+
+        public int NumberOfTransactions { get; private set; }
+
+        public MemoryModelBenchmark()
+        {
+            ClearResults();
+        }
+
+
+        public void ClearResults()
+        {
+            transactionResults.Clear();
+            algorithmResults.Clear();
+
+            algorithmStopwatch.Reset();
+            numberOfActiveAlgorithms = 0;
+
+            operationStopwatch.Reset();
+            numberOfActiveOperations = 0;
+
+            transactionCounter = 0;
+
+            TotalOperationTime = 0;
+            TotalAlgorithmTime = 0;
+
+            NumberOfOperations = 0;
+            NumberOfTransactions = 0;
+            NumberOfAlgorithms = 0;
+        }
+
+        public void InitializeSnapshot(Snapshot snapshot)
+        {
+
+        }
+
+        public void StartTransaction(Snapshot snapshot)
+        {
+            if (!transactions.ContainsKey(snapshot))
+            {
+                TransactionEntry entry = TransactionEntry.CreateAndStartTransaction(++transactionCounter);
+                transactions.Add(snapshot, entry);
+            }
+        }
+
+        public void FinishTransaction(Snapshot snapshot)
+        {
+            TransactionEntry entry;
+            if (transactions.TryGetValue(snapshot, out entry))
+            {
+                entry.StopTransaction(snapshot);
+
+                transactionResults.Add(entry);
+                transactions.Remove(snapshot);
+
+                NumberOfTransactions++;
+            }
+        }
+
+        public void StartAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
+        {
+            AlgorithmKey key = new AlgorithmKey(algorithmType, snapshot);
+            if (!algorithms.ContainsKey(key))
+            {
+                TransactionEntry transaction;
+                if (!transactions.TryGetValue(snapshot, out transaction))
+                {
+                    transaction = null;
+                }
+
+                AlgorithmEntry entry = AlgorithmEntry.CreateAndStartAlgorithm(algorithmType, transaction);
+                algorithms.Add(key, entry);
+
+                if (numberOfActiveAlgorithms == 0)
+                {
+                    algorithmStopwatch.Start();
+                }
+                numberOfActiveAlgorithms++;
+            }
+        }
+
+        public void FinishAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
+        {
+            AlgorithmKey key = new AlgorithmKey(algorithmType, snapshot);
+            AlgorithmEntry entry;
+            if (algorithms.TryGetValue(key, out entry))
+            {
+                if (numberOfActiveAlgorithms > 0)
+                {
+                    numberOfActiveAlgorithms--;
+                    if (numberOfActiveAlgorithms == 0)
+                    {
+                        algorithmStopwatch.Stop();
+                        TotalAlgorithmTime = algorithmStopwatch.Elapsed.TotalMilliseconds;
+                    }
+                }
+
+                entry.StopAlgorithm();
+
+                AlgorithmAggregationEntry aggregation;
+                if (!algorithmResults.TryGetValue(algorithmType, out aggregation))
+                {
+                    aggregation = new AlgorithmAggregationEntry(algorithmType);
+                    algorithmResults.Add(algorithmType, aggregation);
+                }
+
+                aggregation.AlgorithmStopped(entry);
+                algorithms.Remove(key);
+
+                NumberOfAlgorithms++;
+            }
+        }
+
+        public void StartOperation(Snapshot snapshot)
+        {
+            if (numberOfActiveOperations == 0)
+            {
+                operationStopwatch.Start();
+            }
+            numberOfActiveOperations++;
+        }
+
+        public void FinishOperation(Snapshot snapshot)
+        {
+            if (numberOfActiveOperations > 0)
+            {
+                numberOfActiveOperations--;
+                NumberOfOperations++;
+
+                if (numberOfActiveOperations == 0)
+                {
+                    operationStopwatch.Stop();
+                    TotalOperationTime = operationStopwatch.Elapsed.TotalMilliseconds;
+                }
+            }
+        }
+
+        public void WriteResultsToFile(string benchmarkFile)
+        {
+
+        }
+
+
+
+
+
+        /*Measuring currentTransaction;
         Snapshot currentSnapshot;
+
+        public Stopwatch Stopwatch { get; private set; }
 
         Dictionary<AlgorithmKey, Measuring> runningAlgorithms = new Dictionary<AlgorithmKey, Measuring>();
         Dictionary<AlgorithmType, AlgorithmEntry> algorithms = new Dictionary<AlgorithmType, AlgorithmEntry>();
@@ -131,9 +310,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             currentTransaction = null;
         }
 
-        public void StartAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
+
+        public void StartOperation(Snapshot snapshot)
         {
-            AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
+        }
+
+        public void FinishOperation(Snapshot snapshot)
+        {
+        }
+
+        public void StartAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
+        {
+            AlgorithmKey key = new AlgorithmKey(algorithmType);
             Measuring algorithm;
             if (!runningAlgorithms.TryGetValue(key, out algorithm))
             {
@@ -155,11 +343,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             algorithm.Stopwatch.Start();
         }
 
-        public void FinishAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType)
+        public void FinishAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
         {
             double usedMemory = getMemoryUssage();
 
-            AlgorithmKey key = new AlgorithmKey(algorithmType, algorithmInstance);
+            AlgorithmKey key = new AlgorithmKey(algorithmType);
             Measuring algorithm;
             if (runningAlgorithms.TryGetValue(key, out algorithm))
             {
@@ -231,7 +419,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 #else
             return 0;
 #endif
-        }
+        }*/
+
+
+
+
+
 
     }
 }

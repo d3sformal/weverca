@@ -72,8 +72,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         private IWriteableAssociativeContainer<ObjectValue, IObjectDescriptor> objectDescriptors;
         private IWriteableAssociativeContainer<MemoryIndex, IIndexDefinition> indexDefinitions;
         private IWriteableAssociativeContainer<AssociativeArray, CopySet<Snapshot>> callArrays;
-        private LazyCopyDeclarationContainer<FunctionValue> functionDecl;
-        private LazyCopyDeclarationContainer<TypeValue> classDecl;
+        private IWriteableDeclarationContainer<FunctionValue> functionDecl;
+        private IWriteableDeclarationContainer<TypeValue> classDecl;
 
         private ChangeTracker<IReadOnlySnapshotStructure> changeTracker;
         private bool definitionAdded = false;
@@ -102,8 +102,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             data.arrayDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, IArrayDescriptor>();
             data.objectDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<ObjectValue, IObjectDescriptor>();
             data.indexDefinitions = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new LazyCopyDeclarationContainer<FunctionValue>();
-            data.classDecl = new LazyCopyDeclarationContainer<TypeValue>();
+            data.functionDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<FunctionValue>();
+            data.classDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<TypeValue>();
             data.callArrays = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, CopySet<Snapshot>>();
             
             return data;
@@ -123,8 +123,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
             data.arrayDescriptors = this.arrayDescriptors.Copy();
             data.objectDescriptors = this.objectDescriptors.Copy();
             data.indexDefinitions = this.indexDefinitions.Copy();
-            data.functionDecl = new LazyCopyDeclarationContainer<FunctionValue>(this.functionDecl);
-            data.classDecl = new LazyCopyDeclarationContainer<TypeValue>(this.classDecl);
+            data.functionDecl = this.functionDecl.Copy();
+            data.classDecl = this.classDecl.Copy();
             data.callArrays = this.callArrays.Copy();
 
             data.changeTracker = new ChangeTracker<IReadOnlySnapshotStructure>(data.StructureId, data, this.changeTracker);
@@ -354,7 +354,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// <inheritdoc />
         public override int GetNumberOfIndexes()
         {
-            return 0;
+            return indexDefinitions.Count;
         }
 
         /// <inheritdoc />

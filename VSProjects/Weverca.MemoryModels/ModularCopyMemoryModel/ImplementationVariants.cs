@@ -27,14 +27,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
     public class ModularMemoryModelVariants
     {
-        public static ModularMemoryModelFactories DefaultVariant { get { return TrackingImplementation; } }
+        public static ModularMemoryModelFactories DefaultVariant { get { return Copy; } }
 
 
-        public static readonly ModularMemoryModelFactories CopyImplementation = createCopyImplementation();
+        public static readonly ModularMemoryModelFactories Copy = createCopyImplementation();
 
-        public static readonly ModularMemoryModelFactories LazyImplementation = createLazyImplementation();
+        public static readonly ModularMemoryModelFactories LazyExtendCommit = createLazyExtendCommitImplementation();
 
-        public static readonly ModularMemoryModelFactories TrackingImplementation = createTrackingImplementation();
+        public static readonly ModularMemoryModelFactories LazyContainers = createLazyContainersImplementation();
+
+        public static readonly ModularMemoryModelFactories LazyAndDiffContainers = createLazyDiffContainersImplementation();
+
+        public static readonly ModularMemoryModelFactories Tracking = createTrackingImplementation();
+
+        public static readonly ModularMemoryModelFactories TrackingDiffContainers = createTrackingDiffContainersImplementation();
 
         
         private static ModularMemoryModelFactories createCopyImplementation()
@@ -50,6 +56,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new CopyStackContextFactory(),
                     new CopyObjectDescriptorFactory(),
                     new CopyObjectValueContainerFactory(),
+                    new CopyDeclarationContainerFactory(),
                     new CopyDictionaryAssociativeContainerFactory()
                     ),
 
@@ -77,7 +84,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             );
         }
 
-        private static ModularMemoryModelFactories createLazyImplementation()
+        private static ModularMemoryModelFactories createLazyExtendCommitImplementation()
         {
             return new ModularMemoryModelFactories(
                 new LazyCopySnapshotStructureFactory(),
@@ -90,7 +97,90 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new CopyStackContextFactory(),
                     new CopyObjectDescriptorFactory(),
                     new CopyObjectValueContainerFactory(),
+                    new CopyDeclarationContainerFactory(),
                     new CopyDictionaryAssociativeContainerFactory()
+                    ),
+
+                new LazyCopySnapshotDataFactory(),
+
+                new AlgorithmFactories(
+                    new CopyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitMemoryAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new AlgorithmFactories(
+                    new CopyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitInfoAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new EmptyMemoryModelBenchmark()
+            );
+        }
+
+        private static ModularMemoryModelFactories createLazyContainersImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new LazyCopySnapshotStructureFactory(),
+
+                new StructuralContainersFactories(
+                    new LazyCopyArrayDescriptorFactory(),
+                    new LazyCopyIndexContainerFactory(),
+                    new LazyCopyIndexDefinitionFactory(),
+                    new LazyCopyMemoryAliasFactory(),
+                    new LazyCopyStackContextFactory(),
+                    new LazyCopyObjectDescriptorFactory(),
+                    new LazyCopyObjectValueContainerFactory(),
+                    new LazyCopyDeclarationContainerFactory(),
+                    new LazyDictionaryAssociativeContainerFactory()
+                    ),
+
+                new LazyCopySnapshotDataFactory(),
+
+                new AlgorithmFactories(
+                    new CopyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitMemoryAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new AlgorithmFactories(
+                    new CopyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new LazyCommitInfoAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new CopyMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new EmptyMemoryModelBenchmark()
+            );
+        }
+
+        private static ModularMemoryModelFactories createLazyDiffContainersImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new LazyCopySnapshotStructureFactory(),
+
+                new StructuralContainersFactories(
+                    new LazyCopyArrayDescriptorFactory(),
+                    new LazyCopyIndexContainerFactory(),
+                    new LazyCopyIndexDefinitionFactory(),
+                    new LazyCopyMemoryAliasFactory(),
+                    new LazyCopyStackContextFactory(),
+                    new LazyCopyObjectDescriptorFactory(),
+                    new LazyCopyObjectValueContainerFactory(),
+                    new LazyCopyDeclarationContainerFactory(),
+                    new DifferentialDictionaryAssociativeContainerFactory()
                     ),
 
                 new LazyCopySnapshotDataFactory(),
@@ -130,6 +220,49 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                     new LazyCopyStackContextFactory(),
                     new LazyCopyObjectDescriptorFactory(),
                     new LazyCopyObjectValueContainerFactory(),
+                    new LazyCopyDeclarationContainerFactory(),
+                    new LazyDictionaryAssociativeContainerFactory()
+                    ),
+
+                new TrackingSnapshotDataFactory(),
+
+                new AlgorithmFactories(
+                    new LazyAssignMemoryAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new TrackingCommitMemoryAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new TrackingMergeMemoryAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new AlgorithmFactories(
+                    new LazyAssignInfoAlgorithmFactory(),
+                    new CopyReadAlgorithmFactory(),
+                    new TrackingCommitInfoAlgorithmFactory(),
+                    new SimplifyingCopyMemoryAlgorithmFactory(),
+                    new TrackingMergeInfoAlgorithmFactory(),
+                    new PrintAlgorithmFactory()
+                ),
+
+                new EmptyMemoryModelBenchmark()
+
+            );
+        }
+
+        private static ModularMemoryModelFactories createTrackingDiffContainersImplementation()
+        {
+            return new ModularMemoryModelFactories(
+                new TrackingSnapshotStructureFactory(),
+
+                new StructuralContainersFactories(
+                    new LazyCopyArrayDescriptorFactory(),
+                    new LazyCopyIndexContainerFactory(),
+                    new LazyCopyIndexDefinitionFactory(),
+                    new LazyCopyMemoryAliasFactory(),
+                    new LazyCopyStackContextFactory(),
+                    new LazyCopyObjectDescriptorFactory(),
+                    new LazyCopyObjectValueContainerFactory(),
+                    new LazyCopyDeclarationContainerFactory(),
                     new DifferentialDictionaryAssociativeContainerFactory()
                     ),
 

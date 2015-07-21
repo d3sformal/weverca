@@ -17,6 +17,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public IStackContextFactory StackContextFactory { get; private set; }
         public IObjectDescriptorFactory ObjectDescriptorFactory { get; private set; }
         public IObjectValueContainerFactory ObjectValueContainerFactory { get; private set; }
+        public IDeclarationContainerFactory DeclarationContainerFactory { get; private set; }
         public IAssociativeContainerFactory AssociativeContainerFactory { get; private set; }
 
         public StructuralContainersFactories(
@@ -27,6 +28,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             IStackContextFactory stackContextFactory,
             IObjectDescriptorFactory objectDescriptorFactory,
             IObjectValueContainerFactory objectValueContainerFactory,
+            IDeclarationContainerFactory declarationContainerFactory,
             IAssociativeContainerFactory associativeContainerFactory
             )
         {
@@ -37,6 +39,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
             this.StackContextFactory = stackContextFactory;
             this.ObjectDescriptorFactory = objectDescriptorFactory;
             this.ObjectValueContainerFactory = objectValueContainerFactory;
+            this.DeclarationContainerFactory = declarationContainerFactory;
             this.AssociativeContainerFactory = associativeContainerFactory;
         }
     }

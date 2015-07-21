@@ -8,6 +8,11 @@ namespace Weverca.App.Settings
 {
     public enum MemoryModelType
     {
-        CopyAlgorithms, LazyCopyAlgorithms, TrackingCopyAlgorithms
+        Copy,
+        LazyExtendCommit,
+        LazyContainers,
+        LazyAndDiffContainers,
+        Tracking,
+        TrackingDiff
     }
 }

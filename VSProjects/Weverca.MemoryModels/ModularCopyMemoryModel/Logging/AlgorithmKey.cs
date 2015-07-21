@@ -29,13 +29,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
     class AlgorithmKey
     {
-        IAlgorithm algorithmInstance;
+        Snapshot snapshot;
         AlgorithmType algorithmType;
 
-        public AlgorithmKey(AlgorithmType algorithmType, IAlgorithm algorithmInstance = null)
+        public AlgorithmKey(AlgorithmType algorithmType, Snapshot snapshot)
         {
             this.algorithmType = algorithmType;
-            this.algorithmInstance = algorithmInstance;
+            this.snapshot = snapshot;
         }
 
         public override bool Equals(object obj)
@@ -52,13 +52,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
                 return false;
             }
 
-            if (algorithmInstance != null)
+            if (snapshot != null)
             {
-                return algorithmInstance.Equals(key.algorithmInstance);
+                return snapshot.Equals(key.snapshot);
             }
             else
             {
-                return key.algorithmInstance == null;
+                return key.snapshot == null;
             }
         }
 
@@ -66,9 +66,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         {
             int hash = algorithmType.GetHashCode();
 
-            if (algorithmInstance != null)
+            if (snapshot != null)
             {
-                hash ^= algorithmInstance.GetHashCode();
+                hash ^= snapshot.GetHashCode();
             }
 
             return hash;

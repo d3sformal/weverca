@@ -27,6 +27,7 @@ using Weverca.AnalysisFramework.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using PHP.Core;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
@@ -63,12 +64,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 
         private int localLevel = -1;
         private List<CopyStackContext> memoryStack;
-        private Dictionary<AssociativeArray, IArrayDescriptor> arrayDescriptors;
-        private Dictionary<ObjectValue, IObjectDescriptor> objectDescriptors;
-        private Dictionary<MemoryIndex, IIndexDefinition> indexDefinitions;
-        private Dictionary<AssociativeArray, CopySet<Snapshot>> callArrays;
-        private CopyDeclarationContainer<FunctionValue> functionDecl;
-        private CopyDeclarationContainer<TypeValue> classDecl;
+        private IWriteableAssociativeContainer<AssociativeArray, IArrayDescriptor> arrayDescriptors;
+        private IWriteableAssociativeContainer<ObjectValue, IObjectDescriptor> objectDescriptors;
+        private IWriteableAssociativeContainer<MemoryIndex, IIndexDefinition> indexDefinitions;
+        private IWriteableAssociativeContainer<AssociativeArray, CopySet<Snapshot>> callArrays;
+        private IWriteableDeclarationContainer<FunctionValue> functionDecl;
+        private IWriteableDeclarationContainer<TypeValue> classDecl;
 
         #endregion
 
@@ -90,13 +91,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             SnapshotStructureContainer data = new SnapshotStructureContainer(factories);
             data.memoryStack = new List<CopyStackContext>();
-            data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
-            data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
-            data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new CopyDeclarationContainer<FunctionValue>();
-            data.classDecl = new CopyDeclarationContainer<TypeValue>();
-            data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>();
-
+            data.arrayDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, IArrayDescriptor>();
+            data.objectDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<ObjectValue, IObjectDescriptor>();
+            data.indexDefinitions = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<MemoryIndex, IIndexDefinition>();
+            data.functionDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<FunctionValue>();
+            data.classDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<TypeValue>();
+            data.callArrays = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, CopySet<Snapshot>>();
+            
             return data;
         }
 
@@ -109,13 +110,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         {
             SnapshotStructureContainer data = new SnapshotStructureContainer(factories);
             data.memoryStack = new List<CopyStackContext>();
-            data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>();
-            data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>();
-            data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>();
-            data.functionDecl = new CopyDeclarationContainer<FunctionValue>();
-            data.classDecl = new CopyDeclarationContainer<TypeValue>();
-            data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>();
-
+            data.arrayDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, IArrayDescriptor>();
+            data.objectDescriptors = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<ObjectValue, IObjectDescriptor>();
+            data.indexDefinitions = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<MemoryIndex, IIndexDefinition>();
+            data.functionDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<FunctionValue>();
+            data.classDecl = factories.StructuralContainersFactories.DeclarationContainerFactory.CreateWriteableDeclarationContainer<TypeValue>();
+            data.callArrays = factories.StructuralContainersFactories.AssociativeContainerFactory.CreateWriteableAssociativeContainer<AssociativeArray, CopySet<Snapshot>>();
+            
             data.AddLocalLevel();
 
             return data;
@@ -136,12 +137,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
                 data.localLevel++;
             }
 
-            data.arrayDescriptors = new Dictionary<AssociativeArray, IArrayDescriptor>(this.arrayDescriptors);
-            data.objectDescriptors = new Dictionary<ObjectValue, IObjectDescriptor>(this.objectDescriptors);
-            data.indexDefinitions = new Dictionary<MemoryIndex, IIndexDefinition>(this.indexDefinitions);
-            data.functionDecl = new CopyDeclarationContainer<FunctionValue>(this.functionDecl);
-            data.classDecl = new CopyDeclarationContainer<TypeValue>(this.classDecl);
-            data.callArrays = new Dictionary<AssociativeArray, CopySet<Snapshot>>(this.callArrays);
+            data.arrayDescriptors = this.arrayDescriptors.Copy();
+            data.objectDescriptors = this.objectDescriptors.Copy();
+            data.indexDefinitions = this.indexDefinitions.Copy();
+            data.functionDecl = this.functionDecl.Copy();
+            data.classDecl = this.classDecl.Copy();
+            data.callArrays = this.callArrays.Copy();
 
             return data;
         }
@@ -315,7 +316,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <inheritdoc />
         public override int GetNumberOfIndexes()
         {
-            return indexDefinitions.Count();
+            return indexDefinitions.Count;
         }
 
         /// <inheritdoc />

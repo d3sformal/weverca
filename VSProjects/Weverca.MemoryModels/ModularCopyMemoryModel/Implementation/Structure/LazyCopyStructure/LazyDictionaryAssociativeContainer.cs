@@ -51,10 +51,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             associativeContainer.Add(key, value);
         }
 
-        public bool Remove(TKey key)
+        public void Remove(TKey key)
         {
             copy();
-            return associativeContainer.Remove(key);
+            associativeContainer.Remove(key);
         }
 
         public bool TryGetValue(TKey key, out TValue value)

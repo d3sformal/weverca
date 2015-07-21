@@ -103,25 +103,29 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         void InitializeSnapshot(Snapshot snapshot);
 
         void StartTransaction(Snapshot snapshot);
-
         void FinishTransaction(Snapshot snapshot);
 
-        void StartAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType);
+        void StartAlgorithm(Snapshot snapshot, AlgorithmType algorithmType);
+        void FinishAlgorithm(Snapshot snapshot, AlgorithmType algorithmType);
 
-        void FinishAlgorithm(Snapshot snapshot, IAlgorithm algorithmInstance, AlgorithmType algorithmType);
+        void StartOperation(Snapshot snapshot);
+        void FinishOperation(Snapshot snapshot);
+
+
+        IEnumerable<TransactionEntry> TransactionResults { get; }
+        IReadOnlyDictionary<AlgorithmType, AlgorithmAggregationEntry> AlgorithmResults { get; }
+
+        double TotalOperationTime { get; }
+        double TotalAlgorithmTime { get; }
+
+        int NumberOfOperations { get; }
+        int NumberOfAlgorithms { get; }
+        int NumberOfTransactions { get; }
+
+
+
+
 
         void WriteResultsToFile(string benchmarkFile);
-
-        IReadOnlyDictionary<AlgorithmType, AlgorithmEntry> AlgorithmResults { get; }
-
-        int TransactionStarts { get; }
-        int TransactionStops { get; }
-        double TransactionTime { get; }
-        int AlgorithmStarts { get; }
-        int AlgorithmStops { get; }
-        double AlgorithmTime { get; }
-        int Initializations { get; }
-        double TransactionMemory { get; }
-        double AlgorithmMemory { get; }
     }
 }

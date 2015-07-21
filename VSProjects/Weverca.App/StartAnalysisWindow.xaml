@@ -26,9 +26,12 @@
 
                 <Label>Memory model algorithms</Label>
                 <ComboBox Margin="5,0,5,5" Name="memoryModelCombo">
-                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.CopyAlgorithms}">Copy algorithms</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.LazyCopyAlgorithms}">Lazy copy algorithms</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.TrackingCopyAlgorithms}" IsSelected="True">Tracking copy algorithms</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.Copy}">Original copy implementation</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.LazyExtendCommit}">Lazy extend and commit</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.LazyContainers}">Lazy structural containers</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.LazyAndDiffContainers}">Lazy and differential containers</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.Tracking}" IsSelected="True">Tracking implementation</ComboBoxItem>
+                    <ComboBoxItem Tag="{x:Static settings:MemoryModelType.TrackingDiff}" IsSelected="True">Tracking with differential containers</ComboBoxItem>
                 </ComboBox>
                 <Label Content="Memory limit for analysis: 512 MB" Name="memoryLimitLabel"/>
                 <Slider HorizontalAlignment="Right" Width="353" Margin="0,0,5,0" Minimum="6.24" Maximum="11.090354" Name="memoryLimitSlider" ValueChanged="memoryLimitSlider_ValueChanged" />

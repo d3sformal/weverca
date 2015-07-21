@@ -36,10 +36,10 @@ namespace Weverca.App
         int memoryCounter = 0;
 
         private string fileName;
-        private SecondPhaseType secondPhaseType = SecondPhaseType.TaintAnalysis;
-        private MemoryModelType memoryModelType = MemoryModelType.TrackingCopyAlgorithms;
+        private SecondPhaseType secondPhaseType = SecondPhaseType.Deactivated;
+        private MemoryModelType memoryModelType = MemoryModelType.Tracking;
         private bool isBenchmarkEnabled = false;
-        private int numberOfRepetions = 10;
+        private int numberOfRepetions = 100;
         private long memoryLimit;
 
         Stopwatch watch;
@@ -520,11 +520,52 @@ namespace Weverca.App
             }
         }
 
+        private void exportBenchmarkMenu_Click(object sender, RoutedEventArgs e)
+        {
+            if (isBenchmarkEnabled)
+            {
+                System.Windows.Forms.FolderBrowserDialog dlg = new System.Windows.Forms.FolderBrowserDialog()
+                {
+                    Description = "Select folder to export statistics results in CSV files."
+                };
+
+                if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                {
+                    string selectedDirectory = dlg.SelectedPath;
+                    string timePrefix = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+
+
+                    string benchmarkStatsPath = String.Format(@"{0}\{1}_{2}[{3}-{4}].csv", selectedDirectory, timePrefix, "benchmark-stats", memoryModelType, numberOfRepetions);
+                    using (System.IO.StreamWriter writer = System.IO.File.AppendText(benchmarkStatsPath))
+                    {
+                        currentAnalyser.WriteOutBenchmarkStats(writer);
+                    }
+
+                    string memoryMediansPath = String.Format(@"{0}\{1}_{2}[{3}-{4}].csv", selectedDirectory, timePrefix, "trans-mem-med", memoryModelType, numberOfRepetions);
+                    using (System.IO.StreamWriter memoryMediansWriter = System.IO.File.AppendText(memoryMediansPath))
+                    {
+                        currentAnalyser.WriteOutTransactionMemoryMedians(memoryMediansWriter);
+                    }
+
+                    string algorithmTotalTimesPath = String.Format(@"{0}\{1}_{2}[{3}-{4}].csv", selectedDirectory, timePrefix, "alg-tot-time", memoryModelType, numberOfRepetions);
+                    using (System.IO.StreamWriter writer = System.IO.File.AppendText(algorithmTotalTimesPath))
+                    {
+                        currentAnalyser.WriteOutAlgorithmTotalTimes(writer);
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Benchmark results are available only if benchmark mode is enabled.", "Error exporting results", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         private void aboutMenu_Click(object sender, RoutedEventArgs e)
         {
 
         }
 
         #endregion
+
     }
 }

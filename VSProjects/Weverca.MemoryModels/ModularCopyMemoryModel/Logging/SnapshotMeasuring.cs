@@ -27,14 +27,17 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
-    class Measuring
+    class SnapshotMeasuring
     {
-        public Stopwatch Stopwatch { get; private set; }
-        public double MemoryStart { get; set; }
+        public Snapshot Snapshot { get; private set; }
 
-        public Measuring()
+        public TransactionEntry CurrentTransaction { get; private set; }
+
+
+
+        public SnapshotMeasuring(Snapshot snapshot)
         {
-            Stopwatch = new Stopwatch();
+            Snapshot = snapshot;
         }
     }
 }

@@ -24,10 +24,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.CopyStructure
 {
+    class CopyDeclarationContainerFactory : IDeclarationContainerFactory
+    {
+        public IWriteableDeclarationContainer<T> CreateWriteableDeclarationContainer<T>()
+        {
+            return new CopyDeclarationContainer<T>();
+        }
+    }
+
     /// <summary>
     /// Container for class and function declarations. Provides mapping between qualified 
     /// names and declarations data.
@@ -35,12 +45,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
     /// This is not imutable class.
     /// </summary>
     /// <typeparam name="T">Type of delared object.</typeparam>
-    class CopyDeclarationContainer<T>
+    class CopyDeclarationContainer<T> : IWriteableDeclarationContainer<T>
     {
         /// <summary>
         /// The collection of declarrations.
         /// </summary>
-        private Dictionary<QualifiedName, HashSet<T>> declarations;
+        private Dictionary<QualifiedName, CopySet<T>> declarations;
 
         /// <summary>
         /// Gets the count of declarations in the collection.
@@ -49,26 +59,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// The count.
         /// </value>
         public int Count { get { return declarations.Count; } }
-
-        /// <summary>
-        /// Gets the list of declarations.
-        /// </summary>
-        /// <value>
-        /// The list of declarations.
-        /// </value>
-        public IEnumerable<KeyValuePair<QualifiedName, HashSet<T>>> Declarations {
-            get
-            {
-                return declarations;
-            }
-        }
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CopyDeclarationContainer{T}"/> class.
         /// </summary>
         public CopyDeclarationContainer()
         {
-            declarations = new Dictionary<QualifiedName, HashSet<T>>();
+            declarations = new Dictionary<QualifiedName, CopySet<T>>();
         }
 
         /// <summary>
@@ -77,10 +74,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <param name="container">The container.</param>
         public CopyDeclarationContainer(CopyDeclarationContainer<T> container)
         {
-            declarations = new Dictionary<QualifiedName, HashSet<T>>();
+            declarations = new Dictionary<QualifiedName, CopySet<T>>();
             foreach (var decl in container.declarations)
             {
-                declarations[decl.Key] = new HashSet<T>(decl.Value);
+                declarations[decl.Key] = new CopySet<T>(decl.Value);
             }
         }
 
@@ -102,7 +99,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <returns>True whether the container contains declaration with the given name.</returns>
         public bool TryGetValue(QualifiedName key, out IEnumerable<T> value)
         {
-            HashSet<T> val;
+            CopySet<T> val;
             bool ret = declarations.TryGetValue(key, out val);
 
             value = val;
@@ -126,10 +123,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <param name="value">The value.</param>
         public void Add(QualifiedName key, T value)
         {
-            HashSet<T> set;
+            CopySet<T> set;
             if (!declarations.TryGetValue(key, out set))
             {
-                set = new HashSet<T>();
+                set = new CopySet<T>();
                 declarations[key] = set;
             }
 
@@ -146,15 +143,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <param name="value">The values.</param>
         public void SetAll(QualifiedName key, IEnumerable<T> values)
         {
-            HashSet<T> set;
+            CopySet<T> set;
             if (!declarations.TryGetValue(key, out set))
             {
-                set = new HashSet<T>();
+                set = new CopySet<T>();
                 declarations[key] = set;
             }
 
             set.Clear();
-            CollectionMemoryUtils.AddAll(set, values);
+            set.AddAll(values);
         }
 
         /// <summary>
@@ -164,6 +161,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         public IEnumerable<QualifiedName> GetNames()
         {
             return declarations.Keys;
+        }
+
+        public IWriteableDeclarationContainer<T> Copy()
+        {
+            return new CopyDeclarationContainer<T>(this);
         }
     }
 }

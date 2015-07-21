@@ -90,6 +90,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Printing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -110,6 +111,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Analyser.cs" />
+    <Compile Include="BenchmarkResult.cs" />
     <Compile Include="FlowDocumentOutput.cs" />
     <Compile Include="SnapshotTextGenerator.cs" />
     <Compile Include="Settings\LoggingOutputType.cs" />

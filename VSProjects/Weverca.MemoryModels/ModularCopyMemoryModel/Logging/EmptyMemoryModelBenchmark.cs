@@ -20,70 +20,66 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         {
         }
 
-        public void StartAlgorithm(Snapshot snapshot, Interfaces.Algorithm.IAlgorithm algorithmInstance, AlgorithmType algorithmType)
-        {
-        }
-
-        public void FinishAlgorithm(Snapshot snapshot, Interfaces.Algorithm.IAlgorithm algorithmInstance, AlgorithmType algorithmType)
-        {
-        }
-
         public void WriteResultsToFile(string benchmarkFile)
         {
         }
 
-        public IReadOnlyDictionary<AlgorithmType, AlgorithmEntry> AlgorithmResults
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int TransactionStarts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int TransactionStops
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public double TransactionTime
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int AlgorithmStarts
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int AlgorithmStops
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public double AlgorithmTime
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public int Initializations
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public double TransactionMemory
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public double AlgorithmMemory
-        {
-            get { throw new NotImplementedException(); }
-        }
-
         public void ClearResults()
         {
+        }
+
+        public void StartAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
+        {
+        }
+
+        public void FinishAlgorithm(Snapshot snapshot, AlgorithmType algorithmType)
+        {
+        }
+
+        public void StartOperation(Snapshot snapshot)
+        {
+        }
+
+        public void FinishOperation(Snapshot snapshot)
+        {
+        }
+
+
+
+
+        public IEnumerable<TransactionEntry> TransactionResults
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public IReadOnlyDictionary<AlgorithmType, AlgorithmAggregationEntry> AlgorithmResults
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public double TotalOperationTime
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public double TotalAlgorithmTime
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public int NumberOfOperations
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public int NumberOfAlgorithms
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public int NumberOfTransactions
+        {
+            get { throw new NotImplementedException(); }
         }
     }
 }

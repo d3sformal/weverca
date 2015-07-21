@@ -201,12 +201,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "write: " + this.ToString() + " value: " + value.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
+            
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.WRITE);
+            snapshot.Algorithms.AssignAlgorithm.Assign(snapshot, path, value, forceStrongWrite);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.WRITE);
 
-            IAssignAlgorithm algorithm = snapshot.Algorithms.AssignAlgorithm;
-
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.WRITE);
-            algorithm.Assign(snapshot, path, value, forceStrongWrite);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.WRITE);
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
         }
 
         /// <summary>
@@ -219,12 +220,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "write without copy:" + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
+            
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.WRITE_WITHOUT_COPY);
+            snapshot.Algorithms.AssignAlgorithm.WriteWithoutCopy(snapshot, path, value);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.WRITE_WITHOUT_COPY);
 
-            IAssignAlgorithm algorithm = snapshot.Algorithms.AssignAlgorithm;
-
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.WRITE_WITHOUT_COPY);
-            algorithm.WriteWithoutCopy(snapshot, path, value);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.WRITE_WITHOUT_COPY);
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
         }
 
         /// <summary>
@@ -237,14 +239,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
+            
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.SET_ALIAS);
+            snapshot.Algorithms.AssignAlgorithm.AssignAlias(snapshot, path, entry.GetPath(snapshot));
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.SET_ALIAS);
 
-            IAssignAlgorithm algorithm = snapshot.Algorithms.AssignAlgorithm;
-
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.SET_ALIAS);
-            algorithm.AssignAlias(snapshot, path, entry.GetPath(snapshot));
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.SET_ALIAS);
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
         }
 
         #endregion
@@ -263,12 +266,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "is defined:" + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
+            
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.IS_DEFINED);
+            var isDefined = snapshot.Algorithms.ReadAlgorithm.IsDefined(snapshot, path);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.IS_DEFINED);
 
-            IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
-
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.IS_DEFINED);
-            var isDefined = algorithm.IsDefined(snapshot, path);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.IS_DEFINED);
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             return isDefined;
         }
@@ -298,12 +302,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "read: " + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
+                        
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.READ);
+            MemoryEntry entry = snapshot.Algorithms.ReadAlgorithm.Read(snapshot, path);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.READ);
 
-            IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
-            
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.READ);
-            MemoryEntry entry = algorithm.Read(snapshot, path);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.READ);
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             Snapshot.Logger.LogToSameLine(" value: " + entry.ToString());
             return entry;
@@ -320,13 +325,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_FIELDS);
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.ITERATE_FIELDS);
             MemoryEntry values = algorithm.Read(snapshot, path);
             var fields = algorithm.GetFields(snapshot, values);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_FIELDS);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.ITERATE_FIELDS);
+
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             return fields;
         }
@@ -341,14 +349,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+            Snapshot.Logger.Log(snapshot, "iterate indexes: " + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_INDEXES);
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.ITERATE_INDEXES);
             MemoryEntry values = algorithm.Read(snapshot, path);
             var indexes = algorithm.GetIndexes(snapshot, values);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.ITERATE_INDEXES);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.ITERATE_INDEXES);
+
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             return indexes;
         }
@@ -364,13 +375,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_TYPE);
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.RESOLVE_TYPE);
             MemoryEntry values = algorithm.Read(snapshot, path);
             var types = algorithm.GetObjectType(snapshot, values);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_TYPE);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.RESOLVE_TYPE);
+
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             return types;
         }
@@ -387,14 +401,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         {
             Snapshot snapshot = ToSnapshot(context);
             Snapshot.Logger.Log(snapshot, "iterate filds: " + this.ToString());
+            snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
 
-            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_METHOD);
+            snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.RESOLVE_METHOD);
             MemoryEntry values = algorithm.Read(snapshot, path);
             algorithm.Read(snapshot, path);
             var methods = algorithm.GetMethod(snapshot, values, methodName);
-            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, algorithm, AlgorithmType.RESOLVE_METHOD);
+            snapshot.Factories.Benchmark.FinishAlgorithm(snapshot, AlgorithmType.RESOLVE_METHOD);
+
+            snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
             return methods;
         }

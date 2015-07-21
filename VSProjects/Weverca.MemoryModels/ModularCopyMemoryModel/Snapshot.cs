@@ -308,9 +308,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
 		protected override void startTransaction()
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Visualizer.StartTransaction(this);
 			Factories.Benchmark.StartTransaction(this);
+            
 			Logger.Log(this, "Start mode: {0}", CurrentMode);
 
 			OldCallLevel = CallLevel;
@@ -330,6 +332,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					throw new NotSupportedException("Current mode: " + CurrentMode);
 			}
 
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -371,19 +374,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </returns>
 		/// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
 		protected override bool commitTransaction(int simplifyLimit)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Commit");
-
-            ICommitAlgorithm algorithm = Algorithms.CommitAlgorithm;
-
-			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COMMIT);
-            bool differs = algorithm.CommitAndSimplify(this, simplifyLimit);
-			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COMMIT);
+            
+			Factories.Benchmark.StartAlgorithm(this, AlgorithmType.COMMIT);
+            bool differs = Algorithms.CommitAlgorithm.CommitAndSimplify(this, simplifyLimit);
+			Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.COMMIT);
 
 			Logger.LogToSameLine(" " + differs);
 			Logger.Log(this);
 			Logger.Log("\n---------------------------------\n");
 
+            Factories.Benchmark.FinishOperation(this);
 			Factories.Benchmark.FinishTransaction(this);
 
 			Visualizer.SetCommitDiffers(this, differs);
@@ -393,15 +396,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			OldStructure = null;
 			OldData = null;
 			OldInfos = null;
-
-
-			bool test = false;
-			if (test)
-			{
-				DotGraphVisualizer visualizer = new DotGraphVisualizer(@"..\..\..\..\..\Tools\dot_graphviz\dot.exe");
-				Snapshot.Visualizer.BuildGraphVisualisation(visualizer, 20500);
-				visualizer.CreateVisualization("visualization/nocc");
-			}
 
 			return differs;
 		}
@@ -418,14 +412,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		///   <c>true</c> if there is semantic change in transaction, <c>false</c> otherwise
 		/// </returns>
 		protected override bool widenAndCommitTransaction(int simplifyLimit)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Commit and widen");
-
-            ICommitAlgorithm algorithm = Algorithms.CommitAlgorithm;
-
-			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
-            bool differs = algorithm.CommitAndWiden(this, simplifyLimit);
-			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.WIDEN_COMMIT);
+            
+			Factories.Benchmark.StartAlgorithm(this, AlgorithmType.WIDEN_COMMIT);
+            bool differs = Algorithms.CommitAlgorithm.CommitAndWiden(this, simplifyLimit);
+			Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.WIDEN_COMMIT);
 
 			Logger.LogToSameLine(" " + differs);
 			Logger.Log(this);
@@ -441,6 +434,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			OldData = null;
 			OldInfos = null;
 
+            Factories.Benchmark.FinishOperation(this);
 			return differs;
 		}
 
@@ -454,11 +448,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="createdObject">Created object that has to be initialized</param>
 		/// <param name="type">Desired type of initialized object</param>
 		protected override void initializeObject(ObjectValue createdObject, TypeValue type)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Init object " + createdObject + " " + type);
-			IObjectDescriptor descriptor = Factories.StructuralContainersFactories.ObjectDescriptorFactory.CreateObjectDescriptor(Structure.Writeable, createdObject, type, ObjectIndex.CreateUnknown(createdObject));
-			Structure.Writeable.NewIndex(descriptor.UnknownIndex);
-			Structure.Writeable.SetDescriptor(createdObject, descriptor);
+
+            IObjectDescriptor existing;
+            if (!Structure.Readonly.TryGetDescriptor(createdObject, out existing))
+            {
+                IObjectDescriptor descriptor = Factories.StructuralContainersFactories.ObjectDescriptorFactory.CreateObjectDescriptor(Structure.Writeable, createdObject, type, ObjectIndex.CreateUnknown(createdObject));
+                Structure.Writeable.NewIndex(descriptor.UnknownIndex);
+                Structure.Writeable.SetDescriptor(createdObject, descriptor);
+            }
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -468,22 +470,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <returns>List of all fields of the given object.</returns>
 		/// <exception cref="System.Exception">Unknown object</exception>
 		protected IEnumerable<ContainerIndex> iterateObject(ObjectValue iteratedObject)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Iterate object " + iteratedObject);
-			IObjectDescriptor descriptor;
+			
+            IObjectDescriptor descriptor;
+            List<ContainerIndex> indexes;
 			if (Structure.Readonly.TryGetDescriptor(iteratedObject, out descriptor))
 			{
-				List<ContainerIndex> indexes = new List<ContainerIndex>();
+				indexes = new List<ContainerIndex>();
 				foreach (var index in descriptor.Indexes)
 				{
 					indexes.Add(this.CreateIndex(index.Key));
 				}
-				return indexes;
 			}
 			else
 			{
 				throw new Exception("Unknown object");
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return indexes;
 		}
 
 		/// <summary>
@@ -495,17 +502,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </returns>
 		/// <exception cref="System.Exception">Unknown object</exception>
 		protected override TypeValue objectType(ObjectValue objectValue)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Get object type " + objectValue);
+
 			IObjectDescriptor descriptor;
-			if (Structure.Readonly.TryGetDescriptor(objectValue, out descriptor))
-			{
-				return descriptor.Type;
-			}
-			else
+			if (!Structure.Readonly.TryGetDescriptor(objectValue, out descriptor))
 			{
 				throw new Exception("Unknown object");
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return descriptor.Type;
 		}
 
 		/// <summary>
@@ -519,9 +527,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Resolved functions
 		/// </returns>
 		protected override IEnumerable<FunctionValue> resolveStaticMethod(TypeValue value, QualifiedName methodName)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			var objectMethods = Weverca.MemoryModels.VirtualReferenceModel.TypeMethodResolver.ResolveMethods(value, this);
-			return Assistant.ResolveMethods(value, methodName, objectMethods);
+            IEnumerable<FunctionValue> methods = Assistant.ResolveMethods(value, methodName, objectMethods);
+
+            Factories.Benchmark.FinishOperation(this);
+            return methods;
 		}
 
 		/// <summary>
@@ -531,13 +543,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="methodName">Name of the method.</param>
 		/// <returns>List of methods with the given name for objects within the given memory entry.</returns>
 		internal IEnumerable<FunctionValue> resolveMethod(MemoryEntry entry, QualifiedName methodName)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			HashSet<FunctionValue> functions = new HashSet<FunctionValue>();
 			foreach (Value value in entry.PossibleValues)
 			{
 				CollectionMemoryUtils.AddAll(functions, resolveMethod(value, methodName));
 			}
 
+            Factories.Benchmark.FinishOperation(this);
 			return functions;
 		}
 
@@ -548,7 +562,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="methodName">Name of the method.</param>
 		/// <returns>List of methods with the given name for given object.</returns>
 		internal IEnumerable<FunctionValue> resolveMethod(Value value, QualifiedName methodName)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			IEnumerable<FunctionValue> objectMethods;
 			TypeValue type;
 
@@ -566,6 +581,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 			var resolvedMethods = MemoryAssistant.ResolveMethods(objectValue, type, methodName, objectMethods);
 
+            Factories.Benchmark.FinishOperation(this);
 			return resolvedMethods;
 		}
 
@@ -578,7 +594,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="createdArray">Created array that has to be initialized</param>
 		protected override void initializeArray(AssociativeArray createdArray)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Init array " + createdArray);
 			TemporaryIndex arrayIndex = CreateTemporary();
 
@@ -594,7 +611,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			Structure.Writeable.SetDescriptor(createdArray, descriptor);
 
 			Data.Writeable.SetMemoryEntry(arrayIndex, new MemoryEntry(createdArray));
-			Data.Writeable.SetMemoryEntry(descriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
+            Data.Writeable.SetMemoryEntry(descriptor.UnknownIndex, new MemoryEntry(UndefinedValue));
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -604,22 +623,27 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <returns>List of indexes of the array.</returns>
 		/// <exception cref="System.Exception">Unknown associative array</exception>
 		protected IEnumerable<ContainerIndex> iterateArray(AssociativeArray iteratedArray)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Iterate array " + iteratedArray);
 			IArrayDescriptor descriptor;
+
+            List<ContainerIndex> indexes;
 			if (Structure.Readonly.TryGetDescriptor(iteratedArray, out descriptor))
 			{
-				List<ContainerIndex> indexes = new List<ContainerIndex>();
+				indexes = new List<ContainerIndex>();
 				foreach (var index in descriptor.Indexes)
 				{
 					indexes.Add(this.CreateIndex(index.Key));
 				}
-				return indexes;
 			}
 			else
 			{
 				throw new Exception("Unknown associative array");
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return indexes;
 		}
 
 		#endregion
@@ -633,17 +657,26 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="inputs">Input snapshots that should be merged</param>
 		protected override void extend(params ISnapshotReadonly[] inputs)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "extend");
 
-			CallLevel = SnapshotEntry.ToSnapshot (inputs [0]).CallLevel;
+            if (inputs.Length == 1)
+            {
+                extendSnapshot(inputs[0]);
+            }
+            else if (inputs.Length > 1)
+            {
+                mergeSnapshots(inputs);
+            }
 
-			extendWithoutComputingCallLevel(inputs);
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <inheritdoc />
 		protected override void extendAtSubprogramEntry(ISnapshotReadonly[] inputs, ProgramPointBase[] extendedPoints)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "merge at subprogram");
 
 			List<Snapshot> snapshots = new List<Snapshot>();
@@ -654,12 +687,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 				Logger.Log(this, "merge " + s.getSnapshotIdentification());
 			}
-
-            IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
-            
-            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
-            algorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
-            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_AT_SUBPROGRAM);
+                        
+            Factories.Benchmark.StartAlgorithm(this, AlgorithmType.MERGE_AT_SUBPROGRAM);
+            Algorithms.MergeAlgorithm.MergeAtSubprogram(this, snapshots, extendedPoints);
+            Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.MERGE_AT_SUBPROGRAM);
 
 			Visualizer.SetParents(this, snapshots.ToArray());
 			Visualizer.SetLabel(this, "merge at subprogram");
@@ -672,21 +703,34 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			/*CallLevel = maxCallLevel(inputs);
 
 			extendWithoutComputingCallLevel(inputs);*/
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <inheritdoc />
 		protected override void extendAtCatchEntry(ISnapshotReadonly[] inputs, CatchBlockDescription catchDescription)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "extend");
 
 			CallLevel = SnapshotEntry.ToSnapshot (catchDescription.TargetPoint.OutSnapshot).CallLevel;
 
-			extendWithoutComputingCallLevel(inputs);
+            if (inputs.Length == 1)
+            {
+                extendSnapshot(inputs[0]);
+            }
+            else if (inputs.Length > 1)
+            {
+                mergeSnapshots(inputs);
+            }
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <inheritdoc />
 		protected override void extendAsCall(SnapshotBase callerContext, ProgramPointGraph callee, MemoryEntry thisObject, MemoryEntry[] arguments)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Snapshot callerSnapshot = SnapshotEntry.ToSnapshot(callerContext);
 			Logger.Log(this, "call extend: " + callerSnapshot.getSnapshotIdentification() + " level: " + callerSnapshot.CallLevel + " this: " + thisObject);
 
@@ -699,12 +743,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				// Pick the call level from the previous call of extendAsCall
 				CallLevel = oldCallLevel;
 			}*/
-
-            IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
-
-            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
-            algorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
-            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND_AS_CALL);
+            
+            Factories.Benchmark.StartAlgorithm(this, AlgorithmType.EXTEND_AS_CALL);
+            Algorithms.MergeAlgorithm.ExtendAsCall(this, callerSnapshot, callee, thisObject);
+            Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.EXTEND_AS_CALL);
 
 			if (thisObject != null)
 			{
@@ -718,7 +760,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 			// Call levels of the caller should be always the same
 			Debug.Assert(OldCallLevel == GLOBAL_CALL_LEVEL || OldCallLevel == CallLevel);
-			Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -728,7 +772,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="callOutputs">Output snapshots of call level</param>
 		/// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
 		protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			//throw new NotImplementedException("Merging function call is not implemented");
 
 			Snapshot callSnapshot = (Snapshot)callerPoint.OutSnapshot;
@@ -750,17 +795,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				Logger.Log(this, snapshot.getSnapshotIdentification() + " call merge " + snapshot.CallLevel);
 				snapshots.Add(snapshot);
 			}
-
-            IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
-
-            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
-            algorithm.MergeWithCall(this, callSnapshot, snapshots);
-            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE_WITH_CALL);
+            
+            Factories.Benchmark.StartAlgorithm(this, AlgorithmType.MERGE_WITH_CALL);
+            Algorithms.MergeAlgorithm.MergeWithCall(this, callSnapshot, snapshots);
+            Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.MERGE_WITH_CALL);
             
 			Visualizer.SetParents(this, snapshots.ToArray());
 			Visualizer.SetLabel(this, "merge with call level:" + CallLevel);
 
-			Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
+            Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -769,7 +813,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="variables">Variables that will be fetched</param>
 		/// <example>global x,y;</example>
 		protected override void fetchFromGlobal(IEnumerable<VariableName> variables)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Fetch from global");
 			foreach (VariableName name in variables)
 			{
@@ -778,7 +823,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				ReadWriteSnapshotEntryBase globalEntry = getVariable(new VariableIdentifier(name), true);
 
 				localEntry.SetAliases(this, globalEntry);
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -788,7 +835,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Variables defined in global scope
 		/// </returns>
 		protected override IEnumerable<VariableName> getGlobalVariables()
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Get global ");
 
 			List<VariableName> names = new List<VariableName>();
@@ -800,6 +848,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				names.Add(new VariableName(variable.Key));
 			}
 
+            Factories.Benchmark.FinishOperation(this);
 			return names;
 		}
 
@@ -869,16 +918,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Resolved functions
 		/// </returns>
 		protected override IEnumerable<FunctionValue> resolveFunction(QualifiedName functionName)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Resolve function " + functionName);
+
+            IEnumerable<FunctionValue> functions;
 			if (Structure.Readonly.IsFunctionDefined(functionName))
 			{
-				return Structure.Readonly.GetFunction(functionName);
+				functions = Structure.Readonly.GetFunction(functionName);
 			}
 			else
 			{
-				return new List<FunctionValue>(0);
+				functions = new List<FunctionValue>(0);
 			}
+
+            Factories.Benchmark.FinishOperation(this);
+            return functions;
 		}
 
 		/// <summary>
@@ -891,16 +946,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Resolved types
 		/// </returns>
 		protected override IEnumerable<TypeValue> resolveType(QualifiedName typeName)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Resolve type " + typeName);
+
+            IEnumerable<TypeValue> types;
 			if (Structure.Readonly.IsClassDefined(typeName))
 			{
-				return Structure.Readonly.GetClass(typeName);
+				types = Structure.Readonly.GetClass(typeName);
 			}
 			else
 			{
-				return new List<TypeValue>(0);
-			}
+				types = new List<TypeValue>(0);
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return types;
 		}
 
 		/// <summary>
@@ -908,7 +969,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="declaration">Declared function</param>
 		protected override void declareGlobal(FunctionValue declaration)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			QualifiedName name = new QualifiedName(declaration.Name);
 			Logger.Log(this, "Declare function - " + name);
 
@@ -921,7 +983,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			else
 			{
 				structure.AddFunctiondeclaration(name, declaration);
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		/// <summary>
@@ -929,7 +993,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		/// <param name="declaration">Declared type</param>
 		protected override void declareGlobal(TypeValue declaration)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			QualifiedName name = declaration.QualifiedName;
 			Logger.Log(this, "Declare class - " + name);
 
@@ -942,7 +1007,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			else
 			{
 				structure.AddClassDeclaration(name, declaration);
-			}
+            }
+
+            Factories.Benchmark.FinishOperation(this);
 		}
 
 		#endregion
@@ -963,16 +1030,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// or in global context in snapshot belonging to global code
 		/// </remarks>
 		protected override ReadWriteSnapshotEntryBase getVariable(VariableIdentifier variable, bool forceGlobalContext)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Get variable - " + variable);
+
+            ReadWriteSnapshotEntryBase snapshotEntry;
 			if (forceGlobalContext)
 			{
-				return SnapshotEntry.CreateVariableEntry(variable, GlobalContext.GlobalOnly);
+				snapshotEntry = SnapshotEntry.CreateVariableEntry(variable, GlobalContext.GlobalOnly);
 			}
 			else
 			{
-				return SnapshotEntry.CreateVariableEntry(variable, GlobalContext.LocalOnly, CallLevel);
-			}
+				snapshotEntry = SnapshotEntry.CreateVariableEntry(variable, GlobalContext.LocalOnly, CallLevel);
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return snapshotEntry;
 		}
 
 		/// <summary>
@@ -985,9 +1058,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Created control entry
 		/// </returns>
 		protected override ReadWriteSnapshotEntryBase getControlVariable(VariableName name)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Get control variable - " + name);
-			return SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
+
+			ReadWriteSnapshotEntryBase snapshotEntry = SnapshotEntry.CreateControlEntry(name, GlobalContext.GlobalOnly);
+
+            Factories.Benchmark.FinishOperation(this);
+            return snapshotEntry;
 		}
 
 		/// <summary>
@@ -999,7 +1077,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Created value entry
 		/// </returns>
 		protected override ReadWriteSnapshotEntryBase createSnapshotEntry(MemoryEntry entry)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
+            Logger.Log(this, "Get entry snap - " + entry);
+
+            ReadWriteSnapshotEntryBase snapshotEntry = null;
 			if (entry.Count == 1)
 			{
 				Value value = entry.PossibleValues.First();
@@ -1014,14 +1096,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 						MemoryEntry indexEntry = SnapshotDataUtils.GetMemoryEntry(this, Data.Readonly, index);
 						if (indexEntry.Count == 1 && indexEntry.PossibleValues.First() == value)
 						{
-							return new SnapshotEntry(MemoryPath.MakePathTemporary(index));
+							snapshotEntry = new SnapshotEntry(MemoryPath.MakePathTemporary(index));
 						}
 					}
 				}
 			}
 
-			Logger.Log(this, "Get entry snap - " + entry);
-			return new SnapshotDataEntry(this, entry);
+            if (snapshotEntry == null)
+            {
+                snapshotEntry = new SnapshotDataEntry(this, entry);
+            }
+
+            Factories.Benchmark.FinishOperation(this);
+            return snapshotEntry;
 		}
 
 		/// <summary>
@@ -1034,9 +1121,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Created control entry
 		/// </returns>
 		protected override ReadWriteSnapshotEntryBase getLocalControlVariable(VariableName name)
-		{
+        {
+            Factories.Benchmark.StartOperation(this);
 			Logger.Log(this, "Get local control variable - " + name.Value);
-			return SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly, CallLevel);
+
+            ReadWriteSnapshotEntryBase snapshotEntry = SnapshotEntry.CreateControlEntry(name, GlobalContext.LocalOnly, CallLevel);
+
+            Factories.Benchmark.FinishOperation(this);
+            return snapshotEntry;
 		}
 
 		#endregion
@@ -1556,11 +1648,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="isMust">if set to <c>true</c> copy is must othervise undefined value is added into the whole memory tree.</param>
 		private void CopyMemory(MemoryIndex sourceIndex, MemoryIndex targetIndex, bool isMust)
 		{
-            IMemoryAlgorithm algorithm = Algorithms.MemoryAlgorithm;
-
-			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
-			algorithm.CopyMemory(this, sourceIndex, targetIndex, isMust);
-			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.COPY_MEMORY);
+            Algorithms.MemoryAlgorithm.CopyMemory(this, sourceIndex, targetIndex, isMust);
 		}
 
 		/// <summary>
@@ -1569,11 +1657,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <param name="index">The index.</param>
 		public void DestroyMemory(MemoryIndex index)
         {
-            IMemoryAlgorithm algorithm = Algorithms.MemoryAlgorithm;
-
-			Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
-			algorithm.DestroyMemory(this, index);
-			Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.DELETE_MEMORY);
+            Algorithms.MemoryAlgorithm.DestroyMemory(this, index);
 		}
 
 		/// <summary>
@@ -1584,7 +1668,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		public MemoryEntry CreateMemoryEntry(IEnumerable<Value> values)
         {
             IMemoryAlgorithm algorithm = Algorithms.MemoryAlgorithm;
-
 			return algorithm.CreateMemoryEntry(this, values);
 		}
 
@@ -1609,12 +1692,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			Snapshot snapshot = SnapshotEntry.ToSnapshot(input);
 
 			Logger.Log(this, snapshot.getSnapshotIdentification() + " extend");
-
-            IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
-
-            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.EXTEND);
-            algorithm.Extend(this, snapshot);
-            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.EXTEND);
+            
+            Factories.Benchmark.StartAlgorithm(this, AlgorithmType.EXTEND);
+            Algorithms.MergeAlgorithm.Extend(this, snapshot);
+            Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.EXTEND);
             
 			Visualizer.SetParent(this, snapshot);
 			Visualizer.SetLabel(this, "extend");
@@ -1644,12 +1725,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 
 			Visualizer.SetParents(this, snapshots.ToArray());
 			Visualizer.SetLabel(this, "merge");
-
-            IMergeAlgorithm algorithm = Algorithms.MergeAlgorithm;
-
-            Factories.Benchmark.StartAlgorithm(this, algorithm, AlgorithmType.MERGE);
-            algorithm.Merge(this, snapshots);
-            Factories.Benchmark.FinishAlgorithm(this, algorithm, AlgorithmType.MERGE);
+            
+            Factories.Benchmark.StartAlgorithm(this, AlgorithmType.MERGE);
+            Algorithms.MergeAlgorithm.Merge(this, snapshots);
+            Factories.Benchmark.FinishAlgorithm(this, AlgorithmType.MERGE);
 			
 			Debug.Assert(Structure.Readonly.CallLevel == CallLevel);
 		}
@@ -2003,16 +2082,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		#endregion
 
 		#region Private Helpers
-		private void extendWithoutComputingCallLevel(ISnapshotReadonly[] inputs)
-		{
-			if (inputs.Length == 1) {
-				extendSnapshot (inputs [0]);
-			}
-			else
-				if (inputs.Length > 1) {
-					mergeSnapshots (inputs);
-				}
-		}
 
 		private int maxCallLevel(ISnapshotReadonly[] inputs) 
 		{

@@ -174,7 +174,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 oldEntry = snapshot.EmptyEntry;
             }
 
-            if (oldEntry.Equals(newEntry))
+            if (ValueUtils.CompareMemoryEntries(newEntry, oldEntry))
             {
                 return true;
             }
@@ -183,7 +183,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 MemoryEntry simplifiedEntry = assistant.Simplify(newEntry);
                 MemoryEntry entry = setNewMemoryEntry(index, newEntry, simplifiedEntry);
 
-                return oldEntry.Equals(entry);
+                return ValueUtils.CompareMemoryEntries(entry, oldEntry);
             }
             else
             {
@@ -234,14 +234,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             if (newDefinition.Array != oldDefinition.Array)
             {
-                if (newDefinition.Array != null && oldDefinition.Array != null)
-                {
-                    if (!newDefinition.Array.Equals(oldDefinition.Array))
-                    {
-                        return false;
-                    }
-                }
-                else
+                if (newDefinition.Array == null || oldDefinition.Array == null)
                 {
                     return false;
                 }

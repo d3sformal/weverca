@@ -24,27 +24,60 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.AnalysisFramework.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
-    class TransactionEntry
+    public class TransactionEntry
     {
-        Stopwatch stopwatch;
+        public int TransactionID { get; private set; }
+
+        public int NumberfLocations { get; private set; }
+
+        public long StartMemory { get; private set; }
+
+        public long EndMemory { get; private set; }
+
+        public double TransactionTime { get; private set; }
+
+        public SnapshotMode Mode { get; private set; }
+        
+
+        private Stopwatch stopwatch;
 
 
-        internal void Start()
+        public static TransactionEntry CreateAndStartTransaction(int transactionId)
         {
-            stopwatch.Start();
+            TransactionEntry transaction = new TransactionEntry(transactionId);
+            transaction.stopwatch.Start();
+
+            return transaction;
         }
 
-        internal void Stop()
+
+        private TransactionEntry(int transactionId)
         {
-            throw new NotImplementedException();
+            this.TransactionID = transactionId;
+
+            stopwatch = new Stopwatch();
+            StartMemory = GC.GetTotalMemory(false);
         }
 
-        internal long Duration()
+        public void StopTransaction(Snapshot snapshot)
         {
-            throw new NotImplementedException();
+            if (stopwatch.IsRunning)
+            {
+                stopwatch.Stop();
+
+                NumberfLocations = snapshot.NumMemoryLocations();
+                TransactionTime = stopwatch.Elapsed.TotalMilliseconds;
+                EndMemory = GC.GetTotalMemory(false);
+                Mode = snapshot.CurrentMode;
+            }
+            else
+            {
+                throw new Exception("Trying to stop the same transaction twice");
+            }
         }
     }
 }
