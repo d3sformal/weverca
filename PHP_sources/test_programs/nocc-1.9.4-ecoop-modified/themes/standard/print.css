@@ -1,0 +1,26 @@
+#header h1,
+#header ul {
+  display:none;
+}
+
+#header h2 {
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.dontPrint {
+  display:none;
+}
+
+.menuOpts {
+  display:none;
+}
+
+.mainmenu,
+.submenu {
+  display:none;
+}
+
+.sendButtons {
+  display:none;
+}
