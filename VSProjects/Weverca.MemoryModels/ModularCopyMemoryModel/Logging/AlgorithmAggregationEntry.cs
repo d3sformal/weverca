@@ -14,7 +14,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         public double TotalTime { get; private set; }
 
-        public IEnumerable<AlgorithmEntry> Results { get { return results; } }
+        //public IEnumerable<AlgorithmEntry> Results { get { return results; } }
 
         private List<AlgorithmEntry> results = new List<AlgorithmEntry>();
 
@@ -31,7 +31,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             NumberOfRuns++;
             TotalTime += entry.AlgorithmTime;
 
-            results.Add(entry);
+            //results.Add(entry);
         }
     }
 }

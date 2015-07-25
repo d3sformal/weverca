@@ -10,6 +10,8 @@ namespace Weverca.App
 {
     class BenchmarkResult
     {
+        public static readonly long GARBAGE_THRESHOLD = 10000000;
+
         public IEnumerable<TransactionEntry> TransactionResults { get; private set; }
         public IReadOnlyDictionary<AlgorithmType, AlgorithmAggregationEntry> AlgorithmResults { get; private set; }
 
@@ -34,7 +36,7 @@ namespace Weverca.App
 
         public void StartBenchmarking()
         {
-            InitialMemory = GC.GetTotalMemory(false);
+            InitialMemory = GC.GetTotalMemory(true);
             stopwatch.Start();
         }
 
@@ -43,7 +45,7 @@ namespace Weverca.App
             stopwatch.Stop();
 
             TotalAnalysisTime = stopwatch.Elapsed.TotalMilliseconds;
-            FinalMemory = GC.GetTotalMemory(false);
+            FinalMemory = GC.GetTotalMemory(true);
 
             TransactionResults = benchmark.TransactionResults;
             AlgorithmResults = benchmark.AlgorithmResults;

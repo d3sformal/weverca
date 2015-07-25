@@ -32,7 +32,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
     {
         public int TransactionID { get; private set; }
 
-        public int NumberfLocations { get; private set; }
+        // public int NumberfLocations { get; private set; }
 
         public long StartMemory { get; private set; }
 
@@ -69,7 +69,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             {
                 stopwatch.Stop();
 
-                NumberfLocations = snapshot.NumMemoryLocations();
                 TransactionTime = stopwatch.Elapsed.TotalMilliseconds;
                 EndMemory = GC.GetTotalMemory(false);
                 Mode = snapshot.CurrentMode;

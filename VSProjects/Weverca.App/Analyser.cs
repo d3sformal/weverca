@@ -107,6 +107,7 @@ namespace Weverca.App
             secondPhaseAnalysis = null;
 
             GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
         public void StartAnalysis()
@@ -168,6 +169,7 @@ namespace Weverca.App
             WatchSecondPhase = new Stopwatch();
             RepetitionCounter = 1;
 
+            initialiseAnalysisSingletons();
             Watch = Stopwatch.StartNew();
             try
             {
@@ -235,6 +237,13 @@ namespace Weverca.App
                 default:
                     throw new Exception("Unrecognized type of memory model " + MemoryModelType);
             }
+        }
+
+        private void initialiseAnalysisSingletons()
+        {
+            ControlFlowGraph.ControlFlowGraph cfg = ControlFlowGraph.ControlFlowGraph.FromSource("<? $a = 1; echo $a; ?>", FileName);
+            var analysis = new Weverca.Analysis.ForwardAnalysis(cfg, MemoryModel);
+            analysis.Analyse();
         }
 
         private void createControlFlowGraph()
@@ -696,13 +705,13 @@ namespace Weverca.App
 
         internal void WriteOutBenchmarkStats(StreamWriter writer)
         {
-            writer.WriteLine("Iteration;Ananlysis time;Operation time;Algorithm time;Transactions;Operations;Algorithms;Memory difference");
+            writer.WriteLine("Iteration;Ananlysis time;Operation time;Algorithm time;Transactions;Operations;Algorithms;Memory difference;Start memory; End memory");
 
             int benchmarkRun = 1;
             foreach (var result in benchmarkResults)
             {
-                writer.WriteLine(string.Format("{0};{1};{2};{3};{4};{5};{6};{7}", benchmarkRun, result.TotalAnalysisTime, result.TotalOperationTime, result.TotalAlgorithmTime,
-                    result.NumberOfTransactions, result.NumberOfOperations, result.NumberOfAlgorithms, result.FinalMemory - result.InitialMemory
+                writer.WriteLine(string.Format("{0};{1};{2};{3};{4};{5};{6};{7};{8};{9}", benchmarkRun, result.TotalAnalysisTime, result.TotalOperationTime, result.TotalAlgorithmTime,
+                    result.NumberOfTransactions, result.NumberOfOperations, result.NumberOfAlgorithms, result.FinalMemory - result.InitialMemory, result.InitialMemory, result.FinalMemory
                 ));
                 benchmarkRun++;
             }
@@ -710,7 +719,7 @@ namespace Weverca.App
 
         internal void WriteOutTransactionBenchmark(StreamWriter writer)
         {
-            writer.WriteLine("Iteration;Transaction number;Memory mode;Locations;Time;Start memory;End memory;Memory difference");
+            writer.WriteLine("Iteration;Transaction number;Memory mode;Time;Start memory;End memory;Memory difference;Raw start memory");
 
             int benchmarkRun = 1;
             foreach (var result in benchmarkResults)
@@ -721,8 +730,8 @@ namespace Weverca.App
                 {
                     long memDiff = transaction.EndMemory - transaction.StartMemory;
                     writer.WriteLine(string.Format("{0};{1};{2};{3};{4};{5};{6};{7}", benchmarkRun, transaction.TransactionID, transaction.Mode,
-                        transaction.NumberfLocations, transaction.TransactionTime, transaction.StartMemory - initialMemory,
-                        transaction.EndMemory - initialMemory, memDiff
+                        transaction.TransactionTime, transaction.StartMemory - initialMemory, transaction.EndMemory - initialMemory, memDiff, 
+                        transaction.StartMemory
                         ));
                 }
                 benchmarkRun++;
@@ -763,7 +772,7 @@ namespace Weverca.App
                 int half = memoryList.Count / 2;
                 if (memoryList.Count % 2 == 0)
                 {
-                    median = (memoryList[half] + memoryList[half + 1]) / 2;
+                    median = (memoryList[half] + memoryList[half - 1]) / 2;
                 }
                 else
                 {

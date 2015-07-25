@@ -552,6 +552,12 @@ namespace Weverca.App
                     {
                         currentAnalyser.WriteOutAlgorithmTotalTimes(writer);
                     }
+
+                    string transBenchmarkPath = String.Format(@"{0}\{1}_{2}[{3}-{4}].csv", selectedDirectory, timePrefix, "trans-benchmark", memoryModelType, numberOfRepetions);
+                    using (System.IO.StreamWriter writer = System.IO.File.AppendText(transBenchmarkPath))
+                    {
+                        currentAnalyser.WriteOutTransactionBenchmark(writer);
+                    }
                 }
             }
             else
