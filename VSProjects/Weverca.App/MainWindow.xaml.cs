@@ -25,35 +25,51 @@ using Weverca.Taint;
 namespace Weverca.App
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Backend part for the main window of the Weverca applications
+    /// Shows progress and results of an analysis
     /// </summary>
     public partial class MainWindow : Window
     {
-        Analyser currentAnalyser;
-
+        /// <summary>
+        /// The number of watch cycles to skip until update a memory counter is performed
+        /// </summary>
         private static readonly int MEMORY_COUTER_LIMIT = 4;
 
-        int memoryCounter = 0;
-
+        // Current settings of the program selected by the start analysis window
         private string fileName;
         private SecondPhaseType secondPhaseType = SecondPhaseType.Deactivated;
-        private MemoryModelType memoryModelType = MemoryModelType.Tracking;
+        private MemoryModelType memoryModelType = MemoryModelType.TrackingDiff;
         private bool isBenchmarkEnabled = false;
         private int numberOfRepetions = 100;
         private long memoryLimit;
 
-        Stopwatch watch;
-        DispatcherTimer timer = new DispatcherTimer();
+        // Analyzer object and thread where the analysis is performed
+        private Analyser currentAnalyser;
+        private Thread currentAnalysisThred;
+
+        // Time to update watch informations about the analysis
+        private DispatcherTimer timer = new DispatcherTimer();
+
+        // Handler of the main program output - all analysis messages goes here
+        FlowDocumentOutput analysisOutput;
+
+        // Counts the analysis time
+        private Stopwatch watch;
+        // Countdown of the dispather timer ticks when to write out memory data
+        private int memoryCounter = 0;
+
+        // Last reported state of the analysis
         private AnalysisState lastState;
+
+        // Identifies which parts of analysis were reported to the output
         private bool isFirstPhaseStartNotReported;
         private bool isFirstPhaseEndNotReported;
         private bool isSecondPhaseStartNotReported;
         private bool isSecondPhaseEndNotReported;
-        FlowDocumentOutput analysisOutput;
 
-        //BackgroundWorker worker;
-        private Thread currentAnalysisThred;
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainWindow"/> class.
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
@@ -63,25 +79,86 @@ namespace Weverca.App
 
             analysisOutput = new FlowDocumentOutput(outputFlowDocument);
 
-            showStartAnalysisDialog();            
+            // Shows start dialog
+            if (!showStartAnalysisDialog())
+            {
+                //  If user closes the dialog then nothing to do - quit
+                Close();
+            }        
         }
 
+        /// <summary>
+        /// Shows the start analysis dialog and starts the analysis when user accepts the dialog.
+        /// </summary>
+        /// <returns>Returns true when analysis was started</returns>
+        private bool showStartAnalysisDialog()
+        {
+            StartAnalysisWindow startAnalysisWindow = new StartAnalysisWindow()
+            {
+                FileName = fileName,
+                MemoryModelType = memoryModelType,
+                SecondPhaseType = secondPhaseType,
+                NumberOfRepetitions = numberOfRepetions,
+                IsBenchmarkEnabled = isBenchmarkEnabled
+            };
 
-        public void StartAnalysis()
+            if (startAnalysisWindow.ShowStartAnalysisDialog() == true)
+            {
+                fileName = startAnalysisWindow.FileName;
+                memoryModelType = startAnalysisWindow.MemoryModelType;
+                secondPhaseType = startAnalysisWindow.SecondPhaseType;
+                numberOfRepetions = startAnalysisWindow.NumberOfRepetitions;
+                isBenchmarkEnabled = startAnalysisWindow.IsBenchmarkEnabled;
+                memoryLimit = startAnalysisWindow.MemoryLimit;
+
+                if (isBenchmarkEnabled)
+                {
+                    phaseHead.Visibility = System.Windows.Visibility.Collapsed;
+                    phaseText.Visibility = System.Windows.Visibility.Collapsed;
+                    repetitionHead.Visibility = System.Windows.Visibility.Visible;
+                    repetitionText.Visibility = System.Windows.Visibility.Visible;
+                    numOfWarningsHead.Visibility = System.Windows.Visibility.Collapsed;
+                    numOfWarningsText.Visibility = System.Windows.Visibility.Collapsed;
+                }
+                else
+                {
+                    phaseHead.Visibility = System.Windows.Visibility.Visible;
+                    phaseText.Visibility = System.Windows.Visibility.Visible;
+                    repetitionHead.Visibility = System.Windows.Visibility.Collapsed;
+                    repetitionText.Visibility = System.Windows.Visibility.Collapsed;
+                    numOfWarningsHead.Visibility = System.Windows.Visibility.Visible;
+                    numOfWarningsText.Visibility = System.Windows.Visibility.Visible;
+                }
+
+                Title = string.Format("Weverca PHP analyzer - [{0}]", fileName);
+                startAnalysis();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Starts the analysis with specified settings. Analysis is started in separated thread. 
+        /// The Dispatcher timer is started to monitor progress of the analysis.
+        /// </summary>
+        private void startAnalysis()
         {
             isFirstPhaseStartNotReported = true;
             isFirstPhaseEndNotReported = true;
             isSecondPhaseStartNotReported = true;
             isSecondPhaseEndNotReported = true;
 
-            memoryLimitText.Content = getMemoryText(memoryLimit);
+            memoryLimitText.Content = OutputUtils.GetMemoryText(memoryLimit);
 
             outputTab.IsSelected = true;
             warningsTab.Visibility = System.Windows.Visibility.Collapsed;
             finalSnapshotTab.Visibility = System.Windows.Visibility.Collapsed;
-            statsTab.Visibility = System.Windows.Visibility.Collapsed;
 
-            memoryText.Content = getMemoryText(GC.GetTotalMemory(true));
+            memoryText.Content = OutputUtils.GetMemoryText(GC.GetTotalMemory(true));
 
             abortButton.IsEnabled = true;
 
@@ -92,9 +169,42 @@ namespace Weverca.App
 
             ThreadPool.QueueUserWorkItem(startAnalyserMainMethod);
 
+            exportBenchmarkMenu.IsEnabled = false;
+
             reportAnalysisStart();
         }
+        
+        /// <summary>
+        /// Stops monitoring and reports finish state of the analysis.
+        /// </summary>
+        private void analysisFinished()
+        {
+            watch.Stop();
+            timer.IsEnabled = false;
+            memoryText.Content = OutputUtils.GetMemoryText(GC.GetTotalMemory(true));
 
+            warningsTab.Visibility = System.Windows.Visibility.Visible;
+            FlowDocumentOutput warningsOutput = new FlowDocumentOutput(warningsFlowDocument);
+            warningsOutput.ClearDocument();
+            currentAnalyser.GenerateWarnings(warningsOutput);
+
+            finalSnapshotTab.Visibility = System.Windows.Visibility.Visible;
+            FlowDocumentOutput finalSnapshotOutput = new FlowDocumentOutput(finalSnapshotFlowDocument);
+            finalSnapshotOutput.ClearDocument();
+            currentAnalyser.GenerateFinalSnapshotText(finalSnapshotOutput);
+
+            if (currentAnalyser.EndState == AnalysisEndState.Success && isBenchmarkEnabled)
+            {
+                exportBenchmarkMenu.IsEnabled = true;
+            }
+
+            abortButton.IsEnabled = false;
+        }
+
+        /// <summary>
+        /// The main method of the analysis for the counting thread.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
         private void startAnalyserMainMethod(object sender)
         {
             currentAnalysisThred = System.Threading.Thread.CurrentThread;
@@ -108,44 +218,13 @@ namespace Weverca.App
                 currentAnalyser.StartAnalysis();
             }
         }
-
-        private void analysisFinished()
-        {
-            watch.Stop();
-            timer.IsEnabled = false;
-            memoryText.Content = getMemoryText(GC.GetTotalMemory(true));
-
-            warningsTab.Visibility = System.Windows.Visibility.Visible;
-            FlowDocumentOutput warningsOutput = new FlowDocumentOutput(warningsFlowDocument);
-            warningsOutput.ClearDocument();
-            currentAnalyser.GenerateWarnings(warningsOutput);
-
-            finalSnapshotTab.Visibility = System.Windows.Visibility.Visible;
-            FlowDocumentOutput finalSnapshotOutput = new FlowDocumentOutput(finalSnapshotFlowDocument);
-            finalSnapshotOutput.ClearDocument();
-            currentAnalyser.GenerateFinalSnapshotText(finalSnapshotOutput);
-
-            statsTab.Visibility = System.Windows.Visibility.Visible;
-            FlowDocumentOutput statsOutput = new FlowDocumentOutput(statsFlowDocument);
-            statsOutput.ClearDocument();
-            currentAnalyser.GenerateMemoryModelStatisticsOutput(statsOutput);
-
-            abortButton.IsEnabled = false;
-        }
-
-        private void abortButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentAnalyser != null && !currentAnalyser.IsFinished)
-            {
-                if (currentAnalysisThred != null)
-                {
-                    reportEvent("Abort request - terminating the analysis");
-                    currentAnalysisThred.Abort(AnalysisEndState.Abort);
-                }
-            }
-        }
-
-        void timer_Tick(object sender, EventArgs e)
+        
+        /// <summary>
+        /// Handles the Tick event of the timer control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        public void timer_Tick(object sender, EventArgs e)
         {
             timeText.Content = watch.Elapsed.ToString(@"hh\:mm\:ss");
 
@@ -157,7 +236,7 @@ namespace Weverca.App
             {
                 actualizeAnalysisMonitoring();
             }
-            
+
             if (currentAnalyser.IsFinished)
             {
                 switch (currentAnalyser.EndState)
@@ -182,6 +261,8 @@ namespace Weverca.App
                 analysisFinished();
             }
         }
+
+        #region Output methods
 
         private void actualizeAnalysisMonitoring()
         {
@@ -249,7 +330,7 @@ namespace Weverca.App
             {
                 memoryCounter = MEMORY_COUTER_LIMIT;
                 long memoryConsumption = GC.GetTotalMemory(false);
-                memoryText.Content = getMemoryText(memoryConsumption);
+                memoryText.Content = OutputUtils.GetMemoryText(memoryConsumption);
                 if (memoryConsumption > memoryLimit)
                 {
                     //reportEvent("Memory limit reached - trying to garbage collect");
@@ -353,6 +434,7 @@ namespace Weverca.App
             analysisOutput.EmptyLine();
             currentAnalyser.GenerateOutput(analysisOutput);
         }
+
         private void reportAnalysisAbortMemory()
         {
             analysisStateText.Content = "Analysis reached memory limit";
@@ -368,82 +450,30 @@ namespace Weverca.App
             analysisOutput.VariableLine(watch.Elapsed.ToString(@"\[hh\:mm\:ss\]"), " ", text);
         }
 
-        private void showStartAnalysisDialog()
-        {
-            StartAnalysisWindow startAnalysisWindow = new StartAnalysisWindow()
-            {
-                FileName = fileName,
-                MemoryModelType = memoryModelType,
-                SecondPhaseType = secondPhaseType,
-                NumberOfRepetitions = numberOfRepetions,
-                IsBenchmarkEnabled = isBenchmarkEnabled
-            };
+        #endregion
 
-            if (startAnalysisWindow.ShowStartAnalysisDialog() == true)
-            {
-                fileName = startAnalysisWindow.FileName;
-                memoryModelType = startAnalysisWindow.MemoryModelType;
-                secondPhaseType = startAnalysisWindow.SecondPhaseType;
-                numberOfRepetions = startAnalysisWindow.NumberOfRepetitions;
-                isBenchmarkEnabled = startAnalysisWindow.IsBenchmarkEnabled;
-                memoryLimit = startAnalysisWindow.MemoryLimit;
-
-                if (isBenchmarkEnabled)
-                {
-                    phaseHead.Visibility = System.Windows.Visibility.Collapsed;
-                    phaseText.Visibility = System.Windows.Visibility.Collapsed;
-                    repetitionHead.Visibility = System.Windows.Visibility.Visible;
-                    repetitionText.Visibility = System.Windows.Visibility.Visible;
-                    numOfWarningsHead.Visibility = System.Windows.Visibility.Collapsed;
-                    numOfWarningsText.Visibility = System.Windows.Visibility.Collapsed;
-                }
-                else
-                {
-                    phaseHead.Visibility = System.Windows.Visibility.Visible;
-                    phaseText.Visibility = System.Windows.Visibility.Visible;
-                    repetitionHead.Visibility = System.Windows.Visibility.Collapsed;
-                    repetitionText.Visibility = System.Windows.Visibility.Collapsed;
-                    numOfWarningsHead.Visibility = System.Windows.Visibility.Visible;
-                    numOfWarningsText.Visibility = System.Windows.Visibility.Visible;
-                }
-
-                Title = string.Format("Weverca PHP analyzer - [{0}]", fileName);
-                StartAnalysis();
-            }
-        }
-
-        private string getMemoryText(long memorySize)
-        {
-            var units = new[] { "B", "KB", "MB", "GB", "TB" };
-            var index = 0;
-            double size = memorySize;
-            while (size > 1024 && index < units.Length - 1)
-            {
-                size /= 1024;
-                index++;
-            }
-
-            if (size / 100 > 1)
-            {
-                return string.Format("{0:0.0} {1}", size, units[index]);
-            }
-            else if (size / 10 > 1)
-            {
-                return string.Format("{0:0.00} {1}", size, units[index]);
-            }
-            else
-            {
-                return string.Format("{0:0.000} {1}", size, units[index]);
-            }
-
-        }
+        #region Private helpers
 
         private int getMemoryInMB(long memorySize)
         {
             return (int)(memorySize / (1024 * 1024));
         }
 
-        #region Menu handlers
+        #endregion
+
+        #region Button and Menu Handlers
+        
+        private void abortButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentAnalyser != null && !currentAnalyser.IsFinished)
+            {
+                if (currentAnalysisThred != null)
+                {
+                    reportEvent("Abort request - terminating the analysis");
+                    currentAnalysisThred.Abort(AnalysisEndState.Abort);
+                }
+            }
+        }
 
         private bool testRunningAnalysis(string message)
         {
@@ -467,7 +497,7 @@ namespace Weverca.App
         {
             if (testRunningAnalysis("Cannot repeat analysis"))
             {
-                StartAnalysis();
+                startAnalysis();
             }
         }
 
@@ -481,15 +511,9 @@ namespace Weverca.App
             this.Close();
         }
 
-        private void exportPPGMenu_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
-
         private void exportResultsMenu_Click(object sender, RoutedEventArgs e)
         {
             var content = new TextRange(warningsFlowDocument.ContentStart, warningsFlowDocument.ContentEnd);
-
 
             if (content.CanSave(DataFormats.Rtf))
             {
@@ -558,17 +582,14 @@ namespace Weverca.App
                     {
                         currentAnalyser.WriteOutTransactionBenchmark(writer);
                     }
+
+                    MessageBox.Show("The benchmark stats saved succesfully.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             else
             {
                 MessageBox.Show("Benchmark results are available only if benchmark mode is enabled.", "Error exporting results", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        private void aboutMenu_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         #endregion

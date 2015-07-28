@@ -22,12 +22,9 @@
             </MenuItem>
 
             <MenuItem Header="Export">
-                <MenuItem Header="Export program point graph image" Name="exportPPGMenu" Click="exportPPGMenu_Click" />
                 <MenuItem Header="Export analysis dump" Name="exportResultsMenu" Click="exportResultsMenu_Click" />
-                <MenuItem Header="Export benchmark statistics" Name="exportBenchmarkMenu" Click="exportBenchmarkMenu_Click" />
+                <MenuItem Header="Export benchmark statistics" Name="exportBenchmarkMenu" Click="exportBenchmarkMenu_Click" IsEnabled="False" />
             </MenuItem>
-
-            <MenuItem Header="About" Name="aboutMenu" Click="aboutMenu_Click" />
         </Menu>
 
         <StackPanel Grid.Row="1">
@@ -92,12 +89,6 @@
             <TabItem Header="Final snapshot" Name="finalSnapshotTab">
                 <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                     <FlowDocument Name="finalSnapshotFlowDocument" />
-                </RichTextBox>
-            </TabItem>
-
-            <TabItem Header="Statistics" Name="statsTab">
-                <RichTextBox IsReadOnly="True" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                    <FlowDocument Name="statsFlowDocument" />
                 </RichTextBox>
             </TabItem>
         </TabControl>

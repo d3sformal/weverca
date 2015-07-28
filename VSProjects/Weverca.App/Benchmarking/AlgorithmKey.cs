@@ -23,10 +23,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
+namespace Weverca.App.Benchmarking
 {
+    /// <summary>
+    /// Represents key to the dictionary to locate algorithm entry by the type of the 
+    /// algorithm and an enclosing snapshot.
+    /// </summary>
     class AlgorithmKey
     {
         Snapshot snapshot;

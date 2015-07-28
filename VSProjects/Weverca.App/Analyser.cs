@@ -10,6 +10,7 @@ using System.Windows;
 using Weverca.Analysis;
 using Weverca.AnalysisFramework;
 using Weverca.AnalysisFramework.Memory;
+using Weverca.App.Benchmarking;
 using Weverca.App.Settings;
 using Weverca.ControlFlowGraph;
 using Weverca.MemoryModels.ModularCopyMemoryModel;
@@ -19,62 +20,184 @@ using Weverca.Taint;
 
 namespace Weverca.App
 {
-    enum AnalysisState
+    /// <summary>
+    /// The state of analysis performed by an analyzer
+    /// </summary>
+    public enum AnalysisState
     {
         Initialising, ForwardAnalysis, NextPhaseAnalysis
     }
 
-    enum AnalysisEndState
+    /// <summary>
+    /// Defines the end state of finished analysis
+    /// </summary>
+    public enum AnalysisEndState
     {
         NotFinished, Success, Crash, Abort, AbortMemory
     }
 
-    class Analyser
+    /// <summary>
+    /// Analyzer class which performes an analysis with defined settings.
+    /// </summary>
+    public class Analyser
     {
-        public MemoryModels.MemoryModelFactory MemoryModel { get; private set; }
-
-        public bool IsFinished { get; private set; }
-
-        public AnalysisEndState EndState { get; private set; }
-
-        public bool IsFirstPhaseStarted { get; private set; }
-
-        public bool IsSecondPhaseStarted { get; private set; }
-
-        public bool IsFirstPhaseFinished { get; private set; }
-
-        public bool IsSecondPhaseFinished { get; private set; }
-
-        public int RepetitionCounter { get; private set; }
-
-        public AnalysisState State { get; private set; }
-
-        public Exception AnalysisException { get; private set; }
-
-
+        /// <summary>
+        /// Gets the name of the file to perform the analysis.
+        /// </summary>
+        /// <value>
+        /// The name of the file.
+        /// </value>
         public string FileName { get; private set; }
 
+        /// <summary>
+        /// Gets the type of the second phase of the analysis.
+        /// </summary>
+        /// <value>
+        /// The type of the second phase.
+        /// </value>
         public SecondPhaseType SecondPhaseType { get; private set; }
 
+        /// <summary>
+        /// Gets the type of the memory model.
+        /// </summary>
+        /// <value>
+        /// The type of the memory model.
+        /// </value>
         public MemoryModelType MemoryModelType { get; private set; }
 
+        /// <summary>
+        /// Gets the memory model.
+        /// </summary>
+        /// <value>
+        /// The memory model.
+        /// </value>
+        public MemoryModels.MemoryModelFactory MemoryModel { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether an analysis is finished.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if an analysis is finished; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFinished { get; private set; }
+        
+        /// <summary>
+        /// Gets the state of the analysis.
+        /// </summary>
+        /// <value>
+        /// The state.
+        /// </value>
+        public AnalysisState State { get; private set; }
+
+        /// <summary>
+        /// Gets the end state of analysis.
+        /// </summary>
+        /// <value>
+        /// The end state.
+        /// </value>
+        public AnalysisEndState EndState { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the first phase was started.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this the first phase was started; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFirstPhaseStarted { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the second was phase started.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the second phase was started; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSecondPhaseStarted { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the first phase was finished.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the first phase was finished; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsFirstPhaseFinished { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether the second phase was finished.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if the second phase was finished; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSecondPhaseFinished { get; private set; }
+
+        /// <summary>
+        /// Gets the number repetition of the benchmarked analysis.
+        /// </summary>
+        /// <value>
+        /// The repetition counter.
+        /// </value>
+        public int RepetitionCounter { get; private set; }
+
+        /// <summary>
+        /// Gets the first phase initial memory.
+        /// </summary>
+        /// <value>
+        /// The first phase initial memory.
+        /// </value>
+        public long FirstPhaseInitialMemory { get; private set; }
+
+        /// <summary>
+        /// Gets the first phase end memory.
+        /// </summary>
+        /// <value>
+        /// The first phase end memory.
+        /// </value>
+        public long FirstPhaseEndMemory { get; private set; }
+
+        /// <summary>
+        /// Gets the second phase end memory.
+        /// </summary>
+        /// <value>
+        /// The second phase end memory.
+        /// </value>
+        public long SecondPhaseEndMemory { get; private set; }
+
+        /// <summary>
+        /// Gets the analysis exception. Contains the reason why an analysis crashed. 
+        /// Valid only if an analysis is finished and the end state is crashed.
+        /// </summary>
+        /// <value>
+        /// The analysis exception.
+        /// </value>
+        public Exception AnalysisException { get; private set; }
+
+        // CFG and PPG generated by weverca
         private ControlFlowGraph.ControlFlowGraph controlFlowGraph;
         private ProgramPointGraph programPointGraph;
 
+        // Analysis objects
         private ForwardAnalysisBase firstPhaseAnalysis;
         private NextPhaseAnalysis secondPhaseAnalysis;
 
+        // Measuring
         public Stopwatch Watch { get; set; }
         public Stopwatch WatchFirstPhase { get; set; }
         public Stopwatch WatchSecondPhase { get; set; }
 
+        // Warning containers
         private IReadOnlyCollection<AnalysisWarning> analysisWarnings;
         private IReadOnlyCollection<AnalysisSecurityWarning> securityWarnings;
         private IReadOnlyCollection<AnalysisWarning> secondPhaseWarnings;
-        private IBenchmark memoryModelBenchmark;
 
+        // Benchmarking object and benchmark results
+        private MemoryModelBenchmark memoryModelBenchmark;
         private List<BenchmarkResult> benchmarkResults = new List<BenchmarkResult>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Analyser"/> class.
+        /// </summary>
+        /// <param name="fileName">Name of the file.</param>
+        /// <param name="secondPhaseType">Type of the second phase.</param>
+        /// <param name="memoryModelType">Type of the memory model.</param>
         public Analyser(string fileName, SecondPhaseType secondPhaseType, MemoryModelType memoryModelType)
         {
             this.FileName = fileName;
@@ -88,6 +211,9 @@ namespace Weverca.App
             clearComputation();
         }
 
+        /// <summary>
+        /// Clears the inner fields before new computation is performed.
+        /// </summary>
         private void clearComputation()
         {
             AnalysisWarningHandler.ResetWarnings();
@@ -106,19 +232,19 @@ namespace Weverca.App
             firstPhaseAnalysis = null;
             secondPhaseAnalysis = null;
 
+            // Force garbage collecting
             GC.Collect();
             GC.WaitForPendingFinalizers();
         }
 
+        /// <summary>
+        /// Starts the analysis.
+        /// </summary>
         public void StartAnalysis()
         {
             this.memoryModelBenchmark = null;
 
-            var builder = selectMemoryModel().Builder();
-            builder.Benchmark = new EmptyMemoryModelBenchmark();
-            ModularMemoryModelFactories factories = builder.Build();
-
-            MemoryModel = factories.MemoryModelSnapshotFactory;
+            MemoryModel = selectMemoryModel().MemoryModelSnapshotFactory;
 
             WatchFirstPhase = new Stopwatch();
             WatchSecondPhase = new Stopwatch();
@@ -138,11 +264,11 @@ namespace Weverca.App
             {
                 EndState = (AnalysisEndState)e.ExceptionState;
             }
-            /*catch (Exception e)
+            catch (Exception e)
             {
                 AnalysisException = e;
                 EndState = AnalysisEndState.Crash;
-            }*/
+            }
             finally
             {
                 Watch.Stop();
@@ -150,6 +276,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Starts the benchmark.
+        /// </summary>
+        /// <param name="numberOfRepetitions">The number of repetitions.</param>
         public void StartBenchmark(int numberOfRepetitions)
         {
             this.memoryModelBenchmark = new MemoryModelBenchmark();
@@ -160,11 +290,6 @@ namespace Weverca.App
 
             MemoryModel = factories.MemoryModelSnapshotFactory;
 
-            start(numberOfRepetitions);
-        }
-
-        private void start(int numberOfRepetitions)
-        {
             WatchFirstPhase = new Stopwatch();
             WatchSecondPhase = new Stopwatch();
             RepetitionCounter = 1;
@@ -212,6 +337,11 @@ namespace Weverca.App
 
         #region Analysis methods
 
+        /// <summary>
+        /// Selects the memory model.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Unrecognized type of memory model  + MemoryModelType</exception>
         private ModularMemoryModelFactories selectMemoryModel()
         {
             switch (MemoryModelType)
@@ -224,10 +354,7 @@ namespace Weverca.App
 
                 case Settings.MemoryModelType.LazyContainers:
                     return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyContainers;
-
-                case Settings.MemoryModelType.LazyAndDiffContainers:
-                    return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.LazyAndDiffContainers;
-
+                    
                 case Settings.MemoryModelType.Tracking:
                     return MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.Tracking;
 
@@ -239,6 +366,9 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Initialises the analysis singletons.
+        /// </summary>
         private void initialiseAnalysisSingletons()
         {
             ControlFlowGraph.ControlFlowGraph cfg = ControlFlowGraph.ControlFlowGraph.FromSource("<? $a = 1; echo $a; ?>", FileName);
@@ -246,15 +376,22 @@ namespace Weverca.App
             analysis.Analyse();
         }
 
+        /// <summary>
+        /// Creates the control flow graph.
+        /// </summary>
         private void createControlFlowGraph()
         {
             FileInfo sourceFile = new FileInfo(FileName);
             controlFlowGraph = ControlFlowGraph.ControlFlowGraph.FromFile(sourceFile);
         }
 
+        /// <summary>
+        /// Runs the first phase analysis.
+        /// </summary>
         private void runFirstPhaseAnalysis()
         {
             State = AnalysisState.ForwardAnalysis;
+            FirstPhaseInitialMemory = GC.GetTotalMemory(true);
 
             WatchFirstPhase.Start();
 
@@ -268,6 +405,8 @@ namespace Weverca.App
             finally
             {
                 WatchFirstPhase.Stop();
+
+                FirstPhaseEndMemory = GC.GetTotalMemory(true);
 
                 if (IsFirstPhaseStarted)
                 {
@@ -284,6 +423,9 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Runs the second phase analysis.
+        /// </summary>
         private void runSecondPhaseAnalysis()
         {
             secondPhaseAnalysis = createNextPhaseAnalysis();
@@ -302,12 +444,17 @@ namespace Weverca.App
                 finally
                 {
                     WatchSecondPhase.Stop();
+                    SecondPhaseEndMemory = GC.GetTotalMemory(true);
                 }
 
                 IsSecondPhaseFinished = true;
             }
         }
 
+        /// <summary>
+        /// Gets the second phase warnings.
+        /// </summary>
+        /// <returns>Returns the second phase warnings.</returns>
         private IReadOnlyCollection<AnalysisWarning> getSecondPhaseWarnings()
         {
             switch (SecondPhaseType)
@@ -325,6 +472,10 @@ namespace Weverca.App
             return warnings;
         }
 
+        /// <summary>
+        /// Creates the next phase analysis.
+        /// </summary>
+        /// <returns>Returns the next phase analysis.</returns>
         private NextPhaseAnalysis createNextPhaseAnalysis()
         {
             switch (SecondPhaseType)
@@ -338,13 +489,91 @@ namespace Weverca.App
 
         #endregion
 
+        #region Watch methods
+
+        /// <summary>
+        /// Gets the number of program points in program point graph
+        /// </summary>
+        /// <param name="processedGraphs">The processed graphs.</param>
+        /// <param name="processedLines">The processed lines.</param>
+        /// <param name="ppg">The PPG.</param>
+        /// <returns></returns>
+        public int NumProgramPoints(HashSet<ProgramPointGraph> processedGraphs, Dictionary<string, HashSet<int>> processedLines, ProgramPointGraph ppg)
+        {
+            int num = ppg.Points.Cast<object>().Count();
+            processedGraphs.Add(ppg);
+
+            HashSet<int> currentScriptLines = null;
+            if (ppg.OwningScript != null && !processedLines.TryGetValue(ppg.OwningScript.FullName, out currentScriptLines))
+            {
+                currentScriptLines = new HashSet<int>();
+                processedLines.Add(ppg.OwningScript.FullName, currentScriptLines);
+            }
+
+            foreach (var point in ppg.Points)
+            {
+                if (currentScriptLines != null && point.Partial != null)
+                    currentScriptLines.Add(point.Partial.Position.FirstLine);
+
+                foreach (var branch in point.Extension.Branches)
+                {
+                    if (!processedGraphs.Contains(branch.Graph))
+                    {
+                        num += NumProgramPoints(processedGraphs, processedLines, branch.Graph);
+                    }
+                }
+            }
+
+            return num;
+        }
+
+        /// <summary>
+        /// Gets the number of the program lines.
+        /// </summary>
+        /// <param name="programLines">The program lines.</param>
+        /// <returns>Return the number of the program lines</returns>
+        public int NumProgramLines(Dictionary<string, HashSet<int>> programLines)
+        {
+            var programLinesNum = 0;
+            foreach (var script in programLines.Values)
+            {
+                programLinesNum += script.Count;
+            }
+            return programLinesNum;
+        }
+        
+        /// <summary>
+        /// Gets the number of warnings found by both phases of the analysis.
+        /// </summary>
+        /// <returns>Returns the number of warnings</returns>
+        public int GetNumberOfWarnings()
+        {
+            int warnings = 0;
+            if (IsFirstPhaseStarted)
+            {
+                warnings += AnalysisWarningHandler.NumberOfWarnings;
+            }
+
+            if (IsSecondPhaseStarted)
+            {
+                warnings += secondPhaseWarnings.Count;
+            }
+
+            return warnings;
+        }
+
+        #endregion
+        
         #region Output methods
 
+        /// <summary>
+        /// Generates the output of the analysis.
+        /// </summary>
+        /// <param name="output">The output.</param>
         public void GenerateOutput(OutputBase output)
         {
             output.EmptyLine();
             output.Headline("Analysis summary");
-
 
             if (Watch != null)
             {
@@ -354,7 +583,7 @@ namespace Weverca.App
                 output.Headline2("Time consumption");
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:000}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds);
                 output.CommentLine("Weverca analyzer time consumption: " + elapsedTime);
-                
+
                 if (IsFirstPhaseStarted)
                 {
                     var ts1 = WatchFirstPhase.Elapsed;
@@ -369,6 +598,29 @@ namespace Weverca.App
                 }
             }
 
+            if (FirstPhaseInitialMemory != 0)
+            {
+                output.EmptyLine();
+                output.Headline2("Memory consumption");
+                output.CommentLine(string.Format("Initial memory before the first phase: {0}",
+                    OutputUtils.GetMemoryText(FirstPhaseInitialMemory)
+                    ));
+
+                if (IsFirstPhaseStarted)
+                {
+                    output.CommentLine(string.Format("Memory at the end of the first phase: {0} (diff: {1})",
+                        OutputUtils.GetMemoryText(FirstPhaseEndMemory),
+                        OutputUtils.GetMemoryText(FirstPhaseEndMemory - FirstPhaseInitialMemory)
+                        ));
+                }
+                if (IsSecondPhaseStarted)
+                {
+                    output.CommentLine(string.Format("Memory at the end of the second phase: {0} (diff: {1})",
+                    OutputUtils.GetMemoryText(SecondPhaseEndMemory),
+                    OutputUtils.GetMemoryText(SecondPhaseEndMemory - FirstPhaseEndMemory)
+                    ));
+                }
+            }
 
             output.EmptyLine();
             output.Headline2("Code statistics");
@@ -382,8 +634,8 @@ namespace Weverca.App
             if (programPointGraph != null)
             {
                 var programLines = new Dictionary<string, HashSet<int>>();
-                int numberOfProgramPoints = numProgramPoints(new HashSet<ProgramPointGraph>(), programLines, programPointGraph);
-                int numberOfProgramLines = numProgramLines(programLines);
+                int numberOfProgramPoints = NumProgramPoints(new HashSet<ProgramPointGraph>(), programLines, programPointGraph);
+                int numberOfProgramLines = NumProgramLines(programLines);
 
                 output.CommentLine("The number of processed lines of code is: " + numberOfProgramLines);
                 output.CommentLine("The number of program points in the application is: " + numberOfProgramPoints);
@@ -415,6 +667,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Generates the warnings report.
+        /// </summary>
+        /// <param name="output">The output.</param>
         public void GenerateWarnings(OutputBase output)
         {
             output.Headline("Warnings");
@@ -443,6 +699,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Generates the final snapshot text representation.
+        /// </summary>
+        /// <param name="output">The output.</param>
         public void GenerateFinalSnapshotText(OutputBase output)
         {
             output.Headline("Final snapshot content");
@@ -475,44 +735,15 @@ namespace Weverca.App
                 output.Error("End point was not reached");
             }
         }
-
-        public void GenerateMemoryModelStatisticsOutput(OutputBase output)
-        {
-            output.Headline("Memory model statistics");
-            output.EmptyLine();
-
-            if (programPointGraph != null && programPointGraph.End != null && programPointGraph.End.OutSet != null)
-            {
-                if (this.memoryModelBenchmark != null)
-                {
-                    output.CommentLine("Total number of memory model transactions: " + memoryModelBenchmark.NumberOfTransactions);
-                    output.CommentLine("Total number of memory model operations: " + memoryModelBenchmark.NumberOfOperations);
-                    output.CommentLine("Total number of memory model algorithm runs: " + memoryModelBenchmark.NumberOfAlgorithms);
-
-                    output.EmptyLine();
-
-                    output.CommentLine("Total time consumed by memory model: " + new TimeSpan(0, 0, 0, 0, (int)memoryModelBenchmark.TotalOperationTime).ToString());
-
-                    output.CommentLine("Total time consumed by memory model algorithms: " + new TimeSpan(0, 0, 0, 0, (int)memoryModelBenchmark.TotalAlgorithmTime).ToString());
-
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Write, "Write");
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Commit, "Commit");
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Merge, "Merge");
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Extend, "Extend");
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Read, "Read");
-                    generateAlgorithmFamilyResult(output, AlgorithmFamilies.Memory, "Memory");
-                }
-                else
-                {
-                    output.Error("Memory model statistics report is allowed for ModularMemoryModel only");
-                }
-            }
-            else
-            {
-                output.Error("End point was not reached");
-            }
-        }
-
+        
+        /// <summary>
+        /// Generates the warnings output.
+        /// </summary>
+        /// <typeparam name="T">Type of the warning</typeparam>
+        /// <param name="output">The output.</param>
+        /// <param name="warnings">The warnings.</param>
+        /// <param name="headLine">The head line.</param>
+        /// <param name="displayTaintFlows">if set to <c>true</c> the display taint flows.</param>
         public void GenerateWarningsOutput<T>(OutputBase output, IReadOnlyCollection<T> warnings, string headLine, bool displayTaintFlows = false) where T : AnalysisWarning
         {
             output.line();
@@ -568,141 +799,15 @@ namespace Weverca.App
             }
             output.line();
         }
-
-        private void generateAlgorithmFamilyResult(OutputBase output, AlgorithmType[] algorithmType, string header)
-        {
-            output.EmptyLine();
-            output.Headline2(header + " algorithms statistics");
-
-            foreach (AlgorithmType type in algorithmType)
-            {
-                AlgorithmAggregationEntry data;
-                if (memoryModelBenchmark.AlgorithmResults.TryGetValue(type, out data))
-                {
-                    string name = getAlgorithmName(type);
-                    int runs = data.NumberOfRuns;
-                    double time = data.TotalTime;
-                    double timePercentil = time / memoryModelBenchmark.TotalAlgorithmTime;
-
-                    output.line();
-                    output.variable(name);
-                    output.Indent();
-
-                    output.line();
-                    output.hint("Runs: ");
-                    output.info(runs.ToString());
-
-                    output.line();
-                    output.hint("Time: ");
-                    output.info(new TimeSpan(0, 0, 0, 0, (int)time).ToString());
-
-                    output.line();
-                    output.hint("Total percentil: ");
-                    output.info(String.Format("{0:0.0}%", timePercentil * 100));
-
-                    output.Dedent();
-                    output.line();
-                }
-            }
-
-            output.line();
-        }
-
-        private string getAlgorithmName(AlgorithmType type)
-        {
-            StringBuilder builder = new StringBuilder(type.ToString().ToLower());
-            if (builder.Length > 0)
-            {
-                for (int x = 0; x < builder.Length; x++)
-                {
-                    if (builder[x] == '_')
-                    {
-                        builder[x] = ' ';
-                    }
-                }
-
-                builder[0] = Char.ToUpper(builder[0]);
-            }
-
-            return builder.ToString();
-        }
-
+        
         #endregion
+        
+        #region Benchmark stats
 
-        #region Watch methods
-
-        public int GetNumberOfWarnings()
-        {
-            int warnings = 0;
-            if (IsFirstPhaseStarted)
-            {
-                warnings += AnalysisWarningHandler.NumberOfWarnings;
-            }
-
-            if (IsSecondPhaseStarted)
-            {
-                warnings += secondPhaseWarnings.Count;
-            }
-
-            return warnings;
-        }
-
-        #endregion
-
-
-
-
-
-        #region Private helpers
-
-        private Snapshot getSnapshot(ProgramPointBase programPointBase)
-        {
-            SnapshotBase snapshotBase = programPointBase.OutSnapshot;
-            return snapshotBase as Snapshot;
-        }
-
-        public static int numProgramPoints(HashSet<ProgramPointGraph> processedGraphs, Dictionary<string, HashSet<int>> processedLines, ProgramPointGraph ppg)
-        {
-            int num = ppg.Points.Cast<object>().Count();
-            processedGraphs.Add(ppg);
-
-            HashSet<int> currentScriptLines = null;
-            if (ppg.OwningScript != null && !processedLines.TryGetValue(ppg.OwningScript.FullName, out currentScriptLines))
-            {
-                currentScriptLines = new HashSet<int>();
-                processedLines.Add(ppg.OwningScript.FullName, currentScriptLines);
-            }
-
-            foreach (var point in ppg.Points)
-            {
-                if (currentScriptLines != null && point.Partial != null)
-                    currentScriptLines.Add(point.Partial.Position.FirstLine);
-
-                foreach (var branch in point.Extension.Branches)
-                {
-                    if (!processedGraphs.Contains(branch.Graph))
-                    {
-                        num += numProgramPoints(processedGraphs, processedLines, branch.Graph);
-                    }
-                }
-            }
-
-            return num;
-        }
-
-        private int numProgramLines(Dictionary<string, HashSet<int>> programLines)
-        {
-            var programLinesNum = 0;
-            foreach (var script in programLines.Values)
-            {
-                programLinesNum += script.Count;
-            }
-            return programLinesNum;
-        }
-
-        #endregion
-
-
+        /// <summary>
+        /// Writes the out benchmark stats.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         internal void WriteOutBenchmarkStats(StreamWriter writer)
         {
             writer.WriteLine("Iteration;Ananlysis time;Operation time;Algorithm time;Transactions;Operations;Algorithms;Memory difference;Start memory; End memory");
@@ -717,6 +822,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Writes the out transaction benchmark.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         internal void WriteOutTransactionBenchmark(StreamWriter writer)
         {
             writer.WriteLine("Iteration;Transaction number;Memory mode;Time;Start memory;End memory;Memory difference;Raw start memory");
@@ -738,6 +847,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Writes the out transaction memory medians.
+        /// </summary>
+        /// <param name="memoryMediansWriter">The memory medians writer.</param>
         internal void WriteOutTransactionMemoryMedians(StreamWriter memoryMediansWriter)
         {
 
@@ -784,6 +897,10 @@ namespace Weverca.App
             }
         }
 
+        /// <summary>
+        /// Writes the out algorithm total times.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         internal void WriteOutAlgorithmTotalTimes(StreamWriter writer)
         {
             StringBuilder lineBuilder = new StringBuilder();
@@ -811,5 +928,17 @@ namespace Weverca.App
                 lineBuilder.Clear();
             }
         }
+
+        #endregion
+        
+        #region Private helpers
+
+        private Snapshot getSnapshot(ProgramPointBase programPointBase)
+        {
+            SnapshotBase snapshotBase = programPointBase.OutSnapshot;
+            return snapshotBase as Snapshot;
+        }
+
+        #endregion
     }
 }

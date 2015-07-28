@@ -18,18 +18,62 @@ namespace Weverca.App
 {
     /// <summary>
     /// Interaction logic for StartAnalysisWindow.xaml
+    /// 
+    /// Represents a dialog window with options for starting the analysis.
     /// </summary>
     public partial class StartAnalysisWindow : Window
     {
-        //private MainWindow mainWindow;
-
+        /// <summary>
+        /// Gets or sets the name of the file with the PHP source code.
+        /// </summary>
+        /// <value>
+        /// The name of the file.
+        /// </value>
         public string FileName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the second phase.
+        /// </summary>
+        /// <value>
+        /// The type of the second phase.
+        /// </value>
         public SecondPhaseType SecondPhaseType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the memory model.
+        /// </summary>
+        /// <value>
+        /// The type of the memory model.
+        /// </value>
         public MemoryModelType MemoryModelType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the memory limit. Analysis will be terminated when this liit will be exceeded.
+        /// </summary>
+        /// <value>
+        /// The memory limit.
+        /// </value>
         public long MemoryLimit { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether an analysis should perform a benchmark.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if an analysis should perform a benchmark; otherwise, <c>false</c>.
+        /// </value>
         public bool IsBenchmarkEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets the number of repetitions of the analysis. Valud only if IsBenchmarkEnabled is set to true.
+        /// </summary>
+        /// <value>
+        /// The number of repetitions.
+        /// </value>
         public int NumberOfRepetitions { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StartAnalysisWindow"/> class.
+        /// </summary>
         public StartAnalysisWindow()
         {
             InitializeComponent();
@@ -38,6 +82,10 @@ namespace Weverca.App
             NumberOfRepetitions = 10;
         }
 
+        /// <summary>
+        /// Shows the start analysis dialog.
+        /// </summary>
+        /// <returns>Returns true when the start analysis button was clicked.</returns>
         public bool? ShowStartAnalysisDialog()
         {
             if (FileName != null && FileName != string.Empty)
@@ -55,8 +103,6 @@ namespace Weverca.App
             // the default value is 70% of installed ram, which works nicely with 4GB...
             memoryLimitSlider.Value = Math.Log(new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory / (1024*1024) * 0.7);
             
-
-
             return base.ShowDialog();
         }
 

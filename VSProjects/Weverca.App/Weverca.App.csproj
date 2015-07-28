@@ -111,11 +111,15 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Analyser.cs" />
-    <Compile Include="BenchmarkResult.cs" />
+    <Compile Include="Benchmarking\AlgorithmAggregationEntry.cs" />
+    <Compile Include="Benchmarking\AlgorithmEntry.cs" />
+    <Compile Include="Benchmarking\AlgorithmKey.cs" />
+    <Compile Include="Benchmarking\MemoryModelBenchmark.cs" />
+    <Compile Include="Benchmarking\TransactionEntry.cs" />
+    <Compile Include="Benchmarking\BenchmarkResult.cs" />
     <Compile Include="FlowDocumentOutput.cs" />
+    <Compile Include="OutputUtils.cs" />
     <Compile Include="SnapshotTextGenerator.cs" />
-    <Compile Include="Settings\LoggingOutputType.cs" />
-    <Compile Include="Settings\LoggingStrategyType.cs" />
     <Compile Include="Settings\MemoryModelType.cs" />
     <Compile Include="Settings\SecondPhaseType.cs" />
     <Compile Include="StartAnalysisWindow.xaml.cs">

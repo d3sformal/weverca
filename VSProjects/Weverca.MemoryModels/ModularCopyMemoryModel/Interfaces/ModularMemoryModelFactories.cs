@@ -141,6 +141,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             {
                 return new Snapshot(factories);
             }
+
+            public override string ToString()
+            {
+                return "Modular copy memory model";
+            }
         }
 
     }

@@ -94,15 +94,6 @@ namespace Weverca
                         filesIndex += 2;
 					}
 
-					bool benchmark = false;
-					string benchmarkFile = "";
-					if (args.Length > filesIndex + 1 && args[filesIndex] == "-b")
-					{
-						benchmark = true;
-						benchmarkFile = args[filesIndex + 1];
-						filesIndex += 2;
-					}
-
 					if (args.Length <= filesIndex)
 					{
 						Console.WriteLine("file name missing");
@@ -111,12 +102,7 @@ namespace Weverca
 					var analysisFiles = new string[args.Length - filesIndex];
 					Array.Copy(args, filesIndex, analysisFiles, 0, args.Length - filesIndex);
                     RunStaticAnalysis(analysisFiles, memoryModel, args[0].Equals("-satf"));
-
-					if (benchmark)
-					{
-						showBenchmarkResult(memoryModel, benchmarkFile);
-					}
-
+                    
 					break;
 				case "-cmide":
 				var metricsArgs = new string[args.Length - 4];
@@ -131,14 +117,6 @@ namespace Weverca
 				default:
 					Console.WriteLine("Unknown option: \"{0}\"", args[0]);
 					break;
-			}
-		}
-
-        private static void showBenchmarkResult(MemoryModels.MemoryModelFactory memoryModel, string benchmarkFile)
-		{
-			if (memoryModel == MemoryModels.MemoryModels.ModularCopyMM)
-			{
-				MemoryModels.ModularCopyMemoryModel.ModularMemoryModelVariants.DefaultVariant.Benchmark.WriteResultsToFile(benchmarkFile);
 			}
 		}
 

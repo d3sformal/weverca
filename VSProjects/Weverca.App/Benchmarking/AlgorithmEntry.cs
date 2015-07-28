@@ -24,20 +24,47 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Logging;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
+namespace Weverca.App.Benchmarking
 {
+    /// <summary>
+    /// Represents statistics for the single run of the algorithm
+    /// </summary>
     public class AlgorithmEntry
     {
+        /// <summary>
+        /// Gets the type of the algorithm.
+        /// </summary>
+        /// <value>
+        /// The type of the algorithm.
+        /// </value>
         public AlgorithmType AlgorithmType { get; private set; }
 
+        /// <summary>
+        /// Gets the transaction.
+        /// </summary>
+        /// <value>
+        /// The transaction.
+        /// </value>
         public TransactionEntry Transaction { get; private set; }
 
+        /// <summary>
+        /// Gets the algorithm time.
+        /// </summary>
+        /// <value>
+        /// The algorithm time.
+        /// </value>
         public double AlgorithmTime { get; private set; }
-
-
+        
         private Stopwatch stopwatch;
 
+        /// <summary>
+        /// Creates the the algorithm entry object and starts measuring the statistics.
+        /// </summary>
+        /// <param name="algorithmType">Type of the algorithm.</param>
+        /// <param name="transaction">The transaction.</param>
+        /// <returns>New created algorithm object.</returns>
         public static AlgorithmEntry CreateAndStartAlgorithm(AlgorithmType algorithmType, TransactionEntry transaction)
         {
             AlgorithmEntry entry = new AlgorithmEntry(algorithmType, transaction);
@@ -45,7 +72,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
             return entry;
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgorithmEntry"/> class.
+        /// </summary>
+        /// <param name="algorithmType">Type of the algorithm.</param>
+        /// <param name="transaction">The transaction.</param>
         private AlgorithmEntry(AlgorithmType algorithmType, TransactionEntry transaction)
         {
             this.AlgorithmType = algorithmType;
@@ -53,6 +85,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
             stopwatch = new Stopwatch();
         }
 
+        /// <summary>
+        /// Stops the algorithm measuring.
+        /// </summary>
         public void StopAlgorithm()
         {
             if (stopwatch.IsRunning)

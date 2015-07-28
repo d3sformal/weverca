@@ -98,8 +98,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
     public interface IBenchmark
     {
-        void ClearResults();
-
         void InitializeSnapshot(Snapshot snapshot);
 
         void StartTransaction(Snapshot snapshot);
@@ -110,22 +108,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 
         void StartOperation(Snapshot snapshot);
         void FinishOperation(Snapshot snapshot);
-
-
-        IEnumerable<TransactionEntry> TransactionResults { get; }
-        IReadOnlyDictionary<AlgorithmType, AlgorithmAggregationEntry> AlgorithmResults { get; }
-
-        double TotalOperationTime { get; }
-        double TotalAlgorithmTime { get; }
-
-        int NumberOfOperations { get; }
-        int NumberOfAlgorithms { get; }
-        int NumberOfTransactions { get; }
-
-
-
-
-
-        void WriteResultsToFile(string benchmarkFile);
     }
 }
