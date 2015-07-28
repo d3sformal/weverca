@@ -29,15 +29,27 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
 
+    /// <summary>
+    /// Instances of this factory class are used to create the new empty object
+    /// which implements IObjectValueContainer.
+    /// </summary>
     public interface IObjectValueContainerFactory
     {
         /// <summary>
         /// Creates the new instance of object container to store object values for memory location in this structure.
         /// </summary>
+        /// <param name="targetStructure">The target structure.</param>
         /// <param name="objects">The objects to store in collection.</param>
-        /// <returns>Created object container.</returns>
+        /// <returns>
+        /// Created object container.
+        /// </returns>
         IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure, IEnumerable<ObjectValue> objects);
 
+        /// <summary>
+        /// Creates the new instance of object container to store object values for memory location in this structure.
+        /// </summary>
+        /// <param name="targetStructure">The target structure.</param>
+        /// <returns>Created object container.</returns>
         IObjectValueContainer CreateObjectValueContainer(IWriteableSnapshotStructure targetStructure);
     }
 
@@ -55,7 +67,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Gets container builder to create new imutable instance with modified data.
         /// </summary>
-        /// <returns>New builder to modify this descriptor.</returns>
+        /// <param name="targetStructure">The structure object for which a builder created.</param>
+        /// <returns>
+        /// New builder to modify this descriptor.
+        /// </returns>
         IObjectValueContainerBuilder Builder(IWriteableSnapshotStructure targetStructure);
     }
 
@@ -67,7 +82,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Gets the imutable version of this collection.
         /// </summary>
-        /// <returns>The imutable version of this collection.</returns>
+        /// <param name="targetStructure">The structure object for which is the instance built.</param>
+        /// <returns>
+        /// The imutable version of this collection.
+        /// </returns>
         IObjectValueContainer Build(IWriteableSnapshotStructure targetStructure);
     }
 }

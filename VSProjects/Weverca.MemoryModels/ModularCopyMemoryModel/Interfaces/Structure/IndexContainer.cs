@@ -27,8 +27,16 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    /// <summary>
+    /// Instances of this factory class are used to create the new empty object
+    /// which implements IWriteableIndexContainer.
+    /// </summary>
     public interface IIndexContainerFactory
     {
+        /// <summary>
+        /// Creates the new empty writeable index container.
+        /// </summary>
+        /// <returns>Creates the new empty writeable index container.</returns>
         IWriteableIndexContainer CreateWriteableIndexContainer();
     }
 

@@ -28,6 +28,10 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    /// <summary>
+    /// Instances of this factory class are used to create the new empty object
+    /// which implements IArrayDescriptor.
+    /// </summary>
     public interface IArrayDescriptorFactory
     {
         /// <summary>
@@ -70,7 +74,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Gets container builder to create new imutable instance with modified data.
         /// </summary>
-        /// <returns>New builder to modify this descriptor.</returns>
+        /// <param name="targetStructure">The structure object for which a builder created.</param>
+        /// <returns>
+        /// New builder to modify this descriptor.
+        /// </returns>
         IArrayDescriptorBuilder Builder(IWriteableSnapshotStructure targetStructure);
     }
 
@@ -110,7 +117,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Gets the imutable version of this collection.
         /// </summary>
-        /// <returns>The imutable version of this collection.</returns>
+        /// <param name="targetStructure">The structure object for which is the instance built.</param>
+        /// <returns>
+        /// The imutable version of this collection.
+        /// </returns>
         IArrayDescriptor Build(IWriteableSnapshotStructure targetStructure);
     }
 }

@@ -41,6 +41,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
 
     }
 
+    /// <summary>
+    /// Common abstract ancestor for implementation of algorithms. Supports functionality of factories.
+    /// </summary>
     public abstract class AlgorithmBase : IAlgorithm
     {
         public ModularMemoryModelFactories Factories { get; set; }

@@ -17,33 +17,39 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Creates the empty instance of snapshot structure object.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New object with empty inner structure.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New object with empty inner structure.
+        /// </returns>
         ISnapshotStructureProxy CreateEmptyInstance(ModularMemoryModelFactories factories);
 
         /// <summary>
         /// Creates new snapshot structure container as copy of the given one.
         /// Copied object mustn't interfere with source.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
-        /// <returns>New object with inner scructure as copy of given object.</returns>
+        /// <returns>
+        /// New object with inner scructure as copy of given object.
+        /// </returns>
         ISnapshotStructureProxy CopyInstance(ISnapshotStructureProxy oldData);
 
         /// <summary>
         /// Creates new snapshot structure container with empty global context.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New object with empty global context.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New object with empty global context.
+        /// </returns>
         ISnapshotStructureProxy CreateGlobalContextInstance(ModularMemoryModelFactories factories);
 
         /// <summary>
         /// Creates new snapshot structure container as copy containing data from given inner container.
         /// Copied object mustn't interfere with source.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
-        /// <returns>New object with inner scructure as copy of given object.</returns>
+        /// <returns>
+        /// New object with inner scructure as copy of given object.
+        /// </returns>
         ISnapshotStructureProxy CreateNewInstanceWithData(IReadOnlySnapshotStructure oldData);
     }
 }

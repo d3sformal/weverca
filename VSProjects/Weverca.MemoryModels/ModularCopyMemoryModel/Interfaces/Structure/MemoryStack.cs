@@ -29,13 +29,17 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    /// <summary>
+    /// Instances of this factory class are used to create the new empty object
+    /// which implements IWriteableStackContext.
+    /// </summary>
     public interface IStackContextFactory
     {
         /// <summary>
-        /// Creates the writeable stack context.
+        /// Creates the new oinstance of the writeable stack context.
         /// </summary>
-        /// <param name="level">The level.</param>
-        /// <returns></returns>
+        /// <param name="level">The level of the stack context.</param>
+        /// <returns>The new oinstance of the writeable stack context.</returns>
         IWriteableStackContext CreateWriteableStackContext(int level);
     }
 

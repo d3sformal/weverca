@@ -50,12 +50,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 	/// Basic unit of the memory model is MemoryIndex which allows undirect links between aliases
 	/// and collection indexes. Every index is just pointer into the memory location where the data is stored.
 	/// So when the data is changed is not necessary to change every connected memory locations. See
-	/// MemoryIndex and MemoryContainer for more information. Data model itself is implemented
-	/// in <see cref="Structure" /> class.
-	/// 
-	/// Algorithms for reading or modifying snapshots are splitted into two groups. Memory collectors represents
-	/// algorithms to gathering indexes and memory workers provides implementation of read/write
-	/// algorithm. For more informations see ÏndexCollectors and MemoryWorkers.
+	/// MemoryIndex for more information.
 	/// </summary>
 	public class Snapshot : SnapshotBase, IReferenceHolder
 	{
@@ -79,8 +74,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		#endregion
 
 		#region Variables and properties
-
-		#region Algorithm Factories
 
 		/// <summary>
 		/// Gets the algorithm factories for the current memory mode.
@@ -119,8 +112,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 				}
 			}
 		}
-		
-		#endregion
 
 		/// <summary>
 		/// Global identifier counter for snapshot instances
@@ -233,8 +224,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// <summary>
 		/// Backup of the snapshot data after the start of transaction.
 		/// </summary>
+        /// 
+
 		public ISnapshotStructureProxy OldStructure { get; private set; }
+
+
         public ISnapshotDataProxy OldData { get; private set; }
+
+
         public ISnapshotDataProxy OldInfos { get; private set; }
 
         public int OldCallLevel { get; private set; }
@@ -252,6 +249,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		public int NumberOfTransactions { get; private set; }
 
 		public IEnumerable<MemoryIndex> StructureCallChanges { get; set; }
+
 		public IEnumerable<MemoryIndex> DataCallChanges { get; set; }
 		
 		#endregion

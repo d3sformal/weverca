@@ -46,7 +46,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// <summary>
     /// Contains factories for creating all algorithms for memory model.
     /// 
-    /// Imutable class. For creating new instances use the builder class AlgorithmFactoriesBuilder. 
+    /// Imutable class.
     /// </summary>
     public class AlgorithmFactories
     {
@@ -119,6 +119,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
             this.PrintAlgorithmFactory = printAlgorithmFactory;
         }
 
+        /// <summary>
+        /// Creates the instances of the algorithms using the factories stored in this container.
+        /// </summary>
+        /// <param name="factories">The factories object which will be sent to the instances.</param>
+        /// <returns>New object with algorithm instances instances.</returns>
         public AlgorithmInstances CreateInstances(ModularMemoryModelFactories factories)
         {
             return new AlgorithmInstances(

@@ -570,6 +570,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </value>
         protected ISnapshotStructureProxy StructureProxy { get; private set; }
 
+        /// <summary>
+        /// Gets the object with factories for the modular memory model. These factories has to be used to create instances 
+        /// of all inner parts of the structure obejct.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
+        public ModularMemoryModelFactories Factories { get; private set; }
+
         /// <inheritdoc />
         public bool DiffersOnCommit
         {
@@ -814,8 +823,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         public abstract void RemoveAlias(MemoryIndex index);
 
         #endregion
-
-
-        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

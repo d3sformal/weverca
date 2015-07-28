@@ -28,6 +28,10 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
 {
+    /// <summary>
+    /// Instances of this factory class are used to create the new empty object
+    /// which implements IMemoryAlias.
+    /// </summary>
     public interface IMemoryAliasFactory
     {
         /// <summary>
@@ -37,7 +41,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <returns>Created alias collection.</returns>
         IMemoryAlias CreateMemoryAlias(IWriteableSnapshotStructure targetStructure, MemoryIndex index);
     }
-
 
     /// <summary>
     /// Contains information about alias structure for given memory location
@@ -87,11 +90,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// The collection of must aliases.
         /// </value>
         IReadonlySet<MemoryIndex> MustAliases { get; }
-        
+
         /// <summary>
-        /// Creates new builder to modify this object 
+        /// Creates new builder to modify this object
         /// </summary>
-        /// <returns>New builder to modify this object.</returns>
+        /// <param name="targetStructure">The structure object for which a builder created.</param>
+        /// <returns>
+        /// New builder to modify this object.
+        /// </returns>
         IMemoryAliasBuilder Builder(IWriteableSnapshotStructure targetStructure);
     }
 
@@ -129,11 +135,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// </summary>
         /// <param name="index">The index.</param>
         void SetSourceIndex(MemoryIndex index);
-        
+
         /// <summary>
         /// Builds new info object from this instance.
         /// </summary>
-        /// <returns>New imutable instance with data from this builder.</returns>
+        /// <param name="targetStructure">The structure object for which is the instance built.</param>
+        /// <returns>
+        /// New imutable instance with data from this builder.
+        /// </returns>
         IMemoryAlias Build(IWriteableSnapshotStructure targetStructure);
     }
 }

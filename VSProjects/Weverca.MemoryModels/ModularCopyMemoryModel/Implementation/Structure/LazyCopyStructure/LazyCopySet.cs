@@ -29,15 +29,6 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
-    class LazyCopySetFactory : ISetFactory
-    {
-
-        public IWriteableSet<T> CreateWriteableSet<T>()
-        {
-            return new LazyCopySet<T>();
-        }
-    }
-
     class LazyCopySet<T> : IReadonlySet<T>, IWriteableSet<T>, IGenericCloneable<LazyCopySet<T>>
     {
         private HashSet<T> valueSet;
