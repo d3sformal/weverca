@@ -46,8 +46,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
     /// </summary>
     public abstract class AlgorithmBase : IAlgorithm
     {
-        public ModularMemoryModelFactories Factories { get; set; }
+        /// <summary>
+        /// Gets the factories.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
+        public ModularMemoryModelFactories Factories { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AlgorithmBase"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
         protected AlgorithmBase(ModularMemoryModelFactories factories)
         {
             this.Factories = factories;
@@ -108,6 +118,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <param name="path">The path.</param>
         MemoryEntry Read(Snapshot snapshot, MemoryPath path);
 
+        /// <summary>
+        /// Determines whether the all indexes on specified path are defined within the specified sanapshot.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="path">The path.</param>
+        /// <returns>True if all indexes on specified path are defined within the specified sanapshot.</returns>
         bool IsDefined(Snapshot snapshot, MemoryPath path);
 
         /// <summary>
@@ -125,8 +141,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         /// <summary>
         /// Gets the collection of methods from objects on read locations.
         /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="values">The values.</param>
         /// <param name="methodName">Name of the method.</param>
-        /// <returns>The collection of methods from objects on read locations.</returns>
+        /// <returns>
+        /// The collection of methods from objects on read locations.
+        /// </returns>
         IEnumerable<FunctionValue> GetMethod(Snapshot snapshot, MemoryEntry values, QualifiedName methodName);
 
         /// <summary>

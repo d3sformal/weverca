@@ -100,7 +100,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
             if (Node.SourceIndexes != null)
             {
-                var indexModification = Worker.PathModifications[TargetIndex];
+                var indexModification = Worker.PathModifications.GetOrCreateModification(TargetIndex);
                 foreach (var sourceIndex in Node.SourceIndexes)
                 {
                     indexModification.AddDatasource(sourceIndex.Index, sourceIndex.Snapshot);
@@ -110,7 +110,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected void processIndexModifications(MemoryIndex index)
         {
-            var indexModification = Worker.PathModifications[TargetIndex];
+            var indexModification = Worker.PathModifications.GetOrCreateModification(TargetIndex);
             indexModification.AddDatasource(index, Worker.Snapshot);
 
             if (Node.SourceIndexes != null)

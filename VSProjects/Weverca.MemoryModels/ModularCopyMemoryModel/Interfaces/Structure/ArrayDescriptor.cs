@@ -37,9 +37,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Creates the new instance of array descriptor to store array definition in structure.
         /// </summary>
+        /// <param name="targetStructure">The target structure.</param>
         /// <param name="createdArray">The created array.</param>
         /// <param name="memoryIndex">The memory location of array.</param>
-        /// <returns>Created array descriptor instance.</returns>
+        /// <returns>
+        /// Created array descriptor instance.
+        /// </returns>
         IArrayDescriptor CreateArrayDescriptor(IWriteableSnapshotStructure targetStructure, AssociativeArray createdArray, MemoryIndex memoryIndex);
     }
 

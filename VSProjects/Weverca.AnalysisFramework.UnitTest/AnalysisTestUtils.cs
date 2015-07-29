@@ -335,10 +335,6 @@ namespace Weverca.AnalysisFramework.UnitTest
 
         internal static void RunTestCase(TestCase testCase)
         {
-
-            Snapshot.Visualizer.Enabled(testCase.IsSnapshotGraphVisualizationenabled());
-            Snapshot.Visualizer.Clear();
-
             var analyses = CreateAnalyses(testCase);
 
             foreach (var analysis in analyses)
@@ -346,7 +342,6 @@ namespace Weverca.AnalysisFramework.UnitTest
                 var ppg = GetAnalyzedGraph(testCase, analysis);
 
                 testCase.VisualizeProgramPointGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
-                testCase.VisualizeSnapshotGraph(ppg, TrunkStructure.GRAPHVIZ_PATH);
 
                 testCase.Assert(ppg);
             }
@@ -955,22 +950,6 @@ namespace Weverca.AnalysisFramework.UnitTest
                 DotGraphVisualizer visualizer = new DotGraphVisualizer(graphvizPath);
                 ppg.BuildGraphVisualisation(visualizer, skipProgramPoints);
                 visualizer.CreateVisualization(ppgFileName);
-            }
-        }
-
-        internal void VisualizeSnapshotGraph(ProgramPointGraph ppg, string graphvizPath)
-        {
-            if (snapshotGraphFileName != null)
-            {
-                string visualisationDir = new FileInfo(snapshotGraphFileName).Directory.FullName;
-                if (!Directory.Exists(visualisationDir))
-                {
-                    Directory.CreateDirectory(visualisationDir);
-                }
-
-                DotGraphVisualizer visualizer = new DotGraphVisualizer(graphvizPath);
-                Snapshot.Visualizer.BuildGraphVisualisation(visualizer);
-                visualizer.CreateVisualization(snapshotGraphFileName);
             }
         }
 

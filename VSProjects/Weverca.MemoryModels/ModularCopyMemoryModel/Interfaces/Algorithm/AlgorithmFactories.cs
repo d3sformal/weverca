@@ -99,9 +99,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Algorithm
         public IAlgorithmFactory<IPrintAlgorithm> PrintAlgorithmFactory { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AlgorithmFactories"/> class.
+        /// Initializes a new instance of the <see cref="AlgorithmFactories" /> class.
         /// </summary>
-        /// <param name="builder">The builder.</param>
+        /// <param name="assignAlgorithmFactory">The assign algorithm factory.</param>
+        /// <param name="readAlgorithmFactory">The read algorithm factory.</param>
+        /// <param name="commitAlgorithmFactory">The commit algorithm factory.</param>
+        /// <param name="memoryAlgorithmFactory">The memory algorithm factory.</param>
+        /// <param name="mergeAlgorithmFactory">The merge algorithm factory.</param>
+        /// <param name="printAlgorithmFactory">The print algorithm factory.</param>
         public AlgorithmFactories(
             IAlgorithmFactory<IAssignAlgorithm> assignAlgorithmFactory,
             IAlgorithmFactory<IReadAlgorithm> readAlgorithmFactory,

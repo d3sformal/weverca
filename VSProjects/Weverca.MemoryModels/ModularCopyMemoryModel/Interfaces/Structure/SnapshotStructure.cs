@@ -618,7 +618,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractSnapshotStructure" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="factories">The factories.</param>
         public AbstractSnapshotStructure(ModularMemoryModelFactories factories)
         {
             StructureId = STRUCTURE_ID++;

@@ -181,6 +181,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return new MemoryPath(parentPath, new IndexPathSegment(true));
         }
 
+        /// <summary>
+        /// Makes the path which extends given path by an unknown index.
+        /// </summary>
+        /// <param name="parentPath">The parent path.</param>
+        /// <returns>New path which extends given path by an unknown index</returns>
         public static MemoryPath MakePathUnknownIndex(MemoryPath parentPath)
         {
             return new MemoryPath(parentPath, new IndexPathSegment(false));
@@ -277,6 +282,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return builder.ToString();
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (base.Equals(obj))
@@ -310,6 +322,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return false;
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             return this.hashCode;
@@ -377,8 +395,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 
     /// <summary>
     /// Base class for path segment which holds set of names for this segment.
-    /// 
-    /// Derived classes typically adds no functionality (except temporary index). Their main purpose is 
+    /// Derived classes typically adds no functionality (except temporary index). Their main purpose is
     /// to be visited by IPathSegmentVisitor in order to process each type of segment. They should also
     /// override to string nethod.
     /// </summary>
@@ -403,6 +420,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         /// </value>
         public bool IsAny { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is unknown.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is unknown; otherwise, <c>false</c>.
+        /// </value>
         public bool IsUnknown { get { return !IsAny && Names.Count == 0 ; } }
 
 
@@ -489,6 +512,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 
 
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             if (base.Equals(obj))
@@ -525,6 +555,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             }
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             int namesHash = 0;
@@ -671,6 +707,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return TemporaryIndex.ToString();
         }
 
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+        /// </returns>
         public override bool Equals(object obj)
         {
             TemporaryPathSegment other = obj as TemporaryPathSegment;
@@ -691,6 +734,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             }
         }
 
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
         public override int GetHashCode()
         {
             return base.GetHashCode() & TemporaryIndex.GetHashCode();

@@ -226,7 +226,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             if (!data.TryGetMemoryEntry(targetIndex, out sourceEntry))
             {
                 MemoryIndex sourceIndex;
-                if (targetSnapshot.MergeInfo[targetIndex].TryGetDatasource(sourceSnapshot, out sourceIndex))
+                if (targetSnapshot.MergeInfo.GetOrCreateDatasourcesContaier(targetIndex).TryGetDatasource(sourceSnapshot, out sourceIndex))
                 {
                     data.TryGetMemoryEntry(sourceIndex, out sourceEntry);
                 }

@@ -51,7 +51,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected override void collectValueNode(ValueCollectorNode node)
         {
-            MemoryIndexModification modification = PathModifications[node.TargetIndex];
+            MemoryIndexModification modification = PathModifications.GetOrCreateModification(node.TargetIndex);
 
             if (node.IsMust || ForceStrongWrite)
             {
@@ -75,7 +75,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected override void collectMemoryIndexCollectorNode(MemoryIndexCollectorNode node)
         {
-            PathModifications[node.TargetIndex].SetCollectedIndex();
+            PathModifications.GetOrCreateModification(node.TargetIndex).SetCollectedIndex();
 
             if (node.IsMust || ForceStrongWrite)
             {
@@ -89,7 +89,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected override void collectUnknownIndexCollectorNode(UnknownIndexCollectorNode node)
         {
-            PathModifications[node.TargetIndex].SetCollectedIndex();
+            PathModifications.GetOrCreateModification(node.TargetIndex).SetCollectedIndex();
 
             if (node.IsMust || ForceStrongWrite)
             {
@@ -103,7 +103,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         protected override void collectUndefinedCollectorNode(UndefinedCollectorNode node)
         {
-            PathModifications[node.TargetIndex].SetCollectedIndex();
+            PathModifications.GetOrCreateModification(node.TargetIndex).SetCollectedIndex();
 
             if (node.IsMust || ForceStrongWrite)
             {

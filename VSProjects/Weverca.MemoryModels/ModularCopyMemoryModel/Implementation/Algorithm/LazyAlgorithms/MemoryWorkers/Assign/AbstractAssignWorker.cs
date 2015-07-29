@@ -188,7 +188,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         protected void continueUnknownIndexCollectorNode(UnknownIndexCollectorNode node)
         {
             Structure.NewIndex(node.TargetIndex);
-            PathModifications[node.TargetIndex].AddDatasource(node.SourceIndex, Snapshot);
+            PathModifications.GetOrCreateModification(node.TargetIndex).AddDatasource(node.SourceIndex, Snapshot);
 
             IIndexDefinition definition = Structure.GetIndexDefinition(node.SourceIndex);
             HashSet<Value> values = new HashSet<Value>();

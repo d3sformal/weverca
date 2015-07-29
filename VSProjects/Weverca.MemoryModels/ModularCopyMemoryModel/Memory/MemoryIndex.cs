@@ -1332,11 +1332,33 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         }
     }
 
+    /// <summary>
+    /// Defines an interface for visitor to performing type save operation on instances of the memory index.
+    /// </summary>
     public interface MemoryIndexVisitor
     {
+        /// <summary>
+        /// Perform the operation of an instance of the type ObjectIndex.
+        /// </summary>
+        /// <param name="index">The index.</param>
         void VisitObjectIndex(ObjectIndex index);
+
+        /// <summary>
+        /// Perform the operation of an instance of the type VariableIndex.
+        /// </summary>
+        /// <param name="index">The index.</param>
         void VisitVariableIndex(VariableIndex index);
+
+        /// <summary>
+        /// Perform the operation of an instance of the type TemporaryIndex.
+        /// </summary>
+        /// <param name="index">The index.</param>
         void VisitTemporaryIndex(TemporaryIndex index);
+
+        /// <summary>
+        /// Perform the operation of an instance of the type ControlIndex.
+        /// </summary>
+        /// <param name="index">The index.</param>
         void VisitControlIndex(ControlIndex index);
     }
 }

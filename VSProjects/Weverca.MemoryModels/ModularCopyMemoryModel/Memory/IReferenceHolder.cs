@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
 {
     /// <summary>
-    /// Contains operation for the must and may aliaes provider.
+    /// Contains operation for the must and may alias provider.
     /// </summary>
     interface IReferenceHolder
     {

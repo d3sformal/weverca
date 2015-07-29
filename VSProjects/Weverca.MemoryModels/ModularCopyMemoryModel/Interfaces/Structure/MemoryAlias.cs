@@ -37,8 +37,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Creates the new instance of memory alias object to store alias definition in this structure.
         /// </summary>
+        /// <param name="targetStructure">The target structure.</param>
         /// <param name="index">The memory index collection is created for.</param>
-        /// <returns>Created alias collection.</returns>
+        /// <returns>
+        /// Created alias collection.
+        /// </returns>
         IMemoryAlias CreateMemoryAlias(IWriteableSnapshotStructure targetStructure, MemoryIndex index);
     }
 

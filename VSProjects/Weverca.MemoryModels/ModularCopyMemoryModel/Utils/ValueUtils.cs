@@ -9,6 +9,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Utils
 {
     class ValueUtils
     {
+        /// <summary>
+        /// Compares the memory entries to determine whether are the same. 
+        /// 
+        /// ID af associated values are not compared. Just compares the presence of the array.
+        /// </summary>
+        /// <param name="newEntry">The new entry.</param>
+        /// <param name="oldEntry">The old entry.</param>
+        /// <returns>True if compared entries contains the same values; otherwise false.</returns>
         public static bool CompareMemoryEntries(MemoryEntry newEntry, MemoryEntry oldEntry)
         {
             if (newEntry == oldEntry)

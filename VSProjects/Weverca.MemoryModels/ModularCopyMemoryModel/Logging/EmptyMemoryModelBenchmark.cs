@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
 {
+    /// <summary>
+    /// Implementation of benchmark which gives no output.
+    /// 
+    /// This is the default benchmark.
+    /// </summary>
     class EmptyMemoryModelBenchmark : IBenchmark
     {
         public void InitializeSnapshot(Snapshot snapshot)

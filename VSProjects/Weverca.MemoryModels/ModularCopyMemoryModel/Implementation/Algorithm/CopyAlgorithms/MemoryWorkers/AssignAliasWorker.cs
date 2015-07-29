@@ -89,7 +89,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     if (!alias.Equals(index))
                     {
-                        snapshot.AssignInfo.AliasAssignModifications[index].AddDatasource(alias, snapshot);
+                        snapshot.AssignInfo.AliasAssignModifications.GetOrCreateModification(index).AddDatasource(alias, snapshot);
                     }
                 }
 
@@ -98,7 +98,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
                 {
                     if (!alias.Equals(index))
                     {
-                        snapshot.AssignInfo.AliasAssignModifications[index].AddDatasource(alias, snapshot);
+                        snapshot.AssignInfo.AliasAssignModifications.GetOrCreateModification(index).AddDatasource(alias, snapshot);
                     }
                 }
             }

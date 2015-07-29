@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 
-namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
+namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.DifferentialStructure
 {
     class DifferentialDictionaryAssociativeContainerFactory : IAssociativeContainerFactory
     {

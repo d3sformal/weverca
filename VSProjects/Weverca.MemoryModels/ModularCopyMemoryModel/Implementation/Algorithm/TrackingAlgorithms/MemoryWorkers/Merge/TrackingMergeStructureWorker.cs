@@ -643,7 +643,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private void processMergeOperation(MergeOperation operation)
         {
             MemoryIndex targetIndex = operation.TargetIndex;
-            var targetIndexDatasources = targetSnapshot.MergeInfo[targetIndex];
+            var targetIndexDatasources = targetSnapshot.MergeInfo.GetOrCreateDatasourcesContaier(targetIndex);
 
             // Iterate sources
             foreach (MergeOperationContext operationContext in operation.Indexes)

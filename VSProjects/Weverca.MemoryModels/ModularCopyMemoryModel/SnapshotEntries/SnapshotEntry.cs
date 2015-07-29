@@ -200,7 +200,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "write: " + this.ToString() + " value: " + value.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "write: " + this.ToString() + " value: " + value.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
             
             snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.WRITE);
@@ -219,7 +219,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override void writeMemoryWithoutCopy(SnapshotBase context, MemoryEntry value)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "write without copy:" + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "write without copy:" + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
             
             snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.WRITE_WITHOUT_COPY);
@@ -238,7 +238,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "set alias: " + this.ToString() + " from: " + aliasedEntry.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             ICopyModelSnapshotEntry entry = ToEntry(aliasedEntry);
@@ -265,7 +265,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override bool isDefined(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "is defined:" + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "is defined:" + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
             
             snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.IS_DEFINED);
@@ -301,7 +301,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "read: " + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "read: " + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
                         
             snapshot.Factories.Benchmark.StartAlgorithm(snapshot, AlgorithmType.READ);
@@ -310,7 +310,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
 
             snapshot.Factories.Benchmark.FinishOperation(snapshot);
 
-            Snapshot.Logger.LogToSameLine(" value: " + entry.ToString());
+            snapshot.Factories.Logger.LogToSameLine(" value: " + entry.ToString());
             return entry;
         }
 
@@ -324,7 +324,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<VariableIdentifier> iterateFields(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
@@ -349,7 +349,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<MemberIdentifier> iterateIndexes(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "iterate indexes: " + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "iterate indexes: " + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
@@ -374,7 +374,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<TypeValue> resolveType(SnapshotBase context)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;
@@ -400,7 +400,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, QualifiedName methodName)
         {
             Snapshot snapshot = ToSnapshot(context);
-            Snapshot.Logger.Log(snapshot, "iterate filds: " + this.ToString());
+            snapshot.Factories.Logger.Log(snapshot, "iterate filds: " + this.ToString());
             snapshot.Factories.Benchmark.StartOperation(snapshot);
 
             IReadAlgorithm algorithm = snapshot.Algorithms.ReadAlgorithm;

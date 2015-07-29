@@ -60,6 +60,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Utils
             }
         }
 
+        /// <summary>
+        /// Removes all specified values ftom the target collection.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="targetSet">The target set.</param>
+        /// <param name="values">The values.</param>
         public static void RemoveAll<T>(ICollection<T> targetSet, IEnumerable<T> values)
         {
             foreach (T value in values)

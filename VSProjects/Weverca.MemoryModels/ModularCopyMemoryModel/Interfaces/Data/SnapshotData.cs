@@ -134,18 +134,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Data
         /// </summary>
         private static int DATA_ID = 0;
 
-        /// <summary>
-        /// Gets the snapshot.
-        /// </summary>
-        /// <value>
-        /// The snapshot.
-        /// </value>
-        //protected Snapshot Snapshot { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AbstractSnapshotData" /> class.
+        /// Initializes a new instance of the <see cref="AbstractSnapshotData"/> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         public AbstractSnapshotData()
         {
             DataId = DATA_ID++;

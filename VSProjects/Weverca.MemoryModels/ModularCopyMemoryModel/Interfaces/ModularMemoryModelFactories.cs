@@ -97,6 +97,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// The benchmark singleton.
         /// </value>
         public IBenchmark Benchmark { get; private set; }
+
+        /// <summary>
+        /// Gets the logger singleton.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILogger Logger { get; private set; }
         
         /// <summary>
         /// Gets the snapshot structure instance which can be used as common ancestor for all structures
@@ -125,7 +133,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public ISnapshotDataProxy InitialSnapshotInfoInstance { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ModularMemoryModelFactories"/> class.
+        /// Initializes a new instance of the <see cref="ModularMemoryModelFactories" /> class.
         /// </summary>
         /// <param name="snapshotStructureFactory">The snapshot structure factory.</param>
         /// <param name="structuralContainersFactories">The structural containers factories.</param>
@@ -133,13 +141,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         /// <param name="memoryAlgorithmFactories">The memory algorithm factories.</param>
         /// <param name="infoAlgorithmFactories">The information algorithm factories.</param>
         /// <param name="benchmark">The benchmark.</param>
+        /// <param name="logger">The logger.</param>
         internal ModularMemoryModelFactories(
             ISnapshotStructureFactory snapshotStructureFactory,
             StructuralContainersFactories structuralContainersFactories,
             ISnapshotDataFactory snapshotDataFactory,
             AlgorithmFactories memoryAlgorithmFactories,
             AlgorithmFactories infoAlgorithmFactories,
-            IBenchmark benchmark
+            IBenchmark benchmark,
+            ILogger logger
             )
         {
             SnapshotStructureFactory = snapshotStructureFactory;
@@ -148,6 +158,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             MemoryAlgorithmFactories = memoryAlgorithmFactories;
             InfoAlgorithmFactories = infoAlgorithmFactories;
             Benchmark = benchmark;
+            Logger = logger;
 
             MemoryAlgorithms = memoryAlgorithmFactories.CreateInstances(this);
             InfoAlgorithms = infoAlgorithmFactories.CreateInstances(this);
@@ -235,7 +246,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
     public class ModularMemoryModelFactoriesBuilder
     {
         /// <summary>
-        /// Gets the snapshot structure factory. This factory has to be used by snapshot to obtain
+        /// Gets or sets the snapshot structure factory. This factory has to be used by snapshot to obtain
         /// an instances of the snapshot structure object.
         /// </summary>
         /// <value>
@@ -244,7 +255,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public ISnapshotStructureFactory SnapshotStructureFactory { get; set; }
 
         /// <summary>
-        /// Gets the structural containers factories. This instance has to be used by snapshot, algorithms
+        /// Gets or sets the structural containers factories. This instance has to be used by snapshot, algorithms
         /// and structure container to obtain representation of the inner memory objects.
         /// </summary>
         /// <value>
@@ -253,7 +264,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public StructuralContainersFactories StructuralContainersFactories { get; set; }
 
         /// <summary>
-        /// Gets the snapshot data factory. This instance is used by the snapshot to obtain an instance
+        /// Gets or sets the snapshot data factory. This instance is used by the snapshot to obtain an instance
         /// of snapshot data container.
         /// </summary>
         /// <value>
@@ -262,7 +273,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public ISnapshotDataFactory SnapshotDataFactory { get; set; }
 
         /// <summary>
-        /// Gets the algorithm factories for memory phase.
+        /// Gets or sets the algorithm factories for memory phase.
         /// </summary>
         /// <value>
         /// The algorithm factories for memory phase.
@@ -270,7 +281,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public AlgorithmFactories MemoryAlgorithmFactories { get; set; }
 
         /// <summary>
-        /// Gets the algorithm factories for info phase.
+        /// Gets or sets the algorithm factories for info phase.
         /// </summary>
         /// <value>
         /// The algorithm factories for info phase.
@@ -278,12 +289,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
         public AlgorithmFactories InfoAlgorithmFactories { get; set; }
         
         /// <summary>
-        /// Gets the benchmark singleton.
+        /// Gets or sets the benchmark singleton.
         /// </summary>
         /// <value>
         /// The benchmark singleton.
         /// </value>
         public IBenchmark Benchmark { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logger singleton.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILogger Logger { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ModularMemoryModelFactoriesBuilder"/> class.
@@ -298,6 +317,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             MemoryAlgorithmFactories = factories.MemoryAlgorithmFactories;
             InfoAlgorithmFactories = factories.InfoAlgorithmFactories;
             Benchmark = factories.Benchmark;
+            Logger = factories.Logger;
         }
 
         /// <summary>
@@ -313,7 +333,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
                 SnapshotDataFactory,
                 MemoryAlgorithmFactories,
                 InfoAlgorithmFactories,
-                Benchmark
+                Benchmark,
+                Logger
                 );
         }
     }

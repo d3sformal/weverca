@@ -152,7 +152,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readIndex(SnapshotBase context, MemberIdentifier index)
         {
-            Snapshot.Logger.Log(context, "read index - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadIndex(context, index);
         }
@@ -169,7 +170,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override ReadWriteSnapshotEntryBase readField(SnapshotBase context, AnalysisFramework.VariableIdentifier field)
         {
-            Snapshot.Logger.Log(context, "read index - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "read index - " + this.ToString());
 
             return getTemporary(context).ReadField(context, field);
         }
@@ -187,8 +189,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override void writeMemory(SnapshotBase context, MemoryEntry value, bool forceStrongWrite)
         {
-            Snapshot.Logger.Log(context, "write memory - " + this.ToString());
             Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "write memory - " + this.ToString());
 
             switch (snapshot.CurrentMode)
             {
@@ -220,7 +222,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <param name="aliasedEntry">Snapshot entry which will be aliased from current entry</param>
         protected override void setAliases(SnapshotBase context, ReadSnapshotEntryBase aliasedEntry)
         {
-            Snapshot.Logger.Log(context, "set aliases - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "set aliases - " + this.ToString());
 
             getTemporary(context).SetAliases(context, aliasedEntry);
         }
@@ -239,7 +242,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <returns>True whether that memory represented by current snapshot entry Is already defined.</returns>
         protected override bool isDefined(SnapshotBase context)
         {
-            Snapshot.Logger.Log(context, "is defined - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "is defined - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -261,7 +265,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<AliasEntry> aliases(SnapshotBase context)
         {
-            Snapshot.Logger.Log(context, "aliases - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "aliases - " + this.ToString());
 
             if (isTemporarySet(context))
             {
@@ -283,17 +288,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// <exception cref="System.NotSupportedException">Current mode:  + snapshot.CurrentMode</exception>
         protected override MemoryEntry readMemory(SnapshotBase context)
         {
-            Snapshot.Logger.Log(context, "read memory - " + this.ToString());
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "read memory - " + this.ToString());
 
             if (isTemporarySet(context))
             {
-                Snapshot.Logger.Log(context, "read from temporary location - " + this.ToString());
+                snapshot.Factories.Logger.Log(context, "read from temporary location - " + this.ToString());
                 return temporaryLocation.ReadMemory(context);
             }
             else
             {
-                Snapshot.Logger.Log(context, "read just value - " + this.ToString());
-                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+                snapshot.Factories.Logger.Log(context, "read just value - " + this.ToString());
                 switch (snapshot.CurrentMode)
                 {
                     case SnapshotMode.MemoryLevel:
@@ -318,15 +323,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
         /// </returns>
         protected override IEnumerable<FunctionValue> resolveMethod(SnapshotBase context, PHP.Core.QualifiedName methodName)
         {
-            Snapshot.Logger.Log(context, "resolve method - " + this.ToString() + " method: " + methodName);
+            Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
+            snapshot.Factories.Logger.Log(context, "resolve method - " + this.ToString() + " method: " + methodName);
             if (isTemporarySet(context))
             {
                 return getTemporary(context).ResolveMethod(context, methodName);
             }
             else
             {
-                Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+                snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
 
@@ -406,7 +411,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+                snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
 
@@ -434,7 +439,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+                snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
 
@@ -462,7 +467,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.SnapshotEntries
             else
             {
                 Snapshot snapshot = SnapshotEntry.ToSnapshot(context);
-                Snapshot.Logger.Log(snapshot, "iterate fields: " + this.ToString());
+                snapshot.Factories.Logger.Log(snapshot, "iterate fields: " + this.ToString());
 
                 MemoryEntry values = readMemory(snapshot);
 
