@@ -181,6 +181,11 @@ namespace Weverca.MemoryModels.CopyMemoryModel
             return new MemoryPath(parentPath, new IndexPathSegment(true));
         }
 
+        /// <summary>
+        /// Makes the path which extends given path by unknown index.
+        /// </summary>
+        /// <param name="parentPath">The parent path.</param>
+        /// <returns>New path which extends given path by unknown index</returns>
         public static MemoryPath MakePathUnknownIndex(MemoryPath parentPath)
         {
             return new MemoryPath(parentPath, new IndexPathSegment(false));
@@ -340,6 +345,12 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// </value>
         public bool IsAny { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is unknown.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is unknown; otherwise, <c>false</c>.
+        /// </value>
         public bool IsUnknown { get { return !IsAny && Names.Count == 0 ; } }
 
 

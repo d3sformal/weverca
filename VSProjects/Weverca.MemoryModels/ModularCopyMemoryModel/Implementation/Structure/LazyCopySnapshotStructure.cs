@@ -94,8 +94,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates the structure with memory stack with global level only.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New structure with memory stack with global level only.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New structure with memory stack with global level only.
+        /// </returns>
         public static LazyCopySnapshotStructureProxy CreateGlobal(ModularMemoryModelFactories factories)
         {
             LazyCopySnapshotStructureProxy proxy = new LazyCopySnapshotStructureProxy(factories);
@@ -108,8 +110,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates empty structure which contains no data in containers.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New empty structure which contains no data in containers.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New empty structure which contains no data in containers.
+        /// </returns>
         public static LazyCopySnapshotStructureProxy CreateEmpty(ModularMemoryModelFactories factories)
         {
             LazyCopySnapshotStructureProxy proxy = new LazyCopySnapshotStructureProxy(factories);
@@ -122,8 +126,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates new structure object as copy of this structure which contains the same data as this instace.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New copy of this structure which contains the same data as this instace.</returns>
+        /// <returns>
+        /// New copy of this structure which contains the same data as this instace.
+        /// </returns>
         public LazyCopySnapshotStructureProxy Copy()
         {
             LazyCopySnapshotStructureProxy proxy = new LazyCopySnapshotStructureProxy(factories);
@@ -134,9 +139,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates new structure object with copy of diven data object.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="data">The old data.</param>
-        /// <returns>New structure object with copy of diven data object.</returns>
+        /// <returns>
+        /// New structure object with copy of diven data object.
+        /// </returns>
         public static ISnapshotStructureProxy CreateWithData(SnapshotStructureContainer data)
         {
             LazyCopySnapshotStructureProxy proxy = new LazyCopySnapshotStructureProxy(data.Factories);
@@ -187,59 +193,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public bool IsReadonly
         {
             get { return isReadonly; }
-        }
-
-        /// <inheritdoc />
-        public IObjectDescriptor CreateObjectDescriptor(ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex)
-        {
-            CopyObjectDescriptor descriptor = new CopyObjectDescriptor();
-            descriptor.SetObjectValue(createdObject);
-            descriptor.SetType(type);
-            descriptor.SetUnknownIndex(memoryIndex);
-            return descriptor;
-        }
-
-        /// <inheritdoc />
-        public IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, MemoryIndex memoryIndex)
-        {
-            CopyArrayDescriptor descriptor = new CopyArrayDescriptor();
-            descriptor.SetArrayValue(createdArray);
-            descriptor.SetParentIndex(memoryIndex);
-            descriptor.SetUnknownIndex(memoryIndex.CreateUnknownIndex());
-            return descriptor;
-        }
-
-        /// <inheritdoc />
-        public IMemoryAlias CreateMemoryAlias(Memory.MemoryIndex index)
-        {
-            CopyMemoryAlias aliases = new CopyMemoryAlias();
-            aliases.SetSourceIndex(index);
-            return aliases;
-        }
-
-        /// <inheritdoc />
-        public IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects)
-        {
-            CopyObjectValueContainer container = new CopyObjectValueContainer();
-            container.AddAll(objects);
-            return container;
-        }
-
-        /// <inheritdoc />
-        public IIndexDefinition CreateIndexDefinition()
-        {
-            return new CopyIndexDefinition();
-        }
-
-
-        public IWriteableStackContext CreateWriteableStackContext(int level)
-        {
-            return new CopyStackContext(level);
-        }
-
-        public IObjectValueContainer CreateObjectValueContainer()
-        {
-            return new CopyObjectValueContainer();
         }
     }
 }

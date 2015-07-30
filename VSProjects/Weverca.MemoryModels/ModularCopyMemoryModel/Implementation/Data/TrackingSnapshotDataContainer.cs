@@ -35,6 +35,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
     /// Contains data for all definned memory location in memory snapshot.
     /// 
     /// Implemented as associative array which maps memory indexes to memory entries with data.
+    /// Uses change tracker to keep information about changed indexes
     /// </summary>
     public class TrackingSnapshotDataAssociativeContainer : AbstractSnapshotData
     {
@@ -51,9 +52,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
+        /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="factories">The factories.</param>
         public TrackingSnapshotDataAssociativeContainer(ModularMemoryModelFactories factories)
             : base()
         {
@@ -64,8 +65,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// <summary>
         /// Creates new data instance and copies data from this collection to the new one.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New data instance and copies data from this collection to the new one.</returns>
+        /// <returns>
+        /// New data instance and copies data from this collection to the new one.
+        /// </returns>
         public TrackingSnapshotDataAssociativeContainer Copy()
         {
             TrackingSnapshotDataAssociativeContainer data = new TrackingSnapshotDataAssociativeContainer();

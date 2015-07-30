@@ -140,7 +140,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// Sets all given declaration for declarations with given name.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="value">The values.</param>
+        /// <param name="values">The values.</param>
         public void SetAll(QualifiedName key, IEnumerable<T> values)
         {
             CopySet<T> set;

@@ -38,6 +38,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
+    /// <summary>
+    /// Container for class and function declarations. Provides mapping between qualified 
+    /// names and declarations data.
+    /// 
+    /// This is a lazy implementation. Copy method creates new instance with readonly 
+    /// referece to the inner container. Container is copied when the first update operation 
+    /// is performed. Otherwise is shared with previous instances.
+    /// 
+    /// This is not imutable class.
+    /// </summary>
+    /// <typeparam name="T">Type of delared object.</typeparam>
     class LazyCopyDeclarationContainer<T> : IWriteableDeclarationContainer<T>
     {
         private CopyDeclarationContainer<T> declarations;

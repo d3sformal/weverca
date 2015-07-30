@@ -20,7 +20,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
-
+    /// <summary>
+    /// Lazy implementation of object descriptor. Creation of builder prevents creating a new copy when 
+    /// builder is created for the same version of the structure object. This behavior allows to 
+    /// group all changes made in single transaction and to prevent unnecessary copying.
+    /// </summary>
     class LazyCopyObjectDescriptor : LazyCopyIndexContainer, IObjectDescriptor, IObjectDescriptorBuilder
     {
         private TypeValue type;
@@ -28,16 +32,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         private IWriteableSnapshotStructure associatedStructure;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyObjectDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyObjectDescriptor" /> class.
         /// </summary>
+        /// <param name="associatedStructure">The associated structure.</param>
         public LazyCopyObjectDescriptor(IWriteableSnapshotStructure associatedStructure)
         {
             this.associatedStructure = associatedStructure;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyObjectDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyObjectDescriptor" /> class.
         /// </summary>
+        /// <param name="associatedStructure">The associated structure.</param>
         /// <param name="type">The type.</param>
         /// <param name="objectValue">The object value.</param>
         public LazyCopyObjectDescriptor(IWriteableSnapshotStructure associatedStructure, TypeValue type, ObjectValue objectValue)
@@ -48,9 +54,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyObjectDescriptor"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="LazyCopyObjectDescriptor" /> class.
         /// New instance contains copy of given object.
         /// </summary>
+        /// <param name="associatedStructure">The associated structure.</param>
         /// <param name="objectDescriptor">The object descriptor.</param>
         public LazyCopyObjectDescriptor(IWriteableSnapshotStructure associatedStructure, LazyCopyObjectDescriptor objectDescriptor)
             : base(objectDescriptor)

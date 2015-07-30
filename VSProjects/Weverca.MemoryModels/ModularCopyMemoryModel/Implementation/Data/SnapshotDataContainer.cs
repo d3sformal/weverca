@@ -42,9 +42,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         private Dictionary<MemoryIndex, MemoryEntry> IndexData;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer"/> class.
+        /// Initializes a new instance of the <see cref="SnapshotDataAssociativeContainer" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         public SnapshotDataAssociativeContainer()
             : base()
         {
@@ -54,8 +53,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         /// <summary>
         /// Creates new data instance and copies data from this collection to the new one.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New data instance and copies data from this collection to the new one.</returns>
+        /// <returns>
+        /// New data instance and copies data from this collection to the new one.
+        /// </returns>
         public SnapshotDataAssociativeContainer Copy()
         {
             SnapshotDataAssociativeContainer data = new SnapshotDataAssociativeContainer();

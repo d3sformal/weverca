@@ -25,57 +25,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Weverca.AnalysisFramework;
+using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
 {
-    public enum TrackerConnectionType
-    {
-        EXTEND, CALL_EXTEND, MERGE, SUBPROGRAM_MERGE, CALL_MERGE
-    }
-
-    public interface IReadonlyChangeTracker<C>
-        where C : class
-    {
-        TrackerConnectionType ConnectionType { get; }
-
-        int TrackerId { get; }
-
-        int CallLevel { get; }
-
-        C Container { get; }
-
-        IReadonlyChangeTracker<C> PreviousTracker { get; }
-
-        IEnumerable<MemoryIndex> IndexChanges { get; }
-
-        IEnumerable<QualifiedName> FunctionChanges { get; }
-
-        IEnumerable<QualifiedName> ClassChanges { get; }
-
-        bool TryGetCallTracker(Snapshot callSnapshot, out IReadonlyChangeTracker<C> callTracker);
-    }
-
-    public interface IWriteableChangeTracker<C> : IReadonlyChangeTracker<C>
-        where C : class
-    {
-        void SetCallLevel(int callLevel);
-        void SetConnectionType(TrackerConnectionType connectionType);
-
-        void InsertedIndex(MemoryIndex index);
-        void DeletedIndex(MemoryIndex index);
-        void ModifiedIndex(MemoryIndex index);
-        void RemoveIndexChange(MemoryIndex index);
-
-        void ModifiedFunction(QualifiedName function);
-        void ModifiedClass(QualifiedName function);
-
-        void RemoveFunctionChange(QualifiedName functionName);
-        void RemoveClassChange(QualifiedName className);
-
-        void AddCallTracker(Snapshot callSnapshot, IReadonlyChangeTracker<C> callTracker);
-    }
-
+    /// <summary>
+    /// Implementation of a change tracker to track changes within given collection.
+    /// </summary>
+    /// <typeparam name="C">Type of the container to track changes in</typeparam>
     public class ChangeTracker<C> : IReadonlyChangeTracker<C>, IWriteableChangeTracker<C>
         where C : class
     {
@@ -84,29 +42,45 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         HashSet<QualifiedName> classChanges;
         Dictionary<Snapshot, IReadonlyChangeTracker<C>> callRouting;
 
-
+        /// <inheritdoc />
         public TrackerConnectionType ConnectionType { get; private set; }
+
+        /// <inheritdoc />
         public int CallLevel { get; private set; }
+
+        /// <inheritdoc />
         public int TrackerId { get; private set; }
+
+        /// <inheritdoc />
         public C Container { get; private set; }
 
+        /// <inheritdoc />
         public IReadonlyChangeTracker<C> PreviousTracker { get; private set; }
 
+        /// <inheritdoc />
         public IEnumerable<MemoryIndex> IndexChanges
         {
             get { return indexChanges; }
         }
 
+        /// <inheritdoc />
         public IEnumerable<QualifiedName> FunctionChanges
         {
             get { return functionChanges; }
         }
 
+        /// <inheritdoc />
         public IEnumerable<QualifiedName> ClassChanges
         {
             get { return classChanges; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChangeTracker{C}"/> class.
+        /// </summary>
+        /// <param name="trackerId">The tracker identifier.</param>
+        /// <param name="container">The container.</param>
+        /// <param name="previousTracker">The previous tracker.</param>
         public ChangeTracker(int trackerId, C container, IReadonlyChangeTracker<C> previousTracker)
         {
             ConnectionType = TrackerConnectionType.EXTEND;
@@ -119,29 +93,34 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             indexChanges = new HashSet<MemoryIndex>();
         }
 
+        /// <inheritdoc />
         public void InsertedIndex(MemoryIndex index)
         {
             if (!(index is TemporaryIndex))
                 indexChanges.Add(index);
         }
 
+        /// <inheritdoc />
         public void DeletedIndex(MemoryIndex index)
         {
             if (!(index is TemporaryIndex))
                 indexChanges.Add(index);
         }
 
+        /// <inheritdoc />
         public void ModifiedIndex(MemoryIndex index)
         {
             if (!(index is TemporaryIndex))
                 indexChanges.Add(index);
         }
 
+        /// <inheritdoc />
         public void RemoveIndexChange(MemoryIndex index)
         {
             indexChanges.Remove(index);
         }
 
+        /// <inheritdoc />
         public void ModifiedFunction(QualifiedName functionName)
         {
             if (functionChanges == null)
@@ -151,6 +130,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             functionChanges.Add(functionName);
         }
 
+        /// <inheritdoc />
         public void ModifiedClass(QualifiedName className)
         {
             if (classChanges == null)
@@ -160,6 +140,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             classChanges.Add(className);
         }
 
+        /// <inheritdoc />
         public void RemoveFunctionChange(QualifiedName functionName)
         {
             if (functionChanges != null)
@@ -168,6 +149,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             }
         }
 
+        /// <inheritdoc />
         public void RemoveClassChange(QualifiedName className)
         {
             if (classChanges != null)
@@ -176,16 +158,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             }
         }
 
+        /// <inheritdoc />
         public void SetCallLevel(int callLevel)
         {
             CallLevel = callLevel;
         }
 
+        /// <inheritdoc />
         public void SetConnectionType(TrackerConnectionType connectionType)
         {
             ConnectionType = connectionType;
         }
 
+        /// <inheritdoc />
         public void AddCallTracker(Snapshot callSnapshot, IReadonlyChangeTracker<C> callTracker)
         {
             if (callRouting == null)
@@ -203,7 +188,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             }
         }
 
-
+        /// <inheritdoc />
         public bool TryGetCallTracker(Snapshot callSnapshot, out IReadonlyChangeTracker<C> callTracker)
         {
             if (callRouting != null)

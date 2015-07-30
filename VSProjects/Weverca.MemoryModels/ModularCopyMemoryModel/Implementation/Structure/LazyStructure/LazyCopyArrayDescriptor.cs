@@ -21,7 +21,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
-
+    /// <summary>
+    /// Lazy implementation of array descriptor. Creation of builder prevents creating a new copy when 
+    /// builder is created for the same version of the structure object. This behavior allows to 
+    /// group all changes made in single transaction and to prevent unnecessary copying.
+    /// </summary>
     class LazyCopyArrayDescriptor : LazyCopyIndexContainer, IArrayDescriptor, IArrayDescriptorBuilder
     {
         private MemoryIndex parentIndex;
@@ -37,8 +41,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor" /> class.
         /// </summary>
+        /// <param name="associatedStrucutre">The associated strucutre.</param>
         /// <param name="parentIndex">Index of the parent.</param>
         /// <param name="arrayValue">The array value.</param>
         public LazyCopyArrayDescriptor(IWriteableSnapshotStructure associatedStrucutre, MemoryIndex parentIndex, AssociativeArray arrayValue)
@@ -49,9 +54,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LazyCopyArrayDescriptor"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="LazyCopyArrayDescriptor" /> class.
         /// New instance contains copy of given object.
         /// </summary>
+        /// <param name="associatedStrucutre">The associated strucutre.</param>
         /// <param name="arrayDescriptor">The array descriptor.</param>
         public LazyCopyArrayDescriptor(IWriteableSnapshotStructure associatedStrucutre, LazyCopyArrayDescriptor arrayDescriptor)
             : base(arrayDescriptor)

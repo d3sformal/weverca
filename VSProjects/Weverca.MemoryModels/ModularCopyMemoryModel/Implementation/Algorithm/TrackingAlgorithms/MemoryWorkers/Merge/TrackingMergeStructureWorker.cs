@@ -200,7 +200,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 CollectionMemoryUtils.AddAll(this.changeTree, targetSnapshot.StructureCallChanges);
             }
 
-            targetSnapshot.StructureCallChanges = changeTree.Changes;
+            targetSnapshot.StructureCallChanges = changeTree.StoredIndexes;
         }
 
         private void createNewStructureFromCallSnapshot(Snapshot callSnapshot)
@@ -402,7 +402,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         private void ensureTrackingChanges()
         {
-            foreach (MemoryIndex index in this.changeTree.Changes)
+            foreach (MemoryIndex index in this.changeTree.StoredIndexes)
             {
                 writeableTargetStructure.WriteableChangeTracker.ModifiedIndex(index);
             }

@@ -41,6 +41,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of memory alias. Creation of builder creates new copy all the time.
+    /// </summary>
     class CopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
     {
         private MemoryIndex sourceIndex;

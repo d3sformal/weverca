@@ -38,7 +38,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
-
+    /// <summary>
+    /// Typycal implementation of index container which can be used to store variable names and their mapping
+    /// to memory indexes.
+    /// 
+    /// This is NOT imutable class.
+    /// 
+    /// This is a lazy implementation. Copy method creates new instance with readonly 
+    /// referece to the inner container. Container is copied when the first update operation 
+    /// is performed. Otherwise is shared with previous instances.
+    /// </summary>
     class LazyCopyIndexContainer: IReadonlyIndexContainer, IWriteableIndexContainer, IGenericCloneable<LazyCopyIndexContainer>
     {
         private Dictionary<string, MemoryIndex> indexes;
@@ -46,7 +55,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         private bool copied;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyIndexContainer"/> class.
+        /// Initializes a new instance of the <see cref="LazyCopyIndexContainer" /> class.
         /// </summary>
         public LazyCopyIndexContainer()
         {
@@ -55,8 +64,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyIndexContainer"/> class.
-        /// 
+        /// Initializes a new instance of the
+        /// <see cref="LazyCopyIndexContainer" /> class.
         /// Content of given container is copied to the new container.
         /// </summary>
         /// <param name="container">The container.</param>
@@ -70,8 +79,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyIndexContainer"/> class.
-        /// 
+        /// Initializes a new instance of the
+        /// <see cref="LazyCopyIndexContainer" /> class.
         /// Content of given container is copied to the new container.
         /// </summary>
         /// <param name="container">The container.</param>

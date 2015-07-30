@@ -33,6 +33,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
     /// </summary>
     public enum AlgorithmType
     {
+        // supress documentation warnings
+        #pragma warning disable 1591
+
         COMMIT,
         WIDEN_COMMIT,
         EXTEND_AS_CALL,
@@ -52,6 +55,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
         RESOLVE_TYPE,
         RESOLVE_METHOD,
         MERGE_TO_TEMPORARY
+
+        // enable documentation warnings
+        #pragma warning restore 1591
     }
 
     /// <summary>

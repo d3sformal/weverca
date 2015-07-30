@@ -30,10 +30,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
 {
     /// <summary>
-    /// Factory for <see cref="CopySnapshotDataProxy"/> class.
+    /// Factory for <see cref="TrackingSnapshotDataProxy"/> class.
     /// 
     /// This instance of SnapshotData container uses the associative array to store whole inner data 
-    /// structure. The container is always deeply copied when new instance is created.
+    /// structure. The container is lazily copied when new instance is created and uses a change 
+    /// tracker to hold an information about the changes.
     /// </summary>
     public class TrackingSnapshotDataFactory : ISnapshotDataFactory
     {
@@ -67,7 +68,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
 
     /// <summary>
     /// This instance of SnapshotData container uses the associative array to store whole inner data 
-    /// structure. The container is always deeply copied when new instance is created.
+    /// structure. The container is lazily copied when new instance is created and uses a change 
+    /// tracker to hold an information about the changes.
     /// </summary>
     public class TrackingSnapshotDataProxy : ISnapshotDataProxy
     {
@@ -95,9 +97,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="factories">The factories.</param>
         public TrackingSnapshotDataProxy(ModularMemoryModelFactories factories)
         {
             snapshotData = new TrackingSnapshotDataAssociativeContainer(factories);
@@ -106,10 +108,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="CopySnapshotDataProxy" /> class.
         /// Uses given data instance as readonly source of data.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         public TrackingSnapshotDataProxy(TrackingSnapshotDataAssociativeContainer oldData)
         {
@@ -117,10 +119,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="CopySnapshotDataProxy" /> class.
         /// Deeply copies given proxy instance.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="proxy">The proxy.</param>
         public TrackingSnapshotDataProxy(TrackingSnapshotDataProxy proxy)
         {

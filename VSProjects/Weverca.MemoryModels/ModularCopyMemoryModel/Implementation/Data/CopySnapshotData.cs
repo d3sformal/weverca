@@ -93,19 +93,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         public CopySnapshotDataProxy()
         {
             snapshotData = new SnapshotDataAssociativeContainer();
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="CopySnapshotDataProxy" /> class.
         /// Uses given data instance as readonly source of data.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="oldData">The old data.</param>
         public CopySnapshotDataProxy(SnapshotDataAssociativeContainer oldData)
         {
@@ -113,10 +112,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Data
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopySnapshotDataProxy"/> class.
+        /// Initializes a new instance of the 
+        /// <see cref="CopySnapshotDataProxy" /> class.
         /// Deeply copies given proxy instance.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="proxy">The proxy.</param>
         public CopySnapshotDataProxy(CopySnapshotDataProxy proxy)
         {

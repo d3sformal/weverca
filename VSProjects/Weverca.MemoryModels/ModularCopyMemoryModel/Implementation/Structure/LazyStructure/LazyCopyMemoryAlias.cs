@@ -20,7 +20,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
-
+    /// <summary>
+    /// Lazy implementation of memory alias. Creation of builder prevents creating a new copy when 
+    /// builder is created for the same version of the structure object. This behavior allows to 
+    /// group all changes made in single transaction and to prevent unnecessary copying.
+    /// </summary>
     class LazyCopyMemoryAlias : IMemoryAlias, IMemoryAliasBuilder
     {
         private MemoryIndex sourceIndex;
@@ -39,8 +43,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyMemoryAlias"/> class.
+        /// Initializes a new instance of the <see cref="CopyMemoryAlias" /> class.
         /// </summary>
+        /// <param name="associatedStructure">The associated structure.</param>
         /// <param name="memoryAlias">The memory alias.</param>
         public LazyCopyMemoryAlias(IWriteableSnapshotStructure associatedStructure, LazyCopyMemoryAlias memoryAlias)
         {

@@ -39,6 +39,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of stack context. Copy method always provide a fyll copy of the object.
+    /// </summary>
     class CopyStackContext : IReadonlyStackContext, IWriteableStackContext
     {
         private CopyIndexContainer variables;

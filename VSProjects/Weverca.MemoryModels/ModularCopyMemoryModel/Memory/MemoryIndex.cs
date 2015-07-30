@@ -363,6 +363,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             this.hashCode = computeHashCode();
         }
 
+        /// <summary>
+        /// Accepts the specified visitor to provide visitors operation by the type of an index.
+        /// </summary>
+        /// <param name="visitor">The visitor.</param>
         public abstract void Accept(MemoryIndexVisitor visitor);
     }
 
@@ -729,6 +733,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return new ObjectIndex(this, callLevel);
         }
 
+        /// <inheritdoc />
         public override void Accept(MemoryIndexVisitor visitor)
         {
             visitor.VisitObjectIndex(this);
@@ -875,6 +880,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return new VariableIndex(this, callLevel);
         }
 
+        /// <inheritdoc />
         public override void Accept(MemoryIndexVisitor visitor)
         {
             visitor.VisitVariableIndex(this);
@@ -1084,6 +1090,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return new TemporaryIndex(this, callLevel);
         }
 
+        /// <inheritdoc />
         public override void Accept(MemoryIndexVisitor visitor)
         {
             visitor.VisitTemporaryIndex(this);
@@ -1225,6 +1232,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             return new ControlIndex(this, callLevel);
         }
 
+        /// <inheritdoc />
         public override void Accept(MemoryIndexVisitor visitor)
         {
             visitor.VisitControlIndex(this);

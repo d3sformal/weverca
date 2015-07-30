@@ -46,6 +46,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
     }
 
 
+    /// <summary>
+    /// Copy implementation of object value container. Creation of builder creates new copy all the time.
+    /// </summary>
     class CopyObjectValueContainer : CopySet<ObjectValue>, IObjectValueContainer, IObjectValueContainerBuilder
     {
         /// <summary>

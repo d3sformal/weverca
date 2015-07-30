@@ -62,7 +62,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                 CollectionMemoryUtils.AddAll(this.changeTree, targetSnapshot.DataCallChanges);
             }
 
-            targetSnapshot.DataCallChanges = changeTree.Changes;
+            targetSnapshot.DataCallChanges = changeTree.StoredIndexes;
         }
 
         private void createNewData()

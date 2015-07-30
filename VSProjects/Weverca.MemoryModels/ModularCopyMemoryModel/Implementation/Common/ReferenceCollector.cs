@@ -248,8 +248,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
         {
             allReferences.Add(memoryIndex);
         }
-
-
+        
+        /// <summary>
+        /// Gets the must references.
+        /// </summary>
+        /// <returns>The must references</returns>
         public IEnumerable<MemoryIndex> GetMustReferences()
         {
             List<MemoryIndex> references = new List<MemoryIndex>();
@@ -258,6 +261,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             return references;
         }
 
+        /// <summary>
+        /// Gets the may references.
+        /// </summary>
+        /// <returns>The may references</returns>
         public IEnumerable<MemoryIndex> GetMayReferences()
         {
             List<MemoryIndex> references = new List<MemoryIndex>();
@@ -266,6 +273,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Common
             return references;
         }
 
+        /// <summary>
+        /// Gets all references.
+        /// </summary>
+        /// <returns>List of all references.</returns>
         public IEnumerable<MemoryIndex> GetAllReferences()
         {
             return allReferences;

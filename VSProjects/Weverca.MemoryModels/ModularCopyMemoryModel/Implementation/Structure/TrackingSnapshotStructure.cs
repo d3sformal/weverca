@@ -36,7 +36,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
     /// Factory for <see cref="TrackingSnapshotStructureProxy"/> class.
     /// 
     /// This instance of SnapshotStructure container uses the associative arrays and copy semantics. Inner structure
-    /// is copied only when structure will be modified.
+    /// is copied only when structure will be modified. Uses change tracker to keep information about changed 
+    /// indexes and declarations.
     /// </summary>
     public class TrackingSnapshotStructureFactory : ISnapshotStructureFactory
     {
@@ -83,7 +84,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
 
     /// <summary>
     /// This instance of SnapshotStructure container uses the associative arrays and copy semantics. Inner structure
-    /// is copied only when structure will be modified.
+    /// is copied only when structure will be modified. Uses change tracker to keep information about changed 
+    /// indexes and declarations.
     /// </summary>
     public class TrackingSnapshotStructureProxy : ISnapshotStructureProxy
     {
@@ -96,8 +98,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates the structure with memory stack with global level only.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New structure with memory stack with global level only.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New structure with memory stack with global level only.
+        /// </returns>
         public static TrackingSnapshotStructureProxy CreateGlobal(ModularMemoryModelFactories factories)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
@@ -114,8 +118,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates empty structure which contains no data in containers.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New empty structure which contains no data in containers.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New empty structure which contains no data in containers.
+        /// </returns>
         public static TrackingSnapshotStructureProxy CreateEmpty(ModularMemoryModelFactories factories)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
@@ -128,8 +134,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates new structure object as copy of this structure which contains the same data as this instace.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New copy of this structure which contains the same data as this instace.</returns>
+        /// <returns>
+        /// New copy of this structure which contains the same data as this instace.
+        /// </returns>
         public TrackingSnapshotStructureProxy Copy()
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(factories);
@@ -140,9 +147,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         /// <summary>
         /// Creates new structure object with copy of diven data object.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
         /// <param name="data">The old data.</param>
-        /// <returns>New structure object with copy of diven data object.</returns>
+        /// <returns>
+        /// New structure object with copy of diven data object.
+        /// </returns>
         public static ISnapshotStructureProxy CreateWithData(TrackingSnapshotStructureContainer data)
         {
             TrackingSnapshotStructureProxy proxy = new TrackingSnapshotStructureProxy(data.Factories);
@@ -193,59 +201,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure
         public bool IsReadonly
         {
             get { return isReadonly; }
-        }
-
-        /// <inheritdoc />
-        public IObjectDescriptor CreateObjectDescriptor(ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex)
-        {
-            LazyCopyObjectDescriptor descriptor = new LazyCopyObjectDescriptor(snapshotStructure);
-            descriptor.SetObjectValue(createdObject);
-            descriptor.SetType(type);
-            descriptor.SetUnknownIndex(memoryIndex);
-            return descriptor;
-        }
-
-        /// <inheritdoc />
-        public IArrayDescriptor CreateArrayDescriptor(AssociativeArray createdArray, MemoryIndex memoryIndex)
-        {
-            LazyCopyArrayDescriptor descriptor = new LazyCopyArrayDescriptor(snapshotStructure);
-            descriptor.SetArrayValue(createdArray);
-            descriptor.SetParentIndex(memoryIndex);
-            descriptor.SetUnknownIndex(memoryIndex.CreateUnknownIndex());
-            return descriptor;
-        }
-
-        /// <inheritdoc />
-        public IMemoryAlias CreateMemoryAlias(Memory.MemoryIndex index)
-        {
-            LazyCopyMemoryAlias aliases = new LazyCopyMemoryAlias(snapshotStructure);
-            aliases.SetSourceIndex(index);
-            return aliases;
-        }
-
-        /// <inheritdoc />
-        public IObjectValueContainer CreateObjectValueContainer(IEnumerable<ObjectValue> objects)
-        {
-            LazyCopyObjectValueContainer container = new LazyCopyObjectValueContainer(snapshotStructure);
-            container.AddAll(objects);
-            return container;
-        }
-
-        /// <inheritdoc />
-        public IIndexDefinition CreateIndexDefinition()
-        {
-            return new LazyCopyIndexDefinition(snapshotStructure);
-        }
-
-
-        public IWriteableStackContext CreateWriteableStackContext(int level)
-        {
-            return new LazyCopyStackContext(level);
-        }
-
-        public IObjectValueContainer CreateObjectValueContainer()
-        {
-            return new LazyCopyObjectValueContainer(snapshotStructure);
         }
     }
 }

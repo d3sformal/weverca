@@ -29,6 +29,14 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
+    /// <summary>
+    /// Represents cloneable and enumerable set of values which can be used in memory collections.
+    /// 
+    /// This is a lazy implementation. Copy method creates new instance with readonly 
+    /// referece to the inner container. Container is copied when the first update operation 
+    /// is performed. Otherwise is shared with previous instances.
+    /// </summary>
+    /// <typeparam name="T">Element stored within this set.</typeparam>
     class LazyCopySet<T> : IReadonlySet<T>, IWriteableSet<T>, IGenericCloneable<LazyCopySet<T>>
     {
         private HashSet<T> valueSet;

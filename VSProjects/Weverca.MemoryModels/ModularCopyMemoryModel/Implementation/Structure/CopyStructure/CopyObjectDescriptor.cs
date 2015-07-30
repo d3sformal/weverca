@@ -42,6 +42,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of object descriptor. Creation of builder creates new copy all the time.
+    /// </summary>
     class CopyObjectDescriptor : CopyIndexContainer, IObjectDescriptor, IObjectDescriptorBuilder
     {
         private TypeValue type;

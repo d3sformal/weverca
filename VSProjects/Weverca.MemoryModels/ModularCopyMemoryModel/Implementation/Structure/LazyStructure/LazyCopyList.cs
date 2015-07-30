@@ -28,23 +28,43 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.LazyStructure
 {
+    /// <summary>
+    /// Adds lazy behavior to the standard list container.
+    /// 
+    /// This is a lazy implementation. Copy method creates new instance with readonly 
+    /// referece to the inner container. Container is copied when the first update operation 
+    /// is performed. Otherwise is shared with previous instances.
+    /// </summary>
+    /// <typeparam name="T">Type of the elements stored within this instance</typeparam>
     class LazyCopyList<T> : IEnumerable<T> where T : IGenericCloneable<T>
     {
         private List<T> list;
         private bool copied;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyCopyList{T}"/> class.
+        /// </summary>
         public LazyCopyList()
         {
             list = new List<T>();
             copied = true;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyCopyList{T}"/> class. New instance 
+        /// will contain readonly reference to the inner list of the given instance.
+        /// </summary>
+        /// <param name="listToCopy">The list to copy.</param>
         public LazyCopyList(LazyCopyList<T> listToCopy)
         {
             list = listToCopy.list;
             copied = false;
         }
 
+        /// <summary>
+        /// Creates new copy of this instance which contains all elements. This method creates 
+        /// a lazy copy which has readonly reference to the inner list.
+        /// </summary>
         public void Copy()
         {
             if (!copied)
@@ -61,25 +81,45 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             }
         }
 
+        /// <summary>
+        /// Gets the number of items in the list.
+        /// </summary>
+        /// <value>
+        /// The number of items.
+        /// </value>
         public int Count { get { return list.Count; } }
 
+        /// <summary>
+        /// Adds the specified item at the end of the list.
+        /// </summary>
+        /// <param name="value">The value.</param>
         public void Add(T value)
         {
             Copy();
             list.Add(value);
         }
 
+        /// <summary>
+        /// Gets or sets the item at the specified index.
+        /// </summary>
+        /// <value>
+        /// The item.
+        /// </value>
+        /// <param name="index">The index.</param>
+        /// <returns>Item at specified index.</returns>
         public T this[int index]
         {
             get { return list[index]; }
             set { Copy(); list[index] = value; }
         }
 
+        /// <inheritdoc />
         public IEnumerator<T> GetEnumerator()
         {
             return list.GetEnumerator();
         }
 
+        /// <inheritdoc />
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
         {
             return list.GetEnumerator();

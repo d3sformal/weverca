@@ -31,7 +31,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 {
     class CopyArrayDescriptorFactory : IArrayDescriptorFactory
     {
-
         public IArrayDescriptor CreateArrayDescriptor(IWriteableSnapshotStructure targetStructure, AssociativeArray createdArray, MemoryIndex memoryIndex)
         {
             CopyArrayDescriptor descriptor = new CopyArrayDescriptor();
@@ -42,6 +41,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of array descriptor. Creation of builder creates new copy all the time.
+    /// </summary>
     class CopyArrayDescriptor : CopyIndexContainer, IArrayDescriptor, IArrayDescriptorBuilder
     {
         private MemoryIndex parentIndex;

@@ -45,13 +45,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
         IEnumerable<TKey> Keys { get; }
 
         /// <summary>
-        /// Gets the <see cref="TValue"/> with the specified key.
+        /// Gets the value with the specified key.
         /// </summary>
         /// <value>
-        /// The <see cref="TValue"/>.
+        /// The value.
         /// </value>
         /// <param name="key">The key.</param>
-        /// <returns>Value stored with the specified key.</returns>
+        /// <returns>
+        /// Value stored with the specified key.
+        /// </returns>
         TValue this[TKey key] { get; }
 
         /// <summary>
@@ -84,10 +86,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common
     public interface IWriteableAssociativeContainer<TKey, TValue> : IReadonlyAssociativeContainer<TKey, TValue>
     {
         /// <summary>
-        /// Gets or sets the <see cref="TValue"/> with the specified key.
+        /// Gets or sets the value with the specified key.
         /// </summary>
         /// <value>
-        /// The <see cref="TValue"/>.
+        /// The value.
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns>Value stored with the specified key.</returns>

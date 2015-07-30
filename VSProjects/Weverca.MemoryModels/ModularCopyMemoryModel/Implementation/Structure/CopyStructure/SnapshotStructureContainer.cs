@@ -46,14 +46,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
     /// An order to traverse the lookup path by fields and indexes there are another containers ArrayDescriptors
     /// and ObjectDescriptors where names of endexes and fields are mapped to memory indexes.
     /// 
-    /// Another structural information are stored in associative container IndexData which maps memory index to
+    /// Another structural information are stored in associative container IndexDefinition which maps memory index to
     /// IndexData object. In this container can be found definition of alias connections, associated array for
     /// memory location and objecst which are stored there.
-    /// 
-    /// Data of memory locations are stored in snapshot data container which contains associative container
-    /// to map memory indexes to <see cref="Weverca.AnalysisFramework.Memory.MemoryEntry"/> instance. Separation
-    /// of structure and data allows to have multiple data models with the same data structure to handle both
-    /// levels of analysis. Using Data property or public interface can be accesed current version of data.
     /// 
     /// This class should be modified only during the snapshot transaction and then when commit is made there should be
     /// no structural changes at all.
@@ -74,9 +69,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
+        /// Initializes a new instance of the <see cref="SnapshotStructureContainer" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="factories">The factories.</param>
         private SnapshotStructureContainer(ModularMemoryModelFactories factories)
             : base(factories)
         {
@@ -85,8 +80,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <summary>
         /// Creates empty structure which contains no data in containers.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New empty structure which contains no data in containers.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New empty structure which contains no data in containers.
+        /// </returns>
         public static SnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories)
         {
             SnapshotStructureContainer data = new SnapshotStructureContainer(factories);
@@ -104,8 +101,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <summary>
         /// Creates the structure with memory stack with global level only.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New structure with memory stack with global level only.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New structure with memory stack with global level only.
+        /// </returns>
         public static SnapshotStructureContainer CreateGlobal(ModularMemoryModelFactories factories)
         {
             SnapshotStructureContainer data = new SnapshotStructureContainer(factories);
@@ -125,8 +124,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         /// <summary>
         /// Creates new structure object as copy of this structure which contains the same data as this instace.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New copy of this structure which contains the same data as this instace.</returns>
+        /// <returns>
+        /// New copy of this structure which contains the same data as this instace.
+        /// </returns>
         public SnapshotStructureContainer Copy()
         {
             SnapshotStructureContainer data = new SnapshotStructureContainer(Factories);
@@ -704,11 +704,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
 
         #endregion
 
+        /// <inheritdoc />
         public override void AddStackLevel(int level)
         {
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc />
         public override void SetLocalStackLevelNumber(int level)
         {
             throw new NotImplementedException();

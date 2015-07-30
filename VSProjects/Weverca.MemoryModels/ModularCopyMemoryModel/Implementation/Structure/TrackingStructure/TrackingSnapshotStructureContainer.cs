@@ -54,13 +54,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
     /// IndexData object. In this container can be found definition of alias connections, associated array for
     /// memory location and objecst which are stored there.
     /// 
-    /// Data of memory locations are stored in snapshot data container which contains associative container
-    /// to map memory indexes to <see cref="Weverca.AnalysisFramework.Memory.MemoryEntry"/> instance. Separation
-    /// of structure and data allows to have multiple data models with the same data structure to handle both
-    /// levels of analysis. Using Data property or public interface can be accesed current version of data.
-    /// 
     /// This class should be modified only during the snapshot transaction and then when commit is made there should be
     /// no structural changes at all.
+    /// 
+    /// Class uses change tracke rto keep information about changed indexes and declarations. It uses parallel call 
+    /// stack which uses id of the call PPG to identify each call level. Copy implementation uses incremental call level 
+    /// to identify each call stack level.
     /// </summary>
     public class TrackingSnapshotStructureContainer : AbstractSnapshotStructure
     {
@@ -81,9 +80,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SnapshotStructureContainer"/> class.
+        /// Initializes a new instance of the <see cref="SnapshotStructureContainer" /> class.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="factories">The factories.</param>
         private TrackingSnapshotStructureContainer(ModularMemoryModelFactories factories)
             : base(factories)
         {
@@ -93,8 +92,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// <summary>
         /// Creates empty structure which contains no data in containers.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New empty structure which contains no data in containers.</returns>
+        /// <param name="factories">The factories.</param>
+        /// <returns>
+        /// New empty structure which contains no data in containers.
+        /// </returns>
         public static TrackingSnapshotStructureContainer CreateEmpty(ModularMemoryModelFactories factories)
         {
             TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(factories);
@@ -112,8 +113,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.T
         /// <summary>
         /// Creates new structure object as copy of this structure which contains the same data as this instace.
         /// </summary>
-        /// <param name="snapshot">The snapshot.</param>
-        /// <returns>New copy of this structure which contains the same data as this instace.</returns>
+        /// <returns>
+        /// New copy of this structure which contains the same data as this instace.
+        /// </returns>
         public TrackingSnapshotStructureContainer Copy()
         {
             TrackingSnapshotStructureContainer data = new TrackingSnapshotStructureContainer(Factories);

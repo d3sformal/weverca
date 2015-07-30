@@ -38,6 +38,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of index definition. Creation of builder creates new copy all the time.
+    /// </summary>
     class CopyIndexDefinition : IIndexDefinition, IIndexDefinitionBuilder
     {
         private IMemoryAlias aliases;

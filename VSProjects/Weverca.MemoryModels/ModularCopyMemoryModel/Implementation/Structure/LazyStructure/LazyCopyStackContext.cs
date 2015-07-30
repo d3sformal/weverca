@@ -39,6 +39,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
     }
 
+    /// <summary>
+    /// Lazy implementation of the stack context.
+    /// 
+    /// This is a lazy implementation. Copy method creates new instance with readonly 
+    /// referece to the inner container. Container is copied when the first update operation 
+    /// is performed. Otherwise is shared with previous instances.
+    /// </summary>
     class LazyCopyStackContext : IReadonlyStackContext, IWriteableStackContext
     {
         private LazyCopyIndexContainer variables;
@@ -46,6 +53,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         private LazyCopySet<MemoryIndex> temporaryVariables;
         private LazyCopySet<AssociativeArray> arrays;
 
+        /// <inheritdoc />
         public int StackLevel
         {
             get;
@@ -126,6 +134,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
             get { return arrays; }
         }
 
+        /// <inheritdoc />
         public IWriteableStackContext Clone()
         {
             return new LazyCopyStackContext(this);

@@ -184,6 +184,7 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopyObjectValueContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Algorithm\AlgorithmInstances.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Common\AssociativeContainer.cs" />
+    <Compile Include="ModularCopyMemoryModel\Interfaces\Common\ChangeTracker.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataFactory.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Data\SnapshotDataProxy.cs" />
     <Compile Include="ModularCopyMemoryModel\Interfaces\Structure\DeclarationContainer.cs" />
@@ -246,7 +247,6 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\TrackingStructure\TrackingSnapshotStructureContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyCopySnapshotStructure.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopyDeclarationContainer.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopyDictionary.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopyIndexContainer.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopySet.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Structure\LazyStructure\LazyCopyStackContext.cs" />
