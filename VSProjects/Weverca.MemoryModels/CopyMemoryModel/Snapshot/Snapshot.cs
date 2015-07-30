@@ -653,6 +653,7 @@ namespace Weverca.MemoryModels.CopyMemoryModel
         /// Merge given call output with current context.
         /// WARNING: Call can change many objects via references (they don't has to be in global context)
         /// </summary>
+        /// <param name="callerPoint">The caller point.</param>
         /// <param name="callOutputs">Output snapshots of call level</param>
         /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
         protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)

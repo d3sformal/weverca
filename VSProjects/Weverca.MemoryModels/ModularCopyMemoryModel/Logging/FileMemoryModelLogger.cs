@@ -36,7 +36,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Logging
     class FileMemoryModelLogger : ILogger
     {
         static readonly string logFile = @"copy_memory_model.log";
-        static Snapshot oldOne = null;
 
         static FileMemoryModelLogger()
         {

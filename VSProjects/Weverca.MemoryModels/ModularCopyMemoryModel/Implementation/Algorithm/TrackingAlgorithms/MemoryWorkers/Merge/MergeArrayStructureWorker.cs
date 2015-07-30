@@ -9,6 +9,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Provides merge operations connected with arrays.
+    /// 
+    /// Collects arrays from source indexes and merges them to the target.
+    /// </summary>
     class MergeArrayStructureWorker
     {
         private IWriteableSnapshotStructure writeableTargetStructure;
@@ -19,6 +24,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private bool hasArray = false;
         private AssociativeArray targetArray;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeArrayStructureWorker"/> class.
+        /// </summary>
+        /// <param name="writeableTargetStructure">The writeable target structure.</param>
+        /// <param name="worker">The worker.</param>
         public MergeArrayStructureWorker(IWriteableSnapshotStructure writeableTargetStructure, TrackingMergeStructureWorker worker)
         {
             this.writeableTargetStructure = writeableTargetStructure;
@@ -27,6 +37,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             sourceArrays = new List<ContainerContext>();
         }
 
+        /// <summary>
+        /// Collects the source array.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="operationContext">The operation context.</param>
+        /// <param name="sourceArray">The source array.</param>
         public void collectSourceArray(MemoryIndex targetIndex, MergeOperation operation, MergeOperationContext operationContext, AssociativeArray sourceArray)
         {
             // Source array
@@ -60,11 +77,21 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Sets the target array.
+        /// </summary>
+        /// <param name="targetArray">The target array.</param>
         public void SetTargetArray(AssociativeArray targetArray)
         {
             this.targetArray = targetArray;
         }
 
+        /// <summary>
+        /// Merges the arrays into the target index and clear inner collection.
+        /// </summary>
+        /// <param name="targetSnapshot">The target snapshot.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="operation">The operation.</param>
         public void MergeArraysAndClear(Snapshot targetSnapshot, MemoryIndex targetIndex, MergeOperation operation)
         {
             if (hasArray)

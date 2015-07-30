@@ -19,6 +19,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of assign algorithm.
+    /// 
+    /// At first the algorithm has to make copy of received data to prevent changes during the update 
+    /// of the snapshot. The next task is to find and prepare locations which will be updated and at 
+    /// the end finally perform an update of collected locations.
+    /// </summary>
     class CopyAssignMemoryAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
         public CopyAssignMemoryAlgorithm(ModularMemoryModelFactories factories)
@@ -27,6 +34,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         }
 
+        /// <inheritdoc />
         public void Assign(Snapshot snapshot, Memory.MemoryPath path, AnalysisFramework.Memory.MemoryEntry value, bool forceStrongWrite)
         {
             TemporaryIndex temporaryIndex = snapshot.CreateTemporary();
@@ -47,6 +55,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             snapshot.ReleaseTemporary(temporaryIndex);
         }
 
+        /// <inheritdoc />
         public void AssignAlias(Snapshot snapshot, Memory.MemoryPath targetPath, Memory.MemoryPath sourcePath)
         {
             //Collect alias indexes
@@ -77,6 +86,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             snapshot.ReleaseTemporary(temporaryIndex);
         }
 
+        /// <inheritdoc />
         public void WriteWithoutCopy(Snapshot snapshot, Memory.MemoryPath path, AnalysisFramework.Memory.MemoryEntry value)
         {
             AssignCollector collector = new AssignCollector(snapshot);

@@ -50,8 +50,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         private Snapshot snapshot;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AssignWithoutCopyWorker"/> class.
+        /// Initializes a new instance of the <see cref="AssignWithoutCopyWorker" /> class.
         /// </summary>
+        /// <param name="factories">The factories.</param>
         /// <param name="snapshot">The snapshot.</param>
         public AssignWithoutCopyWorker(ModularMemoryModelFactories factories, Snapshot snapshot)
         {

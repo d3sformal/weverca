@@ -11,15 +11,59 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
+    /// <summary>
+    /// Represents scheduled operation within the assign worker. Sequence of assign operations 
+    /// is stored within the queue and waits for processing.
+    /// </summary>
     abstract class AssignOperation
     {
+        /// <summary>
+        /// Gets the index where to assign into.
+        /// </summary>
+        /// <value>
+        /// The index where to assign into.
+        /// </value>
         public MemoryIndex TargetIndex { get; private set; }
+
+        /// <summary>
+        /// Gets the collected node.
+        /// </summary>
+        /// <value>
+        /// The node.
+        /// </value>
         public MemoryEntryCollectorNode Node { get; private set; }
+
+        /// <summary>
+        /// Gets the values to assign.
+        /// </summary>
+        /// <value>
+        /// The values.
+        /// </value>
         public HashSet<Value> Values { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [process aliases].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [process aliases]; otherwise, <c>false</c>.
+        /// </value>
         public bool ProcessAliases { get; private set; }
 
+        /// <summary>
+        /// Gets the parent assign worker.
+        /// </summary>
+        /// <value>
+        /// The worker.
+        /// </value>
         public AssignWorker Worker { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssignOperation"/> class.
+        /// </summary>
+        /// <param name="worker">The worker.</param>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="memoryEntryNode">The memory entry node.</param>
+        /// <param name="processAliases">if set to <c>true</c> [process aliases].</param>
         public AssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases)
         {
             TargetIndex = targetIndex;
@@ -30,16 +74,39 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             Values = new HashSet<Value>();
         }
 
+        /// <summary>
+        /// Sets the values to target locations and stores them into the snapshot data container.
+        /// </summary>
         protected void setValues()
         {
             Worker.Data.SetMemoryEntry(TargetIndex, new MemoryEntry(Values));
         }
 
+        /// <summary>
+        /// Invokes the processing of the operaton the operation.
+        /// </summary>
         public abstract void ProcessOperation();
 
+        /// <summary>
+        /// Prepares the operation to unknown of created array.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="sourceNode">The source node.</param>
+        /// <returns>New operation of the child node processed by this node.</returns>
         protected abstract AssignOperation prepareOperationToUnknownOfCreatedArray(MemoryIndex targetIndex, MemoryEntryCollectorNode sourceNode);
+
+        /// <summary>
+        /// Prepares the operation to index of created array.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="sourceNode">The source node.</param>
+        /// <returns>New operation of the child node processed by this node.</returns>
         protected abstract AssignOperation prepareOperationToIndexOfCreatedArray(MemoryIndex targetIndex, MemoryEntryCollectorNode sourceNode);
 
+        /// <summary>
+        /// Creates the assigned array.
+        /// </summary>
+        /// <returns>New array which should be inserted into the node.</returns>
         protected AssociativeArray createAssignedArray()
         {
             // Creates new empty array
@@ -63,6 +130,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return arrayValue;
         }
 
+        /// <summary>
+        /// Processes the objects stored within this operation.
+        /// </summary>
         protected void processObjects()
         {
             if (Node.Objects != null && Node.Objects.Count > 0)
@@ -74,6 +144,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Stores objects in given container to this node and process them
+        /// </summary>
+        /// <param name="objects">The objects.</param>
         protected void processObjects(IObjectValueContainer objects)
         {
             if (objects != null && objects.Count > 0)
@@ -96,6 +170,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Processes the index modifications.
+        /// </summary>
         protected void processIndexModifications()
         {
             if (Node.SourceIndexes != null)
@@ -108,6 +185,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Processes the index modifications.
+        /// </summary>
+        /// <param name="index">The index.</param>
         protected void processIndexModifications(MemoryIndex index)
         {
             var indexModification = Worker.PathModifications.GetOrCreateModification(TargetIndex);
@@ -123,6 +204,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Provides STRONG assign into an existing memory index. May invoke delete of an array stored in the index.
+    /// </summary>
     class MemoryIndexMustAssignOperation : AssignOperation
     {
         public MemoryIndexMustAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
@@ -295,6 +379,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Provides WEAK assign into an existing index. Existing array will be merged with the data.
+    /// </summary>
     class MemoryIndexMayAssignOperation : AssignOperation
     {
         public MemoryIndexMayAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
@@ -445,6 +532,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Deletes memory location an all its children.
+    /// </summary>
     class MemoryIndexDeleteAssignOperation : AssignOperation
     {
         public MemoryIndexDeleteAssignOperation(AssignWorker worker, MemoryIndex targetIndex)
@@ -508,6 +598,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Provides WEAK assign into the missing index if there is an unknown index where to get the data from.
+    /// Index will be created and will continue specified data merged with an unknown branch.
+    /// </summary>
     class UnknownIndexMayAssign : AssignOperation
     {
 
@@ -715,6 +809,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Provides MUST assign into the missing index. Index will be created and will continue specified data.
+    /// </summary>
     class UndefinedMustAssignOperation : AssignOperation
     {
         public UndefinedMustAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)
@@ -786,6 +883,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Provides WEAK assign into the missing index if there is NO unknown index where to get the data from.
+    /// Index will be created and will continue specified data merged with undefined value.
+    /// </summary>
     class UndefinedMayAssignOperation : AssignOperation
     {
         public UndefinedMayAssignOperation(AssignWorker worker, MemoryIndex targetIndex, MemoryEntryCollectorNode memoryEntryNode, bool processAliases = true)

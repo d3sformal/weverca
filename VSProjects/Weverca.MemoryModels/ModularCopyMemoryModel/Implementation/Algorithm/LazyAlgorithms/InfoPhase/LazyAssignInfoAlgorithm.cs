@@ -19,6 +19,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Lazy implementation of the assign algorithm for an info phase.
+    /// 
+    /// Algorithm provides no collecting operation but uses an AssignInfo stored within the snapshot.
+    /// 
+    /// The copy assign implementation runs the same collecting process for the memory and the info phases. 
+    /// This approach is wrong because the same collecting process doesn’t propagate all possible values 
+    /// from unknown locations.
+    /// </summary>
     class LazyAssignInfoAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
         public LazyAssignInfoAlgorithm(ModularMemoryModelFactories factories)
@@ -26,6 +35,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
 
         }
+
+        /// <inheritdoc />
         public void Assign(Snapshot snapshot, MemoryPath path, MemoryEntry value, bool forceStrongWrite)
         {
             if (snapshot.AssignInfo == null)
@@ -36,6 +47,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             List<Tuple<MemoryIndex, HashSet<Value>>> valuesToAssign = new List<Tuple<MemoryIndex, HashSet<Value>>>();
 
+            // Prepares locations and values to assign
             foreach (var item in pathModifications.Modifications)
             {
                 MemoryIndex index = item.Key;
@@ -49,6 +61,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                     CollectionMemoryUtils.AddAll(values, value.PossibleValues);
                 }
 
+                // Loads all other datasources where to get additional values to assign - unknown indexes.
                 foreach (var datasource in indexModification.Datasources)
                 {
                     MemoryEntry entry;
@@ -59,6 +72,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
 
+            // Assigns values to locations
             foreach (var item in valuesToAssign)
             {
                 MemoryIndex index = item.Item1;
@@ -69,11 +83,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <inheritdoc />
         public void AssignAlias(Snapshot snapshot, MemoryPath targetPath, MemoryPath sourcePath)
         {
             // Do nothing - Alias cannot be assigned in info mode
         }
 
+        /// <inheritdoc />
         public void WriteWithoutCopy(Snapshot snapshot, MemoryPath path, MemoryEntry value)
         {
             AssignCollector collector = new AssignCollector(snapshot);

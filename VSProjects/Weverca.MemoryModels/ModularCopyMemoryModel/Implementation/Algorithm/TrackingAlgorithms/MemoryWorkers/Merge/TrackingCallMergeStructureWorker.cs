@@ -14,13 +14,31 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Implementation of tracking merge operation to merge structure back to the call point.
+    /// 
+    /// Implementation collects changes within the function.
+    /// </summary>
     class TrackingCallMergeStructureWorker : AbstractTrackingMergeWorker, IReferenceHolder
     {
         private Snapshot callSnapshot;
 
+        /// <summary>
+        /// Gets the memory aliases.
+        /// </summary>
+        /// <value>
+        /// The memory aliases.
+        /// </value>
         internal Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
 
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrackingCallMergeStructureWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="targetSnapshot">The target snapshot.</param>
+        /// <param name="callSnapshot">The call snapshot.</param>
+        /// <param name="sourceSnapshots">The source snapshots.</param>
         public TrackingCallMergeStructureWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, Snapshot callSnapshot, List<Snapshot> sourceSnapshots)
             : base(factories, targetSnapshot, sourceSnapshots, true)
         {
@@ -30,6 +48,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             Factories = factories;
         }
 
+        /// <summary>
+        /// Merges the structure.
+        /// </summary>
         public void MergeStructure()
         {
             isStructureWriteable = true;
@@ -51,6 +72,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             ensureTrackingChanges();
         }
 
+        /// <summary>
+        /// Collects the structure changes.
+        /// </summary>
         private void collectStructureChanges()
         {
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
@@ -74,6 +98,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             targetSnapshot.StructureCallChanges = changeTree.StoredIndexes;
         }
 
+        /// <summary>
+        /// Creates the new structure.
+        /// </summary>
         private void createNewStructure()
         {
             Structure = Factories.SnapshotStructureFactory.CopyInstance(callSnapshot.Structure);
@@ -82,6 +109,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             targetStructure = writeableTargetStructure;
         }
 
+        /// <summary>
+        /// Updates the aliases.
+        /// </summary>
         private void updateAliases()
         {
             foreach (var item in MemoryAliases)
@@ -108,6 +138,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the declarations.
+        /// </summary>
         private void mergeDeclarations()
         {
             foreach (QualifiedName functionName in functionChages)
@@ -139,6 +172,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Ensures the tracking changes.
+        /// </summary>
         private void ensureTrackingChanges()
         {
             foreach (MemoryIndex index in this.changeTree.StoredIndexes)
@@ -157,6 +193,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Stores the local arays.
+        /// </summary>
         private void storeLocalArays()
         {
             foreach (var context in snapshotContexts)
@@ -168,6 +207,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Creates the new operation accessor.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
+        /// <returns>Returns proper version of operation accessor</returns>
         protected override TrackingMergeWorkerOperationAccessor createNewOperationAccessor(MergeOperation operation)
         {
             return new OperationAccessor(operation, targetSnapshot, writeableTargetStructure, this);
@@ -231,6 +275,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Gets the alias information.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns></returns>
         internal MemoryAliasInfo getAliasInfo(MemoryIndex index)
         {
             MemoryAliasInfo aliasInfo;
@@ -244,6 +293,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return aliasInfo;
         }
 
+        /// <summary>
+        /// Accessor to apply custom operation.
+        /// </summary>
         private class OperationAccessor : TrackingMergeWorkerOperationAccessor
         {
 
@@ -331,7 +383,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
             return targetIndex;
         }
-
+        
         protected override void deleteChild(ITargetContainerContext targetContainerContext, string childName)
         {
             targetContainerContext.getWriteableSourceContainer().RemoveIndex(childName);
@@ -339,16 +391,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         protected override bool MissingStacklevel(int stackLevel)
         {
-            /*if (ensureAllStackContexts)
-            {
-                writeableTargetStructure.AddStackLevel(stackLevel);
-                return true;
-            }
-            else
-            {
-                return false;
-            }*/
-
             return false;
         }
     }

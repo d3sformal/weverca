@@ -16,6 +16,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of commit algorithm. Always chesk whole memory state for changes.
+    /// </summary>
     class CopyCommitMemoryAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
         public CopyCommitMemoryAlgorithm(ModularMemoryModelFactories factories)
@@ -24,6 +27,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         }
 
+        /// <inheritdoc />
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(
@@ -32,6 +36,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return worker.CompareStructureAndSimplify(false);
         }
 
+        /// <inheritdoc />
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(

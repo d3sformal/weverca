@@ -8,9 +8,20 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Defines the type of processing the children of the processed node
+    /// </summary>
     public enum MergeOperationType
     {
-        ChangedOnly, WholeSubtree
+        /// <summary>
+        /// Continue thru changes only, other locations will be skipped
+        /// </summary>
+        ChangedOnly,
+
+        /// <summary>
+        /// The merge will process whole subtree - used when subtree is deleted or to add undefined value to an array
+        /// </summary>
+        WholeSubtree
     }
 
     /// <summary>
@@ -33,6 +44,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// </value>
         public bool IsUndefined { get; private set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is delete operation.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is delete operation; otherwise, <c>false</c>.
+        /// </value>
         public bool IsDeleteOperation { get; private set; }
 
         /// <summary>
@@ -73,8 +90,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         /// <summary>
         /// Adds the specified memory index into sources for this operation.
         /// </summary>
-        /// <param name="memoryIndex">Index of the memory.</param>
-        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="context">The context.</param>
         /// <exception cref="System.NullReferenceException"></exception>
         public void Add(MergeOperationContext context)
         {
@@ -114,6 +130,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return TargetIndex.ToString();
         }
 
+        /// <summary>
+        /// Gets or sets the tree node.
+        /// </summary>
+        /// <value>
+        /// The tree node.
+        /// </value>
         public MemoryIndexTreeNode TreeNode { get; set; }
 
         internal void SetDeleteOperation()

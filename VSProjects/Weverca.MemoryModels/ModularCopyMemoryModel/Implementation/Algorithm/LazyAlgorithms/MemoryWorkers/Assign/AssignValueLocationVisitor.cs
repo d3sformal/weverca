@@ -24,11 +24,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         public bool IsMust { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocationVisitor"/> class.
+        /// Initializes a new instance of the <see cref="AssignValueLocationVisitor"/> class.
         /// </summary>
         /// <param name="snapshot">The snapshot.</param>
         /// <param name="entry">The entry.</param>
-        /// <param name="isMust">if set to <c>true</c> [is must].</param>
+        /// <param name="isMust">if set to <c>true</c> then this is a MUST operation.</param>
         public AssignValueLocationVisitor(Snapshot snapshot, MemoryEntry entry, bool isMust)
         {
             this.snapshot = snapshot;

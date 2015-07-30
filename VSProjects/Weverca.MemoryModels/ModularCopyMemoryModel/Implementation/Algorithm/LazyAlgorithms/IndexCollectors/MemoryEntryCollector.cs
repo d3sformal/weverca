@@ -12,17 +12,62 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
+    /// <summary>
+    /// This is the collecting class for lazy assign algorithm.
+    /// 
+    /// Instances are used for preparing all data which will be assigned. Instance will go thru whole 
+    /// sub trees of all assigned arrays and builds tree representation of merged data. Produced subtree 
+    /// is used within the assign algorithm to store assigned value into collected locations.
+    /// </summary>
     class MemoryEntryCollector
     {
+        /// <summary>
+        /// Gets the snapshot.
+        /// </summary>
+        /// <value>
+        /// The snapshot.
+        /// </value>
         public Snapshot Snapshot { get; private set; }
+        /// <summary>
+        /// Gets the structure.
+        /// </summary>
+        /// <value>
+        /// The structure.
+        /// </value>
         public IReadOnlySnapshotStructure Structure { get; private set; }
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
+        /// <value>
+        /// The data.
+        /// </value>
         public IReadOnlySnapshotData Data { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the root node.
+        /// </summary>
+        /// <value>
+        /// The root node.
+        /// </value>
         public MemoryEntryCollectorNode RootNode { get; set; }
+
+        /// <summary>
+        /// Gets the root memory entry.
+        /// </summary>
+        /// <value>
+        /// The root memory entry.
+        /// </value>
         public MemoryEntry RootMemoryEntry { get; private set; }
 
+        /// <summary>
+        /// The collecting queue
+        /// </summary>
         public LinkedList<MemoryEntryCollectorNode> collectingQueue = new LinkedList<MemoryEntryCollectorNode>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MemoryEntryCollector"/> class.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
         public MemoryEntryCollector(Snapshot snapshot)
         {
             this.Snapshot = snapshot;
@@ -30,6 +75,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.Data = snapshot.Data.Readonly;
         }
 
+        /// <summary>
+        /// Processes the root memory entry. This is the beginning of an computation which creates the root node from given memory entry.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
         public void ProcessRootMemoryEntry(MemoryEntry entry)
         {
             RootNode = new MemoryEntryCollectorNode();
@@ -42,6 +91,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         }
 
+        /// <summary>
+        /// Processes the root indexes. This is the beginning of an computation which creates the root node from given sets of indexes.
+        /// Used to collect all data from aliased locations.
+        /// </summary>
+        /// <param name="mustIndexes">The must indexes.</param>
+        /// <param name="mayIndexes">The may indexes.</param>
+        /// <param name="values">The values.</param>
         public void ProcessRootIndexes(HashSet<MemoryIndex> mustIndexes, HashSet<MemoryIndex> mayIndexes, IEnumerable<Value> values)
         {
             RootNode = new MemoryEntryCollectorNode();
@@ -68,11 +124,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             RootMemoryEntry = RootNode.GenerateMemeoryEntry(values);
         }
 
+        /// <summary>
+        /// Adds the node to the collecting queue.
+        /// </summary>
+        /// <param name="node">The node.</param>
         public void AddNode(MemoryEntryCollectorNode node)
         {
             collectingQueue.AddLast(node);
         }
 
+        /// <summary>
+        /// Process all nodes stored in the queue to build the tree.
+        /// </summary>
         private void processQueue()
         {
             while (collectingQueue.Count > 0)
@@ -91,6 +154,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
     class MemoryEntryCollectorNode : AbstractValueVisitor
     {
         private static MemoryEntryCollectorNode emptyNode = null;
+
+
+        /// <summary>
+        /// Produce an empty node with no inner data an no childs. This node can be used as 
+        /// an unknown node in the assign algorithm.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <returns>An empty node.</returns>
         public static MemoryEntryCollectorNode GetEmptyNode(Snapshot snapshot)
         {
             if (emptyNode != null)
@@ -109,18 +180,76 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
 
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is must.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is must; otherwise, <c>false</c>.
+        /// </value>
         public bool IsMust { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of source indexes.
+        /// </summary>
+        /// <value>
+        /// The list of source indexes.
+        /// </value>
         public List<SourceIndex> SourceIndexes { get; set; }
 
+        /// <summary>
+        /// Gets the scalar values stored at this node.
+        /// </summary>
+        /// <value>
+        /// The scalar values.
+        /// </value>
         public HashSet<Value> ScalarValues { get; private set; }
+
+        /// <summary>
+        /// Gets the arrays.
+        /// </summary>
+        /// <value>
+        /// The arrays.
+        /// </value>
         public HashSet<AssociativeArray> Arrays { get; private set; }
+
+        /// <summary>
+        /// Gets the objects.
+        /// </summary>
+        /// <value>
+        /// The objects.
+        /// </value>
         public HashSet<ObjectValue> Objects { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the collection named children.
+        /// </summary>
+        /// <value>
+        /// The named children.
+        /// </value>
         public Dictionary<string, MemoryEntryCollectorNode> NamedChildren { get; set; }
+
+        /// <summary>
+        /// Gets or sets any child.
+        /// </summary>
+        /// <value>
+        /// Any child.
+        /// </value>
         public MemoryEntryCollectorNode AnyChild { get; set; }
-
-
+        
+        /// <summary>
+        /// Gets or sets the collection of all aliases to the merged location.
+        /// </summary>
+        /// <value>
+        /// The references.
+        /// </value>
         public ReferenceCollector References { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance has aliases.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance has aliases; otherwise, <c>false</c>.
+        /// </value>
         public bool HasAliases { get { return References != null && References.HasAliases; } }
 
         private bool hasArray;
@@ -378,11 +507,32 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
     }
 
+    /// <summary>
+    /// Represents combination of the memory index and snapshot. Used as the information where to get the data from.
+    /// </summary>
     class SourceIndex
     {
+        /// <summary>
+        /// Gets the index.
+        /// </summary>
+        /// <value>
+        /// The index.
+        /// </value>
         public MemoryIndex Index { get; private set; }
+
+        /// <summary>
+        /// Gets the snapshot.
+        /// </summary>
+        /// <value>
+        /// The snapshot.
+        /// </value>
         public Snapshot Snapshot { get; private set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SourceIndex"/> class.
+        /// </summary>
+        /// <param name="sourceIndex">Index of the source.</param>
+        /// <param name="snapshot">The snapshot.</param>
         public SourceIndex(MemoryIndex sourceIndex, Snapshot snapshot)
         {
             Index = sourceIndex;

@@ -32,6 +32,10 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
+    /// <summary>
+    /// This merge worker merges distinct branches of the same memory tree to the new location.
+    /// Used to merge arrays which should be assigned.
+    /// </summary>
     class MergeWithinSnapshotWorker
     {
         private Snapshot targetSnapshot;

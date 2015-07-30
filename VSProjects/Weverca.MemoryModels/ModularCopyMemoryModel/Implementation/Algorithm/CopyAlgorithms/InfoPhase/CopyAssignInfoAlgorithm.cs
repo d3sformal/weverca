@@ -17,6 +17,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of assign algorithm for assign in info phase. 
+    /// Writes given data to an existing locations.
+    /// </summary>
     class CopyAssignInfoAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
         public CopyAssignInfoAlgorithm(ModularMemoryModelFactories factories)
@@ -25,6 +29,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         }
 
+        /// <inheritdoc />
         public void Assign(Snapshot snapshot, Memory.MemoryPath path, AnalysisFramework.Memory.MemoryEntry value, bool forceStrongWrite)
         {
             AssignCollector collector = new AssignCollector(snapshot);
@@ -39,11 +44,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             worker.Assign(collector, value);
         }
 
+        /// <inheritdoc />
         public void AssignAlias(Snapshot snapshot, Memory.MemoryPath targetPath, Memory.MemoryPath sourcePath)
         {
             // Do nothing - Alias cannot be assigned in info mode
         }
 
+        /// <inheritdoc />
         public void WriteWithoutCopy(Snapshot snapshot, Memory.MemoryPath path, AnalysisFramework.Memory.MemoryEntry value)
         {
             AssignCollector collector = new AssignCollector(snapshot);

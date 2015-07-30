@@ -15,13 +15,42 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Tracking version of merge algorithm which merges the structural data.
+    /// </summary>
     class TrackingMergeStructureWorker : IReferenceHolder
     {
 
+        /// <summary>
+        /// Gets or sets the structure.
+        /// </summary>
+        /// <value>
+        /// The structure.
+        /// </value>
         public ISnapshotStructureProxy Structure { get; set; }
+
+        /// <summary>
+        /// Gets or sets the factories.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
         public ModularMemoryModelFactories Factories { get; set; }
 
+        /// <summary>
+        /// Gets the memory aliases.
+        /// </summary>
+        /// <value>
+        /// The memory aliases.
+        /// </value>
         public Dictionary<MemoryIndex, MemoryAliasInfo> MemoryAliases { get; private set; }
+
+        /// <summary>
+        /// Gets the snapshot.
+        /// </summary>
+        /// <value>
+        /// The snapshot.
+        /// </value>
         public Snapshot Snapshot { get { return targetSnapshot; } }
 
         private Snapshot targetSnapshot;
@@ -42,6 +71,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private MergeAliasStructureWorker aliasWorker;
         private MergeArrayStructureWorker arrayWorker;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrackingMergeStructureWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="targetSnapshot">The target snapshot.</param>
+        /// <param name="sourceSnapshots">The source snapshots.</param>
         public TrackingMergeStructureWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots)
         {
             MemoryAliases = new Dictionary<MemoryIndex, MemoryAliasInfo>();
@@ -56,6 +91,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the structure.
+        /// </summary>
         public void MergeStructure()
         {
             createSnapshotContexts();
@@ -76,6 +114,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             ensureTrackingChanges();
         }
 
+        /// <summary>
+        /// Calls the merge structure.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         public void CallMergeStructure(Snapshot callSnapshot)
         {
             createSnapshotContexts();
@@ -96,6 +138,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Merge methods
 
+        /// <summary>
+        /// Creates the snapshot contexts.
+        /// </summary>
         private void createSnapshotContexts()
         {
             foreach (Snapshot sourceSnapshot in sourceSnapshots)
@@ -112,6 +157,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Merge
 
+        /// <summary>
+        /// Collects the structure changes and find ancestor.
+        /// </summary>
+        /// <returns></returns>
         private IReadonlyChangeTracker<IReadOnlySnapshotStructure> collectStructureChangesAndFindAncestor()
         {
             SnapshotContext ancestorContext = snapshotContexts[0];
@@ -131,6 +180,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return ancestor;
         }
 
+        /// <summary>
+        /// Creates the new structure from common ancestor.
+        /// </summary>
+        /// <param name="commonAncestor">The common ancestor.</param>
         private void createNewStructureFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotStructure> commonAncestor)
         {
             Structure = Factories.SnapshotStructureFactory.CreateNewInstanceWithData(commonAncestor.Container);
@@ -146,6 +199,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             objectWorker = new MergeObjectsStructureWorker(writeableTargetStructure, this);
         }
 
+        /// <summary>
+        /// Creates the stack levels.
+        /// </summary>
         private void createStackLevels()
         {
             int localLevel = -1;
@@ -181,6 +237,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Call merge
 
+        /// <summary>
+        /// Collects the call structure changes.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         private void collectCallStructureChanges(Snapshot callSnapshot)
         {
             List<MemoryIndexTree> changes = new List<MemoryIndexTree>();
@@ -203,6 +263,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             targetSnapshot.StructureCallChanges = changeTree.StoredIndexes;
         }
 
+        /// <summary>
+        /// Creates the new structure from call snapshot.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         private void createNewStructureFromCallSnapshot(Snapshot callSnapshot)
         {
             Structure = Factories.SnapshotStructureFactory.CopyInstance(callSnapshot.Structure);
@@ -218,6 +282,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             objectWorker = new MergeObjectsStructureWorker(writeableTargetStructure, this);
         }
 
+        /// <summary>
+        /// Stores the local arays.
+        /// </summary>
         private void storeLocalArays()
         {
             foreach (var context in snapshotContexts)
@@ -231,6 +298,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #endregion
 
+        /// <summary>
+        /// Merges the declarations.
+        /// </summary>
         private void mergeDeclarations()
         {
             foreach (QualifiedName functionName in functionChages)
@@ -262,6 +332,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the object definitions.
+        /// </summary>
         private void mergeObjectDefinitions()
         {
             foreach (var objectDefinition in changeTree.ObjectTreeRoots)
@@ -313,6 +386,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the memory stacks roots.
+        /// </summary>
         private void mergeMemoryStacksRoots()
         {
             foreach (var memoryStack in changeTree.MemoryStack)
@@ -354,6 +430,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Processes the merge operations.
+        /// </summary>
         private void processMergeOperations()
         {
             // Process operations while queue is not empty
@@ -374,6 +453,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Updates the aliases.
+        /// </summary>
         private void updateAliases()
         {
             foreach (var item in MemoryAliases)
@@ -400,6 +482,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Ensures the tracking changes.
+        /// </summary>
         private void ensureTrackingChanges()
         {
             foreach (MemoryIndex index in this.changeTree.StoredIndexes)
@@ -422,6 +507,15 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Collection changes
 
+        /// <summary>
+        /// Gets the first common ancestor.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="trackerA">The tracker a.</param>
+        /// <param name="trackerB">The tracker b.</param>
+        /// <param name="currentChanges">The current changes.</param>
+        /// <param name="changes">The changes.</param>
+        /// <returns>Located ancestor</returns>
         protected IReadonlyChangeTracker<T> getFirstCommonAncestor<T>(
             IReadonlyChangeTracker<T> trackerA,
             IReadonlyChangeTracker<T> trackerB,
@@ -460,6 +554,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return trackerA;
         }
 
+        /// <summary>
+        /// Collects the single function changes.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="callSnapshot">The call snapshot.</param>
+        /// <param name="tracker">The tracker.</param>
+        /// <param name="currentChanges">The current changes.</param>
+        /// <param name="changes">The changes.</param>
         protected void collectSingleFunctionChanges<T>(
             Snapshot callSnapshot, IReadonlyChangeTracker<T> tracker,
             MemoryIndexTree currentChanges, List<MemoryIndexTree> changes)
@@ -502,6 +604,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Creating operations
 
+        /// <summary>
+        /// Creates the and enqueue operations.
+        /// </summary>
+        /// <param name="targetContainerContext">The target container context.</param>
+        /// <param name="treeNode">The tree node.</param>
+        /// <param name="sourceContainers">The source containers.</param>
+        /// <param name="alwaysDefined">if set to <c>true</c> [always defined].</param>
         public void CreateAndEnqueueOperations(ITargetContainerContext targetContainerContext, MemoryIndexTreeNode treeNode,
             List<ContainerContext> sourceContainers, bool alwaysDefined)
         {
@@ -533,6 +642,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Collects the indexes.
+        /// </summary>
+        /// <param name="childName">Name of the child.</param>
+        /// <param name="sourceContainers">The source containers.</param>
+        /// <param name="operation">The operation.</param>
+        /// <returns>True if there is some defined child; otherwise false</returns>
         private bool collectIndexes(string childName, List<ContainerContext> sourceContainers, MergeOperation operation)
         {
             bool childDefined = false;
@@ -564,6 +680,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return childDefined;
         }
 
+        /// <summary>
+        /// Enqueues the merge operation.
+        /// </summary>
+        /// <param name="childName">Name of the child.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="targetContainerContext">The target container context.</param>
+        /// <param name="childTreeNode">The child tree node.</param>
+        /// <param name="alwaysDefined">if set to <c>true</c> [always defined].</param>
         private void enqueueMergeOperation(string childName, MergeOperation operation, ITargetContainerContext targetContainerContext, MemoryIndexTreeNode childTreeNode, bool alwaysDefined)
         {
             IReadonlyIndexContainer targetContainer = targetContainerContext.getSourceContainer();
@@ -591,6 +715,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             operationQueue.AddLast(operation);
         }
 
+        /// <summary>
+        /// Enqueues the delete operation.
+        /// </summary>
+        /// <param name="childName">Name of the child.</param>
+        /// <param name="operation">The operation.</param>
+        /// <param name="targetContainerContext">The target container context.</param>
+        /// <param name="childTreeNode">The child tree node.</param>
         private void enqueueDeleteOperation(string childName, MergeOperation operation, ITargetContainerContext targetContainerContext, MemoryIndexTreeNode childTreeNode)
         {
             IReadonlyIndexContainer targetContainer = targetContainerContext.getSourceContainer();
@@ -608,6 +739,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Enqueues the merge unknown operation.
+        /// </summary>
+        /// <param name="targetContainerContext">The target container context.</param>
+        /// <param name="anyNode">Any node.</param>
+        /// <param name="sourceContainers">The source containers.</param>
         private void enqueueMergeUnknownOperation(ITargetContainerContext targetContainerContext, MemoryIndexTreeNode anyNode, List<ContainerContext> sourceContainers)
         {
             MergeOperation unknownOperation = new MergeOperation();
@@ -626,6 +763,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             operationQueue.AddLast(unknownOperation);
         }
 
+        /// <summary>
+        /// Creates the new index of the target.
+        /// </summary>
+        /// <param name="targetContainerContext">The target container context.</param>
+        /// <param name="childName">Name of the child.</param>
+        /// <returns></returns>
         private MemoryIndex createNewTargetIndex(ITargetContainerContext targetContainerContext, string childName)
         {
             MemoryIndex targetIndex = targetContainerContext.createMemoryIndex(childName);
@@ -640,6 +783,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Merge operation
 
+        /// <summary>
+        /// Processes the merge operation.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
         private void processMergeOperation(MergeOperation operation)
         {
             MemoryIndex targetIndex = operation.TargetIndex;
@@ -686,6 +833,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Delete operation processing
 
+        /// <summary>
+        /// Processes the delete operation.
+        /// </summary>
+        /// <param name="operation">The operation.</param>
         private void processDeleteOperation(MergeOperation operation)
         {
             MemoryIndex targetIndex = operation.TargetIndex;
@@ -711,6 +862,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Deletes the array.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="targetArray">The target array.</param>
         public void DeleteArray(MemoryIndex targetIndex, AssociativeArray targetArray)
         {
             IArrayDescriptor targetArrayDescriptor = targetStructure.GetDescriptor(targetArray);
@@ -736,6 +892,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             writeableTargetStructure.RemoveArray(targetIndex, targetArray);
         }
 
+        /// <summary>
+        /// Deletes the aliases.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="targetAliases">The target aliases.</param>
         private void deleteAliases(MemoryIndex targetIndex, IMemoryAlias targetAliases)
         {
             foreach (MemoryIndex aliasIndex in targetAliases.MustAliases)
@@ -758,6 +919,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Alias processing
 
+        /// <summary>
+        /// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
+        /// If given memory index contains no aliases new alias entry is created.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAliases">The must aliases.</param>
+        /// <param name="mayAliases">The may aliases.</param>
         public void AddAliases(MemoryIndex index, IEnumerable<MemoryIndex> mustAliases, IEnumerable<MemoryIndex> mayAliases)
         {
             MemoryAliasInfo aliasInfo = getAliasInfo(index);
@@ -781,6 +949,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Adds the aliases to given index. Alias entry of the given alias indexes are not changed.
+        /// If given memory index contains no aliases new alias entry is created.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="mustAlias">The must alias.</param>
+        /// <param name="mayAlias">The may alias.</param>
         public void AddAlias(MemoryIndex index, MemoryIndex mustAlias, MemoryIndex mayAlias)
         {
             MemoryAliasInfo aliasInfo = getAliasInfo(index);
@@ -802,6 +977,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Gets the alias information.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <returns>Alias info for the processed index</returns>
         public MemoryAliasInfo getAliasInfo(MemoryIndex index)
         {
             MemoryAliasInfo aliasInfo;

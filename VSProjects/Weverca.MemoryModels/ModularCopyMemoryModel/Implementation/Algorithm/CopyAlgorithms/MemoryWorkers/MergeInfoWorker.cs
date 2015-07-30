@@ -66,10 +66,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         public ISnapshotDataProxy Infos { get; private set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MergeInfoWorker"/> class.
+        /// Initializes a new instance of the <see cref="MergeInfoWorker" /> class.
         /// </summary>
+        /// <param name="factories">The factories.</param>
         /// <param name="targetSnapshot">The target snapshot.</param>
         /// <param name="sourceSnapshots">The source snapshots.</param>
+        /// <param name="targetCallLevel">The target call level.</param>
         /// <param name="isCallMerge">if set to <c>true</c> [is call merge].</param>
         public MergeInfoWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, List<Snapshot> sourceSnapshots, int targetCallLevel, bool isCallMerge = false)
         {

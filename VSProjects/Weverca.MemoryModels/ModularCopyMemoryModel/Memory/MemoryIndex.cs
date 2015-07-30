@@ -460,6 +460,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
         }
 
         /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
+        /// <summary>
         /// Determines whether this index is part of acces path of the other index.
         /// </summary>
         /// <param name="otherIndex">Index of the other.</param>
@@ -625,6 +636,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         /// <summary>
@@ -1002,6 +1024,17 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Memory
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        /// <returns>
+        /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table. 
+        /// </returns>
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         /// <summary>

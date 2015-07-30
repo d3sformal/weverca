@@ -202,7 +202,6 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignAliasWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWithoutCopyWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\AssignWorker.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\CommitWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\ContainerOperations.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\CopyWithinSnapshotWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\MemoryWorkers\IMergeWorker.cs" />
@@ -221,8 +220,6 @@
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\ReferenceCollector.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\SnapshotContext.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\AbstractTrackingMergeWorker.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\OldTrackingMergeDataWorker.cs" />
-    <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\TrackingAlgorithms\MemoryWorkers\Merge\OldTrackingMergeStructureWorker.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\CollectComposedValuesVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\DestroyMemoryVisitor.cs" />
     <Compile Include="ModularCopyMemoryModel\Implementation\Algorithm\CopyAlgorithms\ValueVisitors\ReadValuesVisitors.cs" />

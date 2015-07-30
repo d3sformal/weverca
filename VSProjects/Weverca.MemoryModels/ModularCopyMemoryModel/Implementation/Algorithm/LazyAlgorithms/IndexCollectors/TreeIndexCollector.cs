@@ -11,21 +11,69 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
+    /// <summary>
+    /// Collector class which interprets given memory path as collection of matching 
+    /// memory locations.
+    /// 
+    /// Collector builds the tree of memory indexes from the root of memory tree to all 
+    /// collected locations. Tre can be used in assign algorithm to prepare the memory 
+    /// structure - implicit objects, arrays, create missing target locations.
+    /// </summary>
     class TreeIndexCollector : IPathSegmentVisitor
     {
+        private HashSet<LocationCollectorNode> currentNodes = new HashSet<LocationCollectorNode>();
+        private HashSet<LocationCollectorNode> nextIterationNodes = new HashSet<LocationCollectorNode>();
+        private Dictionary<MemoryIndex, CollectorNode> processedIndex = new Dictionary<MemoryIndex, CollectorNode>();
+        private MemoryPath currentPath;
+
+        /// <summary>
+        /// Gets the snapshot.
+        /// </summary>
+        /// <value>
+        /// The snapshot.
+        /// </value>
         public Snapshot Snapshot { get; private set; }
+
+        /// <summary>
+        /// Gets the structure.
+        /// </summary>
+        /// <value>
+        /// The structure.
+        /// </value>
         public IReadOnlySnapshotStructure Structure { get; private set; }
+
+        /// <summary>
+        /// Gets the data.
+        /// </summary>
+        /// <value>
+        /// The data.
+        /// </value>
         public IReadOnlySnapshotData Data { get; private set; }
+
+        /// <summary>
+        /// Gets the root node which contains the beginning of interpreted access path.
+        /// </summary>
+        /// <value>
+        /// The root node.
+        /// </value>
         public RootCollectorNode RootNode { get; private set; }
 
-        HashSet<LocationCollectorNode> currentNodes = new HashSet<LocationCollectorNode>();
-        HashSet<LocationCollectorNode> nextIterationNodes = new HashSet<LocationCollectorNode>();
 
-        Dictionary<MemoryIndex, CollectorNode> processedIndex = new Dictionary<MemoryIndex, CollectorNode>();
-
-        private MemoryPath currentPath;
+        /// <summary>
+        /// Gets or sets a value indicating whether the aliases should be processed after 
+        /// the end of collecting process. If true then all aliases to the collected locations 
+        /// will be added to the collected tree.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the aliases should be processed after the end of collecting 
+        ///   process; otherwise, <c>false</c>.
+        /// </value>
         public bool PostProcessAliases { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TreeIndexCollector"/> class.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
         public TreeIndexCollector(Snapshot snapshot)
         {
             this.Snapshot = snapshot;
@@ -37,6 +85,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             PostProcessAliases = false;
         }
 
+        /// <summary>
+        /// Process given access path and collects all matching indexes. This is an entry point 
+        /// of the computation.
+        /// </summary>
+        /// <param name="path">The path.</param>
         public void ProcessPath(MemoryPath path)
         {
             currentPath = path;
@@ -133,6 +186,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         #region Segment Processing
 
+        /// <summary>
+        /// Collects the segment from structure.
+        /// </summary>
+        /// <param name="segment">The segment.</param>
+        /// <param name="node">The node.</param>
+        /// <param name="indexContainer">The index container.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectSegmentFromStructure(PathSegment segment, CollectorNode node, 
             IReadonlyIndexContainer indexContainer, bool isMust)
         {
@@ -165,6 +225,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Collects the segment without structure.
+        /// </summary>
+        /// <param name="segment">The segment.</param>
+        /// <param name="node">The node.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectSegmentWithoutStructure(PathSegment segment, CollectorNode node, bool isMust)
         {
             isMust = isMust && node.IsMust;
@@ -186,7 +252,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Collects the field segment from values.
+        /// </summary>
+        /// <param name="fieldSegment">The field segment.</param>
+        /// <param name="node">The node.</param>
+        /// <param name="values">The values.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectFieldSegmentFromValues(FieldPathSegment fieldSegment, CollectorNode node,
             IEnumerable<Value> values, bool isMust)
         {
@@ -195,6 +268,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             visitor.VisitValues(values);
         }
 
+        /// <summary>
+        /// Collects the index segment from values.
+        /// </summary>
+        /// <param name="indexSegment">The index segment.</param>
+        /// <param name="node">The node.</param>
+        /// <param name="values">The values.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectIndexSegmentFromValues(IndexPathSegment indexSegment, CollectorNode node,
             IEnumerable<Value> values, bool isMust)
         {
@@ -203,8 +283,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             CollectIndexValueVisitor visitor = new CollectIndexValueVisitor(indexSegment, this, node, isMust);
             visitor.VisitValues(values);
         }
-
-
 
         private void collectMemoryIndexAnyNode(MemoryIndex unknownIndex, CollectorNode node)
         {
@@ -308,11 +386,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         #region Public Helpers
 
+        /// <summary>
+        /// Collects the alias.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="alias">The alias.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectAlias(LocationCollectorNode node, MemoryIndex alias, bool isMust)
         {
             RootNode.CollectAlias(this, alias, isMust);
         }
 
+        /// <summary>
+        /// Gets the memory entry.
+        /// </summary>
+        /// <param name="memoryIndex">Index of the memory.</param>
+        /// <returns>Returns memory entry of the given index</returns>
         public MemoryEntry GetMemoryEntry(MemoryIndex memoryIndex)
         {
             MemoryEntry entry;
@@ -323,6 +412,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return entry;
         }
 
+        /// <summary>
+        /// Gets the current call level.
+        /// </summary>
+        /// <returns>Call level of curent path</returns>
+        /// <exception cref="System.InvalidOperationException">Unknown GlobalContext state:  + currentPath.Global</exception>
         public int GetCurrentCallLevel()
         {
             switch (currentPath.Global)
@@ -344,82 +438,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
 
         #endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*internal void ProcessSegmentInStructure(PathSegment segment, CollectorNode node, IReadonlyIndexContainer indexContainer, bool isMust = true)
-        {
-            throw new NotImplementedException();
-
-            if (segment.IsAny)
-            {
-                MemoryIndex unknown = indexContainer.UnknownIndex;
-                CollectorNode anyNode = node.GetOrCreateAny(unknown);
-                addNode(unknown, anyNode);
-
-                foreach (var index in indexContainer.Indexes)
-                {
-                    CollectorNode childNode = node.GetOrCreateChild(index.Key, index.Value);
-                    childNode.SetMay();
-                    addNode(index.Value, childNode);
-                }
-            }
-            else if (segment.IsUnknown)
-            {
-                MemoryIndex unknown = indexContainer.UnknownIndex;
-                CollectorNode anyNode = node.GetOrCreateAny(unknown);
-                addNode(unknown, anyNode);
-            }
-            else if (segment.Names.Count == 1)
-            {
-                string name = segment.Names[0];
-                MemoryIndex index;
-                if (indexContainer.TryGetIndex(name, out index))
-                {
-                    CollectorNode childNode = node.GetOrCreateChild(name, index);
-
-                    if (!isMust)
-                    {
-                        childNode.SetMay();
-                    }
-
-                    addNode(index, childNode);
-                }
-                else
-                {
-
-                }
-            }
-            else
-            {
-                foreach (string name in segment.Names)
-                {
-                    MemoryIndex index;
-                    if (indexContainer.TryGetIndex(name, out index))
-                    {
-                        CollectorNode childNode = node.GetOrCreateChild(name, index);
-                        childNode.SetMay();
-                        addNode(index, childNode);
-                    }
-                    else
-                    {
-
-                    }
-                }
-            }
-        }*/
-
-
     }
 }

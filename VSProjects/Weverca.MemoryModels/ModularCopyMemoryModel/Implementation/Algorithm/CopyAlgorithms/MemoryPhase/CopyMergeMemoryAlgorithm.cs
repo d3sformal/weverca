@@ -21,6 +21,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of the merge algorithm.
+    /// 
+    /// Always merges whle content of all given memory trees. Works only with an incremental call stack.
+    /// </summary>
     class CopyMergeMemoryAlgorithm : AlgorithmBase, IMergeAlgorithm
     {
         public CopyMergeMemoryAlgorithm(ModularMemoryModelFactories factories)
@@ -28,6 +33,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
 
         }
+
+        /// <inheritdoc />
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)
         {
             ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(sourceSnapshot.Structure);
@@ -36,6 +43,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             extendedSnapshot.SetMemoryMergeResult(sourceSnapshot.CallLevel, structure, data);
         }
 
+        /// <inheritdoc />
         public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
             ISnapshotStructureProxy structure = Factories.SnapshotStructureFactory.CopyInstance(sourceSnapshot.Structure);
@@ -47,6 +55,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             extendedSnapshot.SetMemoryMergeResult(localLevel, structure, data);
         }
 
+        /// <inheritdoc />
         public void Merge(Snapshot snapshot, List<Snapshot> snapshots)
         {
             int localLevel = findMaxCallLevel(snapshots);
@@ -60,11 +69,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             snapshot.SetMemoryMergeResult(localLevel, structure, data);
         }
 
+        /// <inheritdoc />
         public void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints)
         {
             Merge(snapshot, snapshots);
         }
 
+        /// <inheritdoc />
         public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             int localLevel = callSnapshot.CallLevel;
@@ -77,6 +88,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             snapshot.SetMemoryMergeResult(localLevel, structure, data);
         }
 
+        /// <inheritdoc />
         public void MergeMemoryEntry(Snapshot snapshot, TemporaryIndex temporaryIndex, MemoryEntry dataEntry)
         {
             MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);

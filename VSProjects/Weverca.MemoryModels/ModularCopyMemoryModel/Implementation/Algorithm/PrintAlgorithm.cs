@@ -39,6 +39,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm
         }
     }
 
+    /// <summary>
+    /// Implementation of the print algorithm which creates representation of the snapshot to standard Weverca format.
+    /// </summary>
     class PrintAlgorithm : AlgorithmBase, IPrintAlgorithm
     {
         public PrintAlgorithm(ModularMemoryModelFactories factories)

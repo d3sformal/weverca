@@ -30,7 +30,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         private IWriteableSnapshotStructure associatedStructure;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyIndexDefinition" /> class.
+        /// Initializes a new instance of the <see cref="LazyCopyIndexDefinition" /> class.
         /// </summary>
         /// <param name="associatedStructure">The associated structure.</param>
         public LazyCopyIndexDefinition(IWriteableSnapshotStructure associatedStructure)
@@ -39,7 +39,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Structure.L
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CopyIndexDefinition" /> class.
+        /// Initializes a new instance of the <see cref="LazyCopyIndexDefinition" /> class.
         /// </summary>
         /// <param name="writeableSnapshotStrucure">The writeable snapshot strucure.</param>
         /// <param name="indexDefinition">The index definition.</param>

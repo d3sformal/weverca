@@ -37,10 +37,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Structure
         /// <summary>
         /// Creates the new instance of object descriptor to store object definition in structure.
         /// </summary>
+        /// <param name="targetStructure">The target structure.</param>
         /// <param name="createdObject">The created object.</param>
         /// <param name="type">The type of object.</param>
         /// <param name="memoryIndex">The memory location of object.</param>
-        /// <returns>Created object descriptor instance.</returns>
+        /// <returns>
+        /// Created object descriptor instance.
+        /// </returns>
         IObjectDescriptor CreateObjectDescriptor(IWriteableSnapshotStructure targetStructure, ObjectValue createdObject, TypeValue type, MemoryIndex memoryIndex);
     }
 

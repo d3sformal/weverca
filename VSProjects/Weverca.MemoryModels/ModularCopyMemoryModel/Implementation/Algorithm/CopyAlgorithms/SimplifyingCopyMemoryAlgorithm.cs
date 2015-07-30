@@ -43,7 +43,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
-
+    /// <summary>
+    /// Implementation of memory algorithms for the Copy implementation variant. This implementation
+    /// simplifies created memory entry.
+    /// </summary>
     class SimplifyingCopyMemoryAlgorithm : AlgorithmBase, IMemoryAlgorithm
     {
         public SimplifyingCopyMemoryAlgorithm(ModularMemoryModelFactories factories)

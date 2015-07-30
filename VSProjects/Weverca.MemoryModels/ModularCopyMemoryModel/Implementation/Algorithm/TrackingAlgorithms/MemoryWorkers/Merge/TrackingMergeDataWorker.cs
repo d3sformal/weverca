@@ -13,9 +13,25 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Tracking version of merge algorithm to merge data values.
+    /// </summary>
     class TrackingMergeDataWorker : AbstractValueVisitor
     {
+        /// <summary>
+        /// Gets or sets the data.
+        /// </summary>
+        /// <value>
+        /// The data.
+        /// </value>
         public ISnapshotDataProxy Data { get; set; }
+
+        /// <summary>
+        /// Gets or sets the factories.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
         public ModularMemoryModelFactories Factories { get; set; }
 
         private Snapshot targetSnapshot;
@@ -27,6 +43,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private HashSet<MemoryIndex> indexChanges = new HashSet<MemoryIndex>();
         private HashSet<Value> values = new HashSet<Value>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrackingMergeDataWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="targetSnapshot">The target snapshot.</param>
+        /// <param name="targetStructure">The target structure.</param>
+        /// <param name="sourceSnapshots">The source snapshots.</param>
         public TrackingMergeDataWorker(ModularMemoryModelFactories factories, Snapshot targetSnapshot, IReadOnlySnapshotStructure targetStructure, List<Snapshot> sourceSnapshots)
         {
             this.targetSnapshot = targetSnapshot;
@@ -41,6 +64,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the data.
+        /// </summary>
         public void MergeData()
         {
             IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectDataChangesAndFindAncestor();
@@ -52,6 +78,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the call data.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         public void MergeCallData(Snapshot callSnapshot)
         {
             collectDataChangesFromCallSnapshot(callSnapshot);
@@ -63,6 +93,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the information.
+        /// </summary>
         public void MergeInfo()
         {
             IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor = collectInfoChangesAndFindAncestor();
@@ -74,6 +107,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the call information.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         public void MergeCallInfo(Snapshot callSnapshot)
         {
             collectDataChangesFromCallSnapshot(callSnapshot);
@@ -86,6 +123,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
 
 
+        /// <summary>
+        /// Collects the data changes and find ancestor.
+        /// </summary>
+        /// <returns>Ancestor</returns>
         private IReadonlyChangeTracker<IReadOnlySnapshotData> collectDataChangesAndFindAncestor()
         {
             CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
@@ -99,6 +140,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return ancestor;
         }
 
+        /// <summary>
+        /// Collects the information changes and find ancestor.
+        /// </summary>
+        /// <returns>Ancestor</returns>
         private IReadonlyChangeTracker<IReadOnlySnapshotData> collectInfoChangesAndFindAncestor()
         {
             CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
@@ -112,6 +157,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return ancestor;
         }
 
+        /// <summary>
+        /// Collects the data changes from call snapshot.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         private void collectDataChangesFromCallSnapshot(Snapshot callSnapshot)
         {
             CollectionMemoryUtils.AddAll(indexChanges, targetSnapshot.MergeInfo.GetIndexes());
@@ -123,6 +172,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Creates the new data from common ancestor.
+        /// </summary>
+        /// <param name="commonAncestor">The common ancestor.</param>
         private void createNewDataFromCommonAncestor(IReadonlyChangeTracker<IReadOnlySnapshotData> commonAncestor)
         {
             Data = Factories.SnapshotDataFactory.CreateNewInstanceWithData(commonAncestor.Container);
@@ -131,6 +184,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             writeableTargetData.ReinitializeTracker(commonAncestor.Container);
         }
 
+        /// <summary>
+        /// Creates the new data from call snapshot.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
         private void createNewDataFromCallSnapshot(Snapshot callSnapshot)
         {
             Data = Factories.SnapshotDataFactory.CopyInstance(callSnapshot.CurrentData);
@@ -139,13 +196,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             writeableTargetData.ReinitializeTracker(callSnapshot.CurrentData.Readonly);
         }
 
-
-
-
-
-
-
-
+        /// <summary>
+        /// Merges the memory index data.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
         private void mergeMemoryIndexData(MemoryIndex targetIndex)
         {
             IIndexDefinition definition;
@@ -174,6 +228,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Merges the memory index information.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
         private void mergeMemoryIndexInfo(MemoryIndex targetIndex)
         {
             IIndexDefinition definition;
@@ -193,6 +251,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Collects the values.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <returns>true if the value is always defined</returns>
         private bool collectValues(MemoryIndex targetIndex)
         {
             bool valuesAlwaysDefined = true;
@@ -219,6 +282,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return valuesAlwaysDefined;
         }
 
+        /// <summary>
+        /// Gets the source entry.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
+        /// <param name="sourceSnapshot">The source snapshot.</param>
+        /// <returns>Source memory entry</returns>
         private MemoryEntry getSourceEntry(MemoryIndex targetIndex, Snapshot sourceSnapshot)
         {
             IReadOnlySnapshotData data = sourceSnapshot.CurrentData.Readonly;
@@ -238,6 +307,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
 
         #region Collecting changes
 
+        /// <summary>
+        /// Gets the first common ancestor.
+        /// </summary>
+        /// <param name="trackerA">The tracker a.</param>
+        /// <param name="trackerB">The tracker b.</param>
+        /// <returns>Common ancestor</returns>
         protected IReadonlyChangeTracker<IReadOnlySnapshotData> getFirstCommonAncestor(
             IReadonlyChangeTracker<IReadOnlySnapshotData> trackerA,
             IReadonlyChangeTracker<IReadOnlySnapshotData> trackerB
@@ -259,6 +334,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return trackerA;
         }
 
+        /// <summary>
+        /// Collects the single function changes.
+        /// </summary>
+        /// <param name="callSnapshot">The call snapshot.</param>
+        /// <param name="tracker">The tracker.</param>
         protected void collectSingleFunctionChanges(
             Snapshot callSnapshot, IReadonlyChangeTracker<IReadOnlySnapshotData> tracker)
         {

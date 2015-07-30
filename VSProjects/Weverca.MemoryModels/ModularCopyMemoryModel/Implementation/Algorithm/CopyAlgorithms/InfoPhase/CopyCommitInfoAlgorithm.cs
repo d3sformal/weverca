@@ -16,6 +16,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
+    /// <summary>
+    /// Copy implementation of commit for info phase. Always checks whole info data container for changes.
+    /// </summary>
     class CopyCommitInfoAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
         public CopyCommitInfoAlgorithm(ModularMemoryModelFactories factories)
@@ -24,6 +27,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
         }
 
+        /// <inheritdoc />
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(
@@ -32,6 +36,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return worker.CompareDataAndSimplify(false);
         }
 
+        /// <inheritdoc />
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             CopyCommitWorker worker = new CopyCommitWorker(

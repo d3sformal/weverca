@@ -12,18 +12,42 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
+    /// <summary>
+    /// An implementation of lazy assign worker which assigns value represented by MemoryEntryCollector 
+    /// into all collected locations.
+    /// </summary>
     class AssignWorker : AbstractAssignWorker
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance will force MUST operation for all 
+        /// collected locations. If yes then all locations are overriden
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance will force MUST operation for all collected locations; 
+        ///   otherwise, <c>false</c>.
+        /// </value>
         public bool ForceStrongWrite { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [assign aliases into collected indexes].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [assign aliases into collected indexes]; otherwise, <c>false</c>.
+        /// </value>
         public bool AssignAliasesIntoCollectedIndexes { get; set; }
-
-
-
+        
         private MemoryEntryCollector memoryEntryCollector;
         private LinkedList<AssignOperation> operationQueue = new LinkedList<AssignOperation>();
         private AssignValueLocationVisitor valueLocationVisitor;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AssignWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="memoryEntryCollector">The memory entry collector.</param>
+        /// <param name="treeCollector">The tree collector.</param>
+        /// <param name="pathModifications">The path modifications.</param>
         public AssignWorker(ModularMemoryModelFactories factories, Snapshot snapshot, MemoryEntryCollector memoryEntryCollector,
             TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
             : base(factories, snapshot, treeCollector, pathModifications)
@@ -34,6 +58,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             AssignAliasesIntoCollectedIndexes = false;
         }
 
+        /// <summary>
+        /// Perform an assign operation.
+        /// </summary>
         public void Assign()
         {
             valueLocationVisitor = new AssignValueLocationVisitor(Snapshot, memoryEntryCollector.RootMemoryEntry, true);

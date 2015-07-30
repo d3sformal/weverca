@@ -46,7 +46,9 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         }
     }
 
-
+    /// <summary>
+    /// Universal implementation of read algorithm. Can be used in all implementation variants.
+    /// </summary>
     class CopyReadAlgorithm : AlgorithmBase, IReadAlgorithm
     {
         public CopyReadAlgorithm(ModularMemoryModelFactories factories)
@@ -54,6 +56,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
         {
 
         }
+
+        /// <inheritdoc />
         public MemoryEntry Read(Snapshot snapshot, MemoryPath path)
         {
             ReadCollector collector = new ReadCollector(snapshot);
@@ -63,6 +67,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return worker.ReadValue(collector);
         }
 
+        /// <inheritdoc />
         public bool IsDefined(Snapshot snapshot, MemoryPath path)
         {
             ReadCollector collector = new ReadCollector(snapshot);
@@ -71,6 +76,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return collector.IsDefined;
         }
 
+        /// <inheritdoc />
         public IEnumerable<VariableIdentifier> GetFields(Snapshot snapshot, MemoryEntry values)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
@@ -79,6 +85,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return visitor.CollectFields(snapshot);
         }
 
+        /// <inheritdoc />
         public IEnumerable<MemberIdentifier> GetIndexes(Snapshot snapshot, MemoryEntry values)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();
@@ -87,11 +94,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return visitor.CollectIndexes(snapshot);
         }
 
+        /// <inheritdoc />
         public IEnumerable<FunctionValue> GetMethod(Snapshot snapshot, MemoryEntry values, QualifiedName methodName)
         {
             return snapshot.resolveMethod(values, methodName);
         }
 
+        /// <inheritdoc />
         public IEnumerable<TypeValue> GetObjectType(Snapshot snapshot, MemoryEntry values)
         {
             CollectComposedValuesVisitor visitor = new CollectComposedValuesVisitor();

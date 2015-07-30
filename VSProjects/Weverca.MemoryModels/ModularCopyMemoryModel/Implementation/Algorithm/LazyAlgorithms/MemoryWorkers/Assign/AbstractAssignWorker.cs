@@ -12,8 +12,22 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers.Assign
 {
+    /// <summary>
+    /// Contains common functioality to provide the lazy assign operation.
+    /// 
+    /// This instance need the collected tree from TreeIndexCollector which 
+    /// identifies the memory locations where to assign into. Second input is 
+    /// </summary>
     abstract class AbstractAssignWorker : LocationCollectorNodeVisitor
     {
+        /// <summary>
+        /// Gets or sets the factories.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
+        public ModularMemoryModelFactories Factories { get; set; }
+
         internal readonly Snapshot Snapshot;
         protected TreeIndexCollector treeCollector;
 
@@ -24,6 +38,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         protected LinkedList<LocationCollectorNode> collectorNodesQueue = new LinkedList<LocationCollectorNode>();
         private CopyValuesVisitor copyValuesVisitor = new CopyValuesVisitor();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AbstractAssignWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="treeCollector">The tree collector.</param>
+        /// <param name="pathModifications">The path modifications.</param>
         public AbstractAssignWorker(ModularMemoryModelFactories factories, Snapshot snapshot,
             TreeIndexCollector treeCollector, MemoryIndexModificationList pathModifications)
         {
@@ -37,28 +58,60 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.Data = snapshot.CurrentData.Writeable;
         }
 
+        /// <summary>
+        /// Perform custom assign operation on value node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        protected abstract void collectValueNode(ValueCollectorNode node);
+
+        /// <summary>
+        /// Perform custom assign operation on memory index node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        protected abstract void collectMemoryIndexCollectorNode(MemoryIndexCollectorNode node);
+
+        /// <summary>
+        /// Perform custom assign operation on unknown node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        protected abstract void collectUnknownIndexCollectorNode(UnknownIndexCollectorNode node);
+
+        /// <summary>
+        /// Perform custom assign operation on undefined node.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        protected abstract void collectUndefinedCollectorNode(UndefinedCollectorNode node);
+
+        /// <summary>
+        /// Performs an assign operation to all nodes collected by the collector.
+        /// </summary>
         public void ProcessCollector()
         {
+            // Prepares all variables.
             foreach (var item in treeCollector.RootNode.VariableStackNodes)
             {
                 processVariables(item.Key, item.Value);
             }
 
+            // Prepares all control variables.
             foreach (var item in treeCollector.RootNode.ControlStackNodes)
             {
                 processControls(item.Key, item.Value);
             }
 
+            // Prepares all temporary variables.
             foreach (var item in treeCollector.RootNode.TemporaryNodes)
             {
                 processTemporary(item.Value);
             }
 
+            // Prepares all objects.
             foreach (var item in treeCollector.RootNode.ObjectNodes)
             {
                 processObject(item.Key, item.Value);
             }
 
+            // Iterates until all operations are performed.
             while (collectorNodesQueue.Count > 0)
             {
                 LocationCollectorNode node = collectorNodesQueue.First.Value;
@@ -67,6 +120,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Processes the controls.
+        /// </summary>
+        /// <param name="stackLevel">The stack level.</param>
+        /// <param name="node">The node.</param>
         private void processControls(int stackLevel, CollectorNode node)
         {
             if (node.HasUndefinedChildren)
@@ -86,6 +144,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             enqueueChildNodes(node);
         }
 
+        /// <summary>
+        /// Processes the variables.
+        /// </summary>
+        /// <param name="stackLevel">The stack level.</param>
+        /// <param name="node">The node.</param>
         private void processVariables(int stackLevel, CollectorNode node)
         {
             if (node.HasUndefinedChildren)
@@ -105,6 +168,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             enqueueChildNodes(node);
         }
 
+        /// <summary>
+        /// Processes the object.
+        /// </summary>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="node">The node.</param>
         private void processObject(ObjectValue objectValue, ContainerCollectorNode node)
         {
             if (node.HasUndefinedChildren)
@@ -128,11 +196,19 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             enqueueChildNodes(node);
         }
 
+        /// <summary>
+        /// Processes the temporary.
+        /// </summary>
+        /// <param name="memoryIndexNode">The memory index node.</param>
         private void processTemporary(MemoryIndexCollectorNode memoryIndexNode)
         {
             collectorNodesQueue.AddLast(memoryIndexNode);
         }
-        
+
+        /// <summary>
+        /// Enqueues the child nodes.
+        /// </summary>
+        /// <param name="node">The node.</param>
         private void enqueueChildNodes(CollectorNode node)
         {
             foreach (var childNode in node.ChildNodes)
@@ -141,6 +217,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Enqueues the location child nodes.
+        /// </summary>
+        /// <param name="node">The node.</param>
         private void enqueueLocationChildNodes(LocationCollectorNode node)
         {
             if (node.ValueNodes != null)
@@ -156,17 +236,20 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 collectorNodesQueue.AddLast(childNode);
             }
         }
-
-        protected abstract void collectValueNode(ValueCollectorNode node);
-        protected abstract void collectMemoryIndexCollectorNode(MemoryIndexCollectorNode node);
-        protected abstract void collectUnknownIndexCollectorNode(UnknownIndexCollectorNode node);
-        protected abstract void collectUndefinedCollectorNode(UndefinedCollectorNode node);
-
-
+        
+        /// <summary>
+        /// Continues the value node.
+        /// </summary>
+        /// <param name="node">The node.</param>
         protected void continueValueNode(ValueCollectorNode node)
         {
             enqueueLocationChildNodes(node);
         }
+
+        /// <summary>
+        /// Continues the memory index collector node.
+        /// </summary>
+        /// <param name="node">The node.</param>
         protected void continueMemoryIndexCollectorNode(MemoryIndexCollectorNode node)
         {
             HashSet<Value> values = new HashSet<Value>();
@@ -185,6 +268,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             enqueueLocationChildNodes(node);
         }
+
+        /// <summary>
+        /// Continues the unknown index collector node.
+        /// </summary>
+        /// <param name="node">The node.</param>
         protected void continueUnknownIndexCollectorNode(UnknownIndexCollectorNode node)
         {
             Structure.NewIndex(node.TargetIndex);
@@ -205,6 +293,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             enqueueLocationChildNodes(node);
         }
+
+        /// <summary>
+        /// Continues the undefined collector node.
+        /// </summary>
+        /// <param name="node">The node.</param>
         protected void continueUndefinedCollectorNode(UndefinedCollectorNode node)
         {
             Structure.NewIndex(node.TargetIndex);
@@ -279,6 +372,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         #region Processing
 
+        /// <summary>
+        /// Processes the source aliases.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="memoryAlias">The memory alias.</param>
         private void processSourceAliases(MemoryCollectorNode node, IMemoryAlias memoryAlias)
         {
             if (memoryAlias != null && memoryAlias.HasAliases)
@@ -313,6 +411,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Processes the source array.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="arrayValue">The array value.</param>
+        /// <param name="values">The values.</param>
         private void processSourceArray(MemoryCollectorNode node, AssociativeArray arrayValue, ICollection<Value> values)
         {
             if (arrayValue != null)
@@ -344,6 +448,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Processes the source objects.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="objects">The objects.</param>
         private void processSourceObjects(MemoryCollectorNode node, IObjectValueContainer objects)
         {
             if (objects != null && objects.Count > 0)
@@ -353,6 +462,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Tests the and create implicit array.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="values">The values.</param>
         public void testAndCreateImplicitArray(MemoryCollectorNode node, ICollection<Value> values)
         {
             if (node.HasNewImplicitArray)
@@ -361,6 +475,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Creates the array.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="values">The values.</param>
+        /// <returns>New created array</returns>
         public AssociativeArray createArray(MemoryCollectorNode node, ICollection<Value> values)
         {
             AssociativeArray createdArrayValue = Snapshot.CreateArray(node.TargetIndex);
@@ -375,6 +495,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return createdArrayValue;
         }
 
+        /// <summary>
+        /// Tests the and create implicit object.
+        /// </summary>
+        /// <param name="node">The node.</param>
+        /// <param name="values">The values.</param>
         private void testAndCreateImplicitObject(MemoryCollectorNode node, HashSet<Value> values)
         {
             if (node.HasNewImplicitObject)
@@ -407,6 +532,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
         }
 
+        /// <summary>
+        /// Tests the and create undefined children.
+        /// </summary>
+        /// <param name="node">The node.</param>
         private void testAndCreateUndefinedChildren(MemoryCollectorNode node)
         {
             if (node.HasUndefinedChildren)
@@ -434,6 +563,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         #endregion
 
+        /// <summary>
+        /// Copies the entry values.
+        /// </summary>
+        /// <param name="entry">The entry.</param>
+        /// <param name="values">The values.</param>
+        /// <param name="removeUndefined">if set to <c>true</c> [remove undefined].</param>
+        /// <param name="removeArray">if set to <c>true</c> [remove array].</param>
         public void copyEntryValues(MemoryEntry entry, ICollection<Value> values, bool removeUndefined, bool removeArray)
         {
             copyValuesVisitor.CopyEntryValues(entry, values, removeUndefined, removeArray);
@@ -475,7 +611,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
         }
-
-        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

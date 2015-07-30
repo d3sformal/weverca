@@ -13,16 +13,37 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.CopyAlgorithms.MemoryWorkers
 {
+    /// <summary>
+    /// Implements logic of the copy implementation of the commit algorithm.
+    /// </summary>
     class CopyCommitWorker
     {
+
+        /// <summary>
+        /// Gets or sets the factories.
+        /// </summary>
+        /// <value>
+        /// The factories.
+        /// </value>
+        public ModularMemoryModelFactories Factories { get; set; }
+
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
 
         private Snapshot snapshot;
-        private IIndexDefinition emptyDefinition;
         private int simplifyLimit;
         private MemoryAssistantBase assistant;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CopyCommitWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="simplifyLimit">The simplify limit.</param>
+        /// <param name="newStructure">The new structure.</param>
+        /// <param name="oldStructure">The old structure.</param>
+        /// <param name="newData">The new data.</param>
+        /// <param name="oldData">The old data.</param>
         public CopyCommitWorker(ModularMemoryModelFactories factories, Snapshot snapshot, int simplifyLimit, 
             ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
             ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
@@ -38,6 +59,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             this.oldData = oldData;
         }
 
+        /// <summary>
+        /// Compares the structure and simplifies the data.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> then widening operation is performed.</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareStructureAndSimplify(bool widen)
         {
             HashSet<MemoryIndex> usedIndexes = new HashSet<MemoryIndex>();
@@ -80,6 +106,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
             return !areEqual;
         }
 
+        /// <summary>
+        /// Compares the data and simplify.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> then widening operation is performed.</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareDataAndSimplify(bool widen)
         {
             bool areEquals = true;
@@ -268,7 +299,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.C
 
             return true;
         }
-
-        public ModularMemoryModelFactories Factories { get; set; }
     }
 }

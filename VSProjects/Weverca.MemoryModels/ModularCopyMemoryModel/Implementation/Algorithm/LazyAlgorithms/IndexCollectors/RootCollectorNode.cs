@@ -9,6 +9,10 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Memory;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.IndexCollectors
 {
+    /// <summary>
+    /// Represents the root of the collecting tree. Contains the set of variables or objects 
+    /// which were resulved during the interpretation of the path.
+    /// </summary>
     class RootCollectorNode
     {
         public readonly Dictionary<int, ContainerCollectorNode> VariableStackNodes =
@@ -22,6 +26,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
         public bool HasRootNode { get; private set; }
 
+        /// <summary>
+        /// Collects the variable.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="variableSegment">The variable segment.</param>
         public void CollectVariable(TreeIndexCollector collector, VariablePathSegment variableSegment)
         {
             int currentCallLevel = collector.GetCurrentCallLevel();
@@ -31,6 +40,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             HasRootNode = true;
         }
 
+        /// <summary>
+        /// Collects the control variables.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="controlPathSegment">The control path segment.</param>
         public void CollectControl(TreeIndexCollector collector, ControlPathSegment controlPathSegment)
         {
             int currentCallLevel = collector.GetCurrentCallLevel();
@@ -40,12 +54,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             HasRootNode = true;
         }
 
+        /// <summary>
+        /// Collects the object.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="objectValue">The object value.</param>
+        /// <param name="fieldPathSegment">The field path segment.</param>
         public void CollectObject(TreeIndexCollector collector, ObjectValue objectValue, FieldPathSegment fieldPathSegment)
         {
             ContainerCollectorNode objectNode = GetOrCreateObjectNode(collector, objectValue);
             objectNode.Collect(collector, fieldPathSegment);
         }
 
+        /// <summary>
+        /// Collects the temporary variables.
+        /// </summary>
+        /// <param name="treeIndexCollector">The tree index collector.</param>
+        /// <param name="temporaryPathSegment">The temporary path segment.</param>
+        /// <exception cref="System.NotImplementedException">Temporary memory index is visited more than once</exception>
         public void CollectTemporary(TreeIndexCollector treeIndexCollector, TemporaryPathSegment temporaryPathSegment)
         {
             if (TemporaryNodes.ContainsKey(temporaryPathSegment.TemporaryIndex))
@@ -60,12 +86,24 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             HasRootNode = true;
         }
 
+        /// <summary>
+        /// Collects the alias.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="aliasIndex">Index of the alias.</param>
+        /// <param name="isMust">if set to <c>true</c> [is must].</param>
         public void CollectAlias(TreeIndexCollector collector, MemoryIndex aliasIndex, bool isMust)
         {
             CollectAliasMemoryIndexVisitor visitor = new CollectAliasMemoryIndexVisitor(collector, this, isMust);
             aliasIndex.Accept(visitor);
         }
 
+        /// <summary>
+        /// Gets the or create variable stack node.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns></returns>
         public ContainerCollectorNode GetOrCreateVariableStackNode(TreeIndexCollector collector, int callLevel)
         {
             ContainerCollectorNode variableStackNode;
@@ -81,6 +119,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return variableStackNode;
         }
 
+        /// <summary>
+        /// Gets the or create control stack node.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="callLevel">The call level.</param>
+        /// <returns>Node representing stack context on specified level.</returns>
         public ContainerCollectorNode GetOrCreateControlStackNode(TreeIndexCollector collector, int callLevel) 
         {
             ContainerCollectorNode controlStackNode;
@@ -95,6 +139,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return controlStackNode;
         }
 
+        /// <summary>
+        /// Gets the or create object node.
+        /// </summary>
+        /// <param name="collector">The collector.</param>
+        /// <param name="objectValue">The object value.</param>
+        /// <returns>Node representing given object</returns>
         public ContainerCollectorNode GetOrCreateObjectNode(TreeIndexCollector collector, ObjectValue objectValue)
         {
             ContainerCollectorNode objectNode;

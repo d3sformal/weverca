@@ -20,6 +20,14 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Lazy implementation of the assign algorithm.
+    /// 
+    /// The new implementation of an assign algorithm doesn’t need to create deep copy of assigned data 
+    /// to a new temporary variable. The collecting process is designed to collect all target locations 
+    /// but not to do any change within the structure. New locations and implicit objects are created after 
+    /// collecting process is finished so input memory entry remains unbroken until the assign is performed.
+    /// </summary>
     class LazyAssignMemoryAlgorithm : AlgorithmBase, IAssignAlgorithm
     {
         public LazyAssignMemoryAlgorithm(ModularMemoryModelFactories factories)
@@ -36,13 +44,16 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             }
             MemoryIndexModificationList pathModifications = snapshot.AssignInfo.GetOrCreatePathModification(path);
 
+            // Collecting all sources of the data
             MemoryEntryCollector entryCollector = new MemoryEntryCollector(snapshot);
             entryCollector.ProcessRootMemoryEntry(value);
 
+            // Collecting all locations where to assign into
             TreeIndexCollector treeCollector = new TreeIndexCollector(snapshot);
             treeCollector.PostProcessAliases = true;
             treeCollector.ProcessPath(path);
 
+            // Provides an assign operation
             AssignWorker worker = new AssignWorker(Factories, snapshot, entryCollector, treeCollector, pathModifications);
             worker.ForceStrongWrite = forceStrongWrite;
             worker.Assign();

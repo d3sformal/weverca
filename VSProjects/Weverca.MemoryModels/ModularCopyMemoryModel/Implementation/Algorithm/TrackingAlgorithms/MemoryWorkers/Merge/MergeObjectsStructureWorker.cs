@@ -10,6 +10,11 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers.Merge
 {
+    /// <summary>
+    /// Provides merge operations connected with objects.
+    /// 
+    /// Collects set of objects for a single target index and stores them within the structure.
+    /// </summary>
     class MergeObjectsStructureWorker
     {
         private IWriteableSnapshotStructure writeableTargetStructure;
@@ -18,6 +23,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         private HashSet<ObjectValue> objectValues;
         private bool hasObjects = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MergeObjectsStructureWorker"/> class.
+        /// </summary>
+        /// <param name="writeableTargetStructure">The writeable target structure.</param>
+        /// <param name="worker">The worker.</param>
         public MergeObjectsStructureWorker(IWriteableSnapshotStructure writeableTargetStructure, TrackingMergeStructureWorker worker)
         {
             this.writeableTargetStructure = writeableTargetStructure;
@@ -27,6 +37,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
 
 
+        /// <summary>
+        /// Collects all objects from given collection of objects.
+        /// </summary>
+        /// <param name="obejcts">The obejcts.</param>
         public void collectSourceObjects(IObjectValueContainer obejcts)
         {
             if (obejcts != null && obejcts.Count > 0)
@@ -36,6 +50,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             }
         }
 
+        /// <summary>
+        /// Stores collected objects into the structure and clear inner container.
+        /// </summary>
+        /// <param name="targetIndex">Index of the target.</param>
         public void MergeObjectsAndClear(MemoryIndex targetIndex)
         {
             if (hasObjects)

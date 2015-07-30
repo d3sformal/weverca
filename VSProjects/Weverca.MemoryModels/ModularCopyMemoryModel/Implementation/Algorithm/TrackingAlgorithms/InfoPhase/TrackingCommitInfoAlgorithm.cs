@@ -16,6 +16,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
     }
 
+    /// <summary>
+    /// Tracking implementation of commit algorithm for info phase. Provides full commit only if some part of snapshot was 
+    /// modified. Commit compares only memory locations which was changed between previous and current transaction.
+    /// </summary>
     class TrackingCommitInfoAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
         public TrackingCommitInfoAlgorithm(ModularMemoryModelFactories factories)
@@ -23,6 +27,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
 
         }
+
+        /// <inheritdoc />
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             TrackingCommitWorker worker = new TrackingCommitWorker(
@@ -31,6 +37,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             return worker.CompareDataAndSimplify(false);
         }
 
+        /// <inheritdoc />
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             TrackingCommitWorker worker = new TrackingCommitWorker(

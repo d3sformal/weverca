@@ -15,18 +15,30 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.TrackingAlgorithms.MemoryWorkers
 {
+    /// <summary>
+    /// Implements logic of the copy implementation of the commit algorithm.
+    /// </summary>
     class TrackingCommitWorker
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
 
         private Snapshot snapshot;
-        private IIndexDefinition emptyDefinition;
         private int simplifyLimit;
         private MemoryAssistantBase assistant;
 
         public ModularMemoryModelFactories Factories { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrackingCommitWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="simplifyLimit">The simplify limit.</param>
+        /// <param name="newStructure">The new structure.</param>
+        /// <param name="oldStructure">The old structure.</param>
+        /// <param name="newData">The new data.</param>
+        /// <param name="oldData">The old data.</param>
         public TrackingCommitWorker(ModularMemoryModelFactories factories, Snapshot snapshot, int simplifyLimit, 
             ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
             ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
@@ -43,12 +55,18 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             Factories = factories;
         }
 
+        /// <summary>
+        /// Compares the structure and simplify.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> [widen].</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareStructureAndSimplify(bool widen)
         {
             if (newStructure.IsReadonly && newData.IsReadonly)
             {
                 if (snapshot.NumberOfTransactions > 1)
                 {
+                    // Snapshot was not modified - it is different if the previous snapshot was different
                     bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
                     return differs;
                 }
@@ -76,6 +94,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         areSame = compareData();
                     }
 
+                    // Stores information whether is different or not
                     newData.Writeable.SetDiffersOnCommit(!areSame);
                 }
 
@@ -88,16 +107,23 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         areSame = compareStructure();
                     }
 
+                    // Stores information whether is different or not
                     newStructure.Writeable.SetDiffersOnCommit(!areSame);
                 }
                 return !areSame;
             }
         }
 
+        /// <summary>
+        /// Compares the data and simplify.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> [widen].</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareDataAndSimplify(bool widen)
         {
             if (newData.IsReadonly)
             {
+                // Snapshot was not modified - it is different if the previous snapshot was different
                 bool differs = newData.Readonly.DiffersOnCommit;
                 return differs;
             }
@@ -120,6 +146,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
                         areSame = compareData();
                     }
 
+                    // Stores information whether is different or not
                     newData.Writeable.SetDiffersOnCommit(!areSame);
                 }
                 return !areSame;

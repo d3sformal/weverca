@@ -13,16 +13,28 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Utils;
 
 namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.LazyAlgorithms.MemoryWorkers
 {
+    /// <summary>
+    /// Implements logic of the lazy implementation of the commit algorithm.
+    /// </summary>
     class LazyCommitWorker
     {
         private ISnapshotStructureProxy newStructure, oldStructure;
         private ISnapshotDataProxy newData, oldData;
 
         private Snapshot snapshot;
-        private IIndexDefinition emptyDefinition;
         private int simplifyLimit;
         private MemoryAssistantBase assistant;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyCommitWorker"/> class.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="simplifyLimit">The simplify limit.</param>
+        /// <param name="newStructure">The new structure.</param>
+        /// <param name="oldStructure">The old structure.</param>
+        /// <param name="newData">The new data.</param>
+        /// <param name="oldData">The old data.</param>
         public LazyCommitWorker(ModularMemoryModelFactories factories, Snapshot snapshot, int simplifyLimit, 
             ISnapshotStructureProxy newStructure, ISnapshotStructureProxy oldStructure, 
             ISnapshotDataProxy newData, ISnapshotDataProxy oldData)
@@ -39,15 +51,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             this.oldData = oldData;
         }
 
+        /// <summary>
+        /// Compares the structure and simplify.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> [widen].</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareStructureAndSimplify(bool widen)
         {
             if (snapshot.NumberOfTransactions == 1)
             {
+                // This is the first transaction of the snapshot - it has to be different
                 return true;
             }
 
             if (newStructure.IsReadonly && newData.IsReadonly)
             {
+                // Snapshot was not modified - it is different if the previous snapshot was different
                 bool differs = newStructure.Readonly.DiffersOnCommit || newData.Readonly.DiffersOnCommit;
                 return differs;
             }
@@ -60,6 +79,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
 
             bool areEqual = true;
 
+            // Go thru all indexes
             foreach (MemoryIndex index in usedIndexes)
             {
                 if (index is TemporaryIndex)
@@ -89,6 +109,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
 
+            // Stores information whether is different or not
             if (!newStructure.IsReadonly)
             {
                 newStructure.Writeable.SetDiffersOnCommit(!areEqual);
@@ -100,15 +121,22 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return !areEqual;
         }
 
+        /// <summary>
+        /// Compares the data and simplify.
+        /// </summary>
+        /// <param name="widen">if set to <c>true</c> [widen].</param>
+        /// <returns>true if memory state is different; otherwise false</returns>
         public bool CompareDataAndSimplify(bool widen)
         {
             if (snapshot.NumberOfTransactions == 1)
             {
+                // This is the first transaction of the snapshot - it has to be different
                 return true;
             }
 
             if (newData.IsReadonly)
             {
+                // Snapshot was not modified - it is different if the previous snapshot was different
                 bool differs = newData.Readonly.DiffersOnCommit;
                 return differs;
             }
@@ -135,6 +163,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
                 }
             }
 
+            // Stores information whether is different or not
             if (!newData.IsReadonly)
             {
                 newData.Writeable.SetDiffersOnCommit(!areEqual);

@@ -23,7 +23,12 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         }
     }
 
-
+    /// <summary>
+    /// Tracking implementation of the merge algorithm for info phase. Use a change tracker to determine 
+    /// which memory location differs and should be merged. Other locations remains unchanged.
+    /// 
+    /// Works only with tracking structure - needs change tracker and parallel call stack.
+    /// </summary>
     class TrackingMergeInfoAlgorithm : AlgorithmBase, IMergeAlgorithm
     {
         public TrackingMergeInfoAlgorithm(ModularMemoryModelFactories factories)
@@ -31,6 +36,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
         {
 
         }
+
+        /// <inheritdoc />
         public void Extend(Snapshot extendedSnapshot, Snapshot sourceSnapshot)
         {
             ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(sourceSnapshot.Infos);
@@ -39,6 +46,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             extendedSnapshot.SetInfoMergeResult(data);
         }
 
+        /// <inheritdoc />
         public void ExtendAsCall(Snapshot extendedSnapshot, Snapshot sourceSnapshot, ProgramPointGraph calleeProgramPoint, MemoryEntry thisObject)
         {
             ISnapshotDataProxy data = Factories.SnapshotDataFactory.CopyInstance(sourceSnapshot.Infos);
@@ -48,6 +56,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             extendedSnapshot.SetInfoMergeResult(data);
         }
 
+        /// <inheritdoc />
         public void Merge(Snapshot snapshot, List<Snapshot> snapshots)
         {
             TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
@@ -61,6 +70,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             snapshot.SetInfoMergeResult(data);
         }
 
+        /// <inheritdoc />
         public void MergeAtSubprogram(Snapshot snapshot, List<Snapshot> snapshots, ProgramPointBase[] extendedPoints)
         {
             TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
@@ -83,6 +93,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             snapshot.SetInfoMergeResult(data);
         }
 
+        /// <inheritdoc />
         public void MergeWithCall(Snapshot snapshot, Snapshot callSnapshot, List<Snapshot> snapshots)
         {
             TrackingMergeDataWorker dataWorker = new TrackingMergeDataWorker(Factories, snapshot, snapshot.Structure.Readonly, snapshots);
@@ -96,6 +107,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.T
             snapshot.SetInfoMergeResult(data);
         }
 
+        /// <inheritdoc />
         public void MergeMemoryEntry(Snapshot snapshot, TemporaryIndex temporaryIndex, MemoryEntry dataEntry)
         {
             MergeWithinSnapshotWorker mergeWorker = new MergeWithinSnapshotWorker(snapshot);

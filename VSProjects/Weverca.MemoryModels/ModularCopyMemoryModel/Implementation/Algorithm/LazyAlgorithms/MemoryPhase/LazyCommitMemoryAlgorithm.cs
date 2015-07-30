@@ -16,6 +16,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         }
     }
 
+    /// <summary>
+    /// Lazy implementation of commit algorithm. Provides full commit only if some part of snapshot was 
+    /// modified and this is not the first transaction of the snapshot.
+    /// </summary>
     class LazyCommitMemoryAlgorithm : AlgorithmBase, ICommitAlgorithm
     {
         public LazyCommitMemoryAlgorithm(ModularMemoryModelFactories factories)
@@ -23,6 +27,8 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
         {
 
         }
+
+        /// <inheritdoc />
         public bool CommitAndSimplify(Snapshot snapshot, int simplifyLimit)
         {
             LazyCommitWorker worker = new LazyCommitWorker(
@@ -31,6 +37,7 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel.Implementation.Algorithm.L
             return worker.CompareStructureAndSimplify(false);
         }
 
+        /// <inheritdoc />
         public bool CommitAndWiden(Snapshot snapshot, int simplifyLimit)
         {
             LazyCommitWorker worker = new LazyCommitWorker(

@@ -41,7 +41,12 @@ using Weverca.MemoryModels.ModularCopyMemoryModel.Interfaces.Common;
 namespace Weverca.MemoryModels.ModularCopyMemoryModel
 {
 	/// <summary>
-	/// Implementation of the memory snapshot based on copy semantics.
+	/// Modular implementation of the memory snapshot based on copy semantics.
+    /// 
+    /// Each instance represents the whole memory state at some point of a PHP program. The class contains 
+    /// high level description of the memory state, references to a structural and a value storages and 
+    /// entry points of all memory operations. The Weverca analyzer creates a new instance with the factory 
+    /// object and calls the public interface of the SnapshotBase to invoke a memory operation.
 	/// 
 	/// This implementation stores every possible value for the single memory location in one place.
 	/// This approach guarantees write-read semantics - when user strongly writes to MAY alliased location
@@ -51,6 +56,11 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 	/// and collection indexes. Every index is just pointer into the memory location where the data is stored.
 	/// So when the data is changed is not necessary to change every connected memory locations. See
 	/// MemoryIndex for more information.
+    /// 
+    /// The modularity of the new memory model is achieved by factory objects which create new instances 
+    /// of all main parts. A new factory instance for each module has to be passed to the constructor of 
+    /// the ModularMemoryModelFactories object. An instance of factories is distributed across whole memory 
+    /// model by create method in factory objects. 
 	/// </summary>
 	public class Snapshot : SnapshotBase, IReferenceHolder
 	{
@@ -113,7 +123,6 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// Identifier for the bottom of the call stack. At this level the global variables are stored.
 		/// </summary>
 		public static readonly int GLOBAL_CALL_LEVEL = 0;
-        private bool isInitialized;
 
 		/// <summary>
 		/// Unique identifier of snapshot instance
@@ -207,40 +216,88 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 		/// </summary>
 		public new MemoryAssistantBase Assistant { get { return base.Assistant; } }
 
-		/// <summary>
-		/// Backup of the snapshot data after the start of transaction.
-		/// </summary>
-        /// 
-
+        /// <summary>
+        /// Gets the backup of the snapshot structure after the start of transaction.
+        /// </summary>
+        /// <value>
+        /// The old structure.
+        /// </value>
 		public ISnapshotStructureProxy OldStructure { get; private set; }
-
-
+        
+        /// <summary>
+        /// Gets the backup of the snapshot data after the start of transaction.
+        /// </summary>
+        /// <value>
+        /// The old data.
+        /// </value>
         public ISnapshotDataProxy OldData { get; private set; }
-
-
+        
+        /// <summary>
+        /// Gets the backup of the snapshot info data after the start of transaction.
+        /// </summary>
+        /// <value>
+        /// The old infos.
+        /// </value>
         public ISnapshotDataProxy OldInfos { get; private set; }
 
+        /// <summary>
+        /// Gets the backup of the snapshot call level after the start of transaction.
+        /// </summary>
+        /// <value>
+        /// The old call level.
+        /// </value>
         public int OldCallLevel { get; private set; }
-
+        
+        /// <summary>
+        /// Gets or sets the assign information.
+        /// </summary>
+        /// <value>
+        /// The assign information.
+        /// </value>
 		public AssignInfo AssignInfo { get; set; }
 
+        /// <summary>
+        /// Gets or sets the merge information.
+        /// </summary>
+        /// <value>
+        /// The merge information.
+        /// </value>
 		public MergeInfo MergeInfo { get; set; }
 
 		/// <summary>
-		/// Gets the number of transactions.
+		/// Gets the number of transactions which were started on this snapshot - iterations of worklist 
+        /// algorithm which passes this snapshot.
 		/// </summary>
 		/// <value>
 		/// The number of transactions.
 		/// </value>
 		public int NumberOfTransactions { get; private set; }
 
+        /// <summary>
+        /// Gets or sets the list of changed memory indexes in the structure container call changes. Allows to store 
+        /// changes at the end of the function and use them in the next iteration of worklist algorithm.
+        /// </summary>
+        /// <value>
+        /// The structure call changes.
+        /// </value>
 		public IEnumerable<MemoryIndex> StructureCallChanges { get; set; }
 
+        /// <summary>
+        /// Gets or sets the list of changed memory indexes in the data container. Allows to store 
+        /// changes at the end of the function and use them in the next iteration of worklist algorithm.
+        /// </summary>
+        /// <value>
+        /// The data call changes.
+        /// </value>
 		public IEnumerable<MemoryIndex> DataCallChanges { get; set; }
 		
 		#endregion
-
-
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Snapshot"/> class. This constructor is only 
+        /// called from MemoryModelFactory stored in ModularMemoryModelFactories.
+        /// </summary>
+        /// <param name="factories">The factories.</param>
         internal Snapshot(ModularMemoryModelFactories factories)
         {
             SnapshotId = SNAP_ID++;
@@ -256,13 +313,10 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             NumberOfTransactions = 0;
             CurrentData = Data;
 
-            isInitialized = true;
-
             Factories.Benchmark.InitializeSnapshot(this);
             Factories.Logger.Log(this, "Constructed snapshot");
         }
-
-
+        
 		/// <summary>
 		/// Gets the snapshot identification which consists of snapshot and data ID separated by colons.
 		/// </summary>
@@ -734,12 +788,13 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
             Factories.Benchmark.FinishOperation(this);
 		}
 
-		/// <summary>
-		/// Merge given call output with current context.
-		/// WARNING: Call can change many objects via references (they don't has to be in global context)
-		/// </summary>
-		/// <param name="callOutputs">Output snapshots of call level</param>
-		/// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
+        /// <summary>
+        /// Merge given call output with current context.
+        /// WARNING: Call can change many objects via references (they don't has to be in global context)
+        /// </summary>
+        /// <param name="callerPoint">The caller point.</param>
+        /// <param name="callOutputs">Output snapshots of call level</param>
+        /// <exception cref="System.NotSupportedException">Current mode:  + CurrentMode</exception>
 		protected override void mergeWithCallLevel(ProgramPointBase callerPoint, ISnapshotReadonly[] callOutputs)
         {
             Factories.Benchmark.StartOperation(this);
@@ -1709,12 +1764,41 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 					CurrentData.Writeable.SetMemoryEntry(memoryIndex, new MemoryEntry(values));
 				}
 			}
-		}
+        }
+
+        /// <summary>
+        /// Sets the memory merge result.
+        /// </summary>
+        /// <param name="callLevel">The call level.</param>
+        /// <param name="structure">The structure.</param>
+        /// <param name="data">The data.</param>
+        internal void SetMemoryMergeResult(int callLevel, ISnapshotStructureProxy structure, ISnapshotDataProxy data)
+        {
+            Structure = structure;
+            Data = data;
+            CurrentData = data;
+            CallLevel = callLevel;
+        }
+
+        /// <summary>
+        /// Sets the info merge result.
+        /// </summary>
+        /// <param name="data">The data.</param>
+        internal void SetInfoMergeResult(ISnapshotDataProxy data)
+        {
+            Infos = data;
+            CurrentData = Infos;
+        }
 
 		#endregion
 
 		#region Aliases
 
+        /// <summary>
+        /// Assigns the created aliases.
+        /// </summary>
+        /// <param name="snapshot">The snapshot.</param>
+        /// <param name="data">The data.</param>
 		public void AssignCreatedAliases(Snapshot snapshot, ISnapshotDataProxy data)
 		{
 			if (snapshot.AssignInfo != null)
@@ -2060,19 +2144,5 @@ namespace Weverca.MemoryModels.ModularCopyMemoryModel
 			return callLevel;
 		}
 		#endregion
-
-        internal void SetMemoryMergeResult(int callLevel, ISnapshotStructureProxy structure, ISnapshotDataProxy data)
-        {
-            Structure = structure;
-            Data = data;
-            CurrentData = data;
-            CallLevel = callLevel;
-        }
-
-        internal void SetInfoMergeResult(ISnapshotDataProxy data)
-        {
-            Infos = data;
-            CurrentData = Infos;
-        }
     }
 }
