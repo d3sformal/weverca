@@ -817,6 +817,18 @@ $resultA=sharedFn(2);
  .ShareFunctionGraph("sharedFn")
  ;
 
+        #region Shared recursive functions
+        readonly static TestCase SharedRecursiveFunctions_CASE = @"
+function recursiveSharedFn($a){
+		return $a+recursiveSharedFn($a-1);
+
+}
+
+$result = recursiveSharedFn(1);
+"
+            .AssertVariable("result").HasSpecialValues(SpecialValues.ANY_FLOAT);
+#endregion
+
 
 
         /// <summary>
@@ -3957,6 +3969,12 @@ g();
         public void SharedFunction()
         {
             AnalysisTestUtils.RunTestCase(SharedFunction_CASE);
+        }
+
+        [TestMethod]
+        public void SharedRecursiveFunction()
+        {
+            //AnalysisTestUtils.RunTestCase(SharedRecursiveFunctions_CASE);
         }
 
         [TestMethod]

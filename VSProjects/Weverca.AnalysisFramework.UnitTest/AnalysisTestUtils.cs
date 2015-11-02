@@ -278,6 +278,8 @@ namespace Weverca.AnalysisFramework.UnitTest
     {
         internal readonly static SpecialValues ANY_BOOLEAN = new AnyBoolean();
 
+        internal readonly static SpecialValues ANY_FLOAT = new AnyFloat();
+
         internal abstract Value getValue(FlowOutputSet outputSet);
 
         private class AnyBoolean : SpecialValues 
@@ -287,6 +289,15 @@ namespace Weverca.AnalysisFramework.UnitTest
                 return outputSet.AnyBooleanValue;
             }
         }
+
+        private class AnyFloat : SpecialValues
+        {
+            internal override Value getValue(FlowOutputSet outputSet)
+            {
+                return outputSet.AnyFloatValue;
+            }
+        }
+       
     }
 
     internal static class AnalysisTestUtils

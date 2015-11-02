@@ -41,6 +41,13 @@ namespace Weverca.Analysis
     public class FunctionResolver : FunctionResolverBase
     {
         private static readonly VariableName currentFunctionName = new VariableName(".currentFunction");
+        /// <summary>
+        /// The number of call sites after which the function becomes shared
+        /// </summary>
+        private static readonly uint SHAREDTHRESHOLD = 2;
+
+        private static uint callnum = 0;
+
         private NativeFunctionAnalyzer nativeFunctionAnalyzer;
         private Dictionary<MethodDecl, FunctionHints> methods = new Dictionary<MethodDecl, FunctionHints>();
         private Dictionary<FunctionDecl, FunctionHints> functions
@@ -907,6 +914,8 @@ namespace Weverca.Analysis
             var functionName = function.Name;
             ProgramPointGraph functionGraph;
 
+             callnum++;
+
             bool useSharedFunctions = false;
             if (OutSet.GetLocalControlVariable(callDepthName).IsDefined(OutSet.Snapshot))
             {
@@ -930,7 +939,7 @@ namespace Weverca.Analysis
                     }
                 }
             }
-            if (max >= 3)
+            if (max >= SHAREDTHRESHOLD)
             {
                 useSharedFunctions = true;
             }

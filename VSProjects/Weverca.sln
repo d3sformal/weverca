@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "..\External Sources\PhalangerOriginal\Source\Core\Core.csproj", "{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClassLibrary", "..\External Sources\PhalangerOriginal\Source\ClassLibrary\ClassLibrary.csproj", "{D515E8F4-357C-4CAF-87C1-97D64C5F865A}"
@@ -48,6 +50,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Web", "Weverca.Web\Weverca.Web.csproj", "{FC47902F-C2DE-4DFA-B525-22C4A611E263}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.WebDefinitions", "Common.WebDefinitions\Common.WebDefinitions.csproj", "{C7975503-5314-44C7-BE79-6321C16A92A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E482B9C8-01B4-4442-88CE-EBDA198576A6}"
+	ProjectSection(SolutionItems) = preProject
+		Performance1.psess = Performance1.psess
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -271,7 +278,6 @@ Global
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Debug|x86.Build.0 = Debug|x86
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|Mixed Platforms.ActiveCfg = Mono|x86
-		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|Mixed Platforms.Build.0 = Mono|x86
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|x64.ActiveCfg = Mono|Any CPU
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|x64.Build.0 = Mono|Any CPU
 		{9135A7EC-5BC6-42BF-AF34-98812F1ECF63}.Mono|x86.ActiveCfg = Mono|x86

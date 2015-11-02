@@ -33,7 +33,7 @@ namespace Weverca.Common
         /// <summary>
         /// Relative path to the trunk folder in SVN
         /// </summary>
-		public static readonly string TRUNK_PATH = @"..\..\..\..\"; // On windows
+		public static readonly string TRUNK_PATH = @"..\..\..\..\..\"; // On windows
 		//public static readonly string TRUNK_PATH = @"../../../../"; // On linux
 
         /// <summary>
