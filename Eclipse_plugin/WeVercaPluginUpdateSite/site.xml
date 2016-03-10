@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<site>
-   <feature url="features/PHP.analysis.plugin_1.0.0.jar" id="PHP.analysis.plugin" version="1.0.0">
-      <category name="weverca.plugin"/>
-   </feature>
-   <category-def name="weverca.plugin" label="Analysis tools for PHP"/>
-</site>

@@ -1,0 +1,2 @@
+#!/bin/bash
+mono bin/Weverca.exe -sa PHP_sources/Simple_XSS.php

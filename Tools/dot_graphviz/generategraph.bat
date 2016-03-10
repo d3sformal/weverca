@@ -1,1 +1,0 @@
-dot.exe -Tpng graph.txt > g.png

@@ -1,5 +1,0 @@
-<?
-function f(){
-goto b;
-}
-?>

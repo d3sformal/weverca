@@ -1,3 +1,0 @@
-Testovací program (Weverca.Parser.Tester) je nastaven tak, že pokud ho spustíte bez parametrù, tak vezme soubory typu *.php z tohoto adresáøe, vyrobí pro nì CFG a uloží je do souboru. Pokud budete chtít testovat vlastní sadu souborù, tak mu mùžete nastavit libovolný poèet souborù, nebo adresáøù pøes parametry.
-
-Do téhle složky dám pozdìji nìjaké PHP zdrojáky, které generují pìkné grafy, aby jsme to mohli použít na PR. Jinak si každý vytvoøte vlastní složky pro vaše zdrojáky.

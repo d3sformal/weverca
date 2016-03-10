@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "..\External Sources\PhalangerOriginal\Source\Core\Core.csproj", "{9A2867A2-981C-4B5A-A1C5-EACCC80B5148}"
 EndProject
@@ -46,10 +46,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Taint", "Weverca.Ta
 	ProjectSection(ProjectDependencies) = postProject
 		{01F0A818-EBE4-431B-9091-0E5DC99382AD} = {01F0A818-EBE4-431B-9091-0E5DC99382AD}
 	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Weverca.Web", "Weverca.Web\Weverca.Web.csproj", "{FC47902F-C2DE-4DFA-B525-22C4A611E263}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common.WebDefinitions", "Common.WebDefinitions\Common.WebDefinitions.csproj", "{C7975503-5314-44C7-BE79-6321C16A92A2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E482B9C8-01B4-4442-88CE-EBDA198576A6}"
 	ProjectSection(SolutionItems) = preProject
@@ -596,64 +592,9 @@ Global
 		{F6DEA013-A45C-47BF-8BA5-2118179D6E73}.Release|x64.ActiveCfg = Release|x64
 		{F6DEA013-A45C-47BF-8BA5-2118179D6E73}.Release|x64.Build.0 = Release|x64
 		{F6DEA013-A45C-47BF-8BA5-2118179D6E73}.Release|x86.ActiveCfg = Release|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|x64.ActiveCfg = Debug|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|x64.Build.0 = Debug|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Mono|Any CPU.Build.0 = Mono|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Mono|Mixed Platforms.ActiveCfg = Mono|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Mono|x64.ActiveCfg = Mono|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Mono|x86.ActiveCfg = Mono|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|Any CPU.ActiveCfg = Release x64|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|Any CPU.Build.0 = Release x64|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|Mixed Platforms.ActiveCfg = Release x64|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|Mixed Platforms.Build.0 = Release x64|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|x64.ActiveCfg = Release x64|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|x64.Build.0 = Release x64|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release x64|x86.ActiveCfg = Release x64|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|x64.ActiveCfg = Release|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|x64.Build.0 = Release|x64
-		{FC47902F-C2DE-4DFA-B525-22C4A611E263}.Release|x86.ActiveCfg = Release|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|x64.ActiveCfg = Debug|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|x64.Build.0 = Debug|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Mono|Any CPU.ActiveCfg = Mono|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Mono|Any CPU.Build.0 = Mono|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Mono|Mixed Platforms.ActiveCfg = Mono|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Mono|x64.ActiveCfg = Mono|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Mono|x86.ActiveCfg = Mono|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|Any CPU.ActiveCfg = Release x64|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|Any CPU.Build.0 = Release x64|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|Mixed Platforms.ActiveCfg = Release x64|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|Mixed Platforms.Build.0 = Release x64|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|x64.ActiveCfg = Release x64|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|x64.Build.0 = Release x64|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release x64|x86.ActiveCfg = Release x64|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|x64.ActiveCfg = Release|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|x64.Build.0 = Release|x64
-		{C7975503-5314-44C7-BE79-6321C16A92A2}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ..\..\..\VSProjects\Realisation\Weverca\Weverca.csproj

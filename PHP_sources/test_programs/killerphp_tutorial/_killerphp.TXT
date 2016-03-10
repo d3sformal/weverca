@@ -1,1 +1,0 @@
-http://www.killerphp.com/tutorials/object-oriented-php/

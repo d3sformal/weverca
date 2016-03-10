@@ -1,0 +1,3 @@
+#!/bin/bash
+xbuild /p:Configuration="Mono" VSProjects/Weverca.sln
+cp -R VSProjects/Weverca/bin/Mono/*.{exe,dll} bin/
