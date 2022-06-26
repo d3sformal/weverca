@@ -1,3 +1,4 @@
 #!/bin/bash
-xbuild /p:Configuration="Mono" VSProjects/Weverca.sln
+msbuild /p:Configuration="Mono" VSProjects/Weverca.sln
+mkdir -p bin
 cp -R VSProjects/Weverca/bin/Mono/*.{exe,dll} bin/
